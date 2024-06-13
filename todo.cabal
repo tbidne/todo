@@ -1,0 +1,57 @@
+cabal-version:      2.4
+name:               todo
+version:            0.1
+license:            MIT
+license-file:       LICENSE
+tested-with: GHC ==9.8.2
+
+copyright:          2024 Thomas Bidne
+author:             Thomas Bidne
+maintainer:         tbidne@protonmail.com
+homepage:           https://github.com/tbidne/todo/
+bug-reports:        https://github.com/tbidne/todo/issues
+synopsis:           Template
+description:        Template
+category:           Template
+extra-source-files:
+  .gitignore
+  cabal.project
+  CHANGELOG.md
+  README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/tbidne/todo
+
+common common-lang
+  default-extensions:
+    DataKinds
+    DeriveAnyClass
+    DerivingStrategies
+    DerivingVia
+    FunctionalDependencies
+    GADTs
+    LambdaCase
+    MultiWayIf
+    OverloadedStrings
+    PatternSynonyms
+    TypeFamilyDependencies
+    TypeOperators
+
+  default-language:   GHC2021
+
+library
+  import:          common-lang
+  exposed-modules: Lib
+  build-depends:   base >=4.19.0.0 && <4.21
+  hs-source-dirs:  src
+
+executable todo
+  import:         common-lang
+  main-is:        Main.hs
+  build-depends:
+    , base
+    , todo
+
+  hs-source-dirs: app
+  ghc-options:    -threaded -with-rtsopts=-N
