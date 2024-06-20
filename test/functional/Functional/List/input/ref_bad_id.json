@@ -1,0 +1,23 @@
+[
+  {
+    "id": "a",
+    "priority": "low",
+    "status": "not-started"
+  },
+  {
+    "id": "b",
+    "priority": "low",
+    "status": "not-started"
+  },
+  {
+    "id": "c",
+    "status": "completed",
+    "subtasks": [
+      {
+        "id": "d",
+        "priority": "normal",
+        "status": "blocked: a, x, b, y"
+      }
+    ]
+  }
+]

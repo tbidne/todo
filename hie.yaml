@@ -1,0 +1,13 @@
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:todo"
+
+    - path: "./app/Main.hs"
+      component: "todo:exe:todo"
+
+    - path: "./test/unit"
+      component: "todo:test:unit"
+
+    - path: "./test/functional"
+      component: "todo:test:functional"

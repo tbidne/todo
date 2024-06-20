@@ -3,7 +3,140 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: text-display-0.0.5.2@sha256:6e6a5bf1c83dfa6c34692ed5d8ea87f1bd385984309b42c302f2156f4d82477b,2670
+    pantry-tree:
+      sha256: e84ac3f5fdc4d6e1c544174735beb80474cf7d7b849abfd1ae6184517a30c1c1
+      size: 3364
+  original:
+    hackage: text-display-0.0.5.2@sha256:6e6a5bf1c83dfa6c34692ed5d8ea87f1bd385984309b42c302f2156f4d82477b,2670
+- completed:
+    commit: f8590486ec0fc66acf7db20308e1ed6993a52151
+    git: https://github.com/tbidne/algebra-simple.git
+    name: algebra-simple
+    pantry-tree:
+      sha256: 175574cc504ef22e28ced562b297fe5208bc4c96aedc9164b93aeeb7e381b281
+      size: 3449
+    version: '0.1'
+  original:
+    commit: f8590486ec0fc66acf7db20308e1ed6993a52151
+    git: https://github.com/tbidne/algebra-simple.git
+- completed:
+    commit: f93b202c9d154b25b42b048570cf6648451aa577
+    git: https://github.com/tbidne/bounds.git
+    name: bounds
+    pantry-tree:
+      sha256: d35ab86d343913f00cbb7ae8db587047e6bb8efdb76c5a376e31d7ba85a63ebe
+      size: 833
+    version: '0.1'
+  original:
+    commit: f93b202c9d154b25b42b048570cf6648451aa577
+    git: https://github.com/tbidne/bounds.git
+- completed:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    name: effects-env
+    pantry-tree:
+      sha256: d0850c16bd2c15a1873d1f59a9e42e94752e8ce15ab06e4f9ee54876fecb1da9
+      size: 235
+    subdir: lib/effects-env
+    version: '0.1'
+  original:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    subdir: lib/effects-env
+- completed:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    name: effects-exceptions
+    pantry-tree:
+      sha256: 854e1af85f546bbe678d2fd5d13437f27c309b5beaebfcbd29d40c58c32128c4
+      size: 703
+    subdir: lib/effects-exceptions
+    version: '0.1'
+  original:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    subdir: lib/effects-exceptions
+- completed:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    name: effects-fs
+    pantry-tree:
+      sha256: 3db78e6855f8a0c53ff83b20ee7fd0fca63f01cf828a07218e30f4e5b6bd5309
+      size: 2120
+    subdir: lib/effects-fs
+    version: '0.1'
+  original:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    subdir: lib/effects-fs
+- completed:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    name: effects-ioref
+    pantry-tree:
+      sha256: 7ab85bccdb173fae222801d41a2e63c10e0265c53ef1c52d5bd1a5b56e4a5ecf
+      size: 224
+    subdir: lib/effects-ioref
+    version: '0.1'
+  original:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    subdir: lib/effects-ioref
+- completed:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    name: effects-optparse
+    pantry-tree:
+      sha256: d8e7858a4dd3c4d709807471905df170057d71fd3eb752120642cb5924189ada
+      size: 230
+    subdir: lib/effects-optparse
+    version: '0.1'
+  original:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    subdir: lib/effects-optparse
+- completed:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    name: effects-terminal
+    pantry-tree:
+      sha256: 65bf791e45bf0f873570d32bb90ea17529eedfae51119be4d5c7836eecdbd500
+      size: 237
+    subdir: lib/effects-terminal
+    version: '0.1'
+  original:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    subdir: lib/effects-terminal
+- completed:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    name: effects-time
+    pantry-tree:
+      sha256: 20faa74b5f488221f0a394e00cfce28b1fa712a76a3d7b2e65226fb4b50d45eb
+      size: 281
+    subdir: lib/effects-time
+    version: '0.1'
+  original:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    subdir: lib/effects-time
+- completed:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    name: effects-unix-compat
+    pantry-tree:
+      sha256: c92d9b941796b8c7c5b98cb845ee6677ebd68e1ae2062dfb3fbf69579ccc46fd
+      size: 367
+    subdir: lib/effects-unix-compat
+    version: '0.1'
+  original:
+    commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
+    git: https://github.com/tbidne/monad-effects.git
+    subdir: lib/effects-unix-compat
 snapshots:
 - completed:
     sha256: e47314df6b200e3c95f14b926d81fd193ae010e51bd162a36ce18ef68f421e4a

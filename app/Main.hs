@@ -3,10 +3,14 @@
 -- @since 0.1
 module Main (main) where
 
-import Lib qualified
+import System.IO (IO)
+import Todo.Prelude hiding (IO)
+import Todo.Runner qualified as Runner
 
 -- | Executable entry-point.
 --
 -- @since 0.1
 main :: IO ()
-main = putStrLn Lib.hello
+main = do
+  setUncaughtExceptionHandlerDisplay
+  Runner.runTodo

@@ -1,0 +1,71 @@
+[
+  {
+    "id": "haircut",
+    "priority": "low",
+    "status": "not-started"
+  },
+  {
+    "id": "walk_dog",
+    "deadline": "2024-04-10",
+    "priority": "normal",
+    "status": "completed"
+  },
+  {
+    "id": "groceries",
+    "status": "blocked: fix_car, paycheck",
+    "subtasks": [
+      {
+        "id": "apples",
+        "priority": "normal",
+        "status": "not-started"
+      },
+      {
+        "id": "bananas",
+        "priority": "high",
+        "status": "not-started"
+      }
+    ]
+  },
+  {
+    "id": "fix_car",
+    "deadline": "2024-06-22 12:15:00 UTC",
+    "description": "Car needs brakes fixed",
+    "priority": "high",
+    "status": "not-started"
+  },
+  {
+    "id": "paycheck",
+    "priority": "high",
+    "deadline": "2024-08-12 12:00:00",
+    "status": "in-progress"
+  },
+  {
+    "id": "soccer_match",
+    "priority": "low",
+    "subtasks": [
+      {
+        "id": "pack_bananas",
+        "priority": "normal",
+        "status": "blocked: groceries"
+      },
+      {
+        "id": "equipment",
+        "description": "Get equipment",
+        "priority": "normal",
+        "subtasks": [
+          {
+            "id": "cleats",
+            "description": "Get cleats",
+            "priority": "normal",
+            "status": "blocked: fix_car"
+          },
+          {
+            "id": "ball",
+            "priority": "normal",
+            "status": "blocked: fix_car"
+          }
+        ]
+      }
+    ]
+  }
+]

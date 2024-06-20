@@ -7,3 +7,6 @@ cabal.project.local
 
 # nix
 result*
+
+# misc
+.vscode

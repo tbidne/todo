@@ -3,8 +3,7 @@ name:               todo
 version:            0.1
 license:            MIT
 license-file:       LICENSE
-tested-with: GHC ==9.8.2
-
+tested-with:        GHC ==9.8.2
 copyright:          2024 Thomas Bidne
 author:             Thomas Bidne
 maintainer:         tbidne@protonmail.com
@@ -25,16 +24,21 @@ source-repository head
 
 common common-lang
   default-extensions:
+    ApplicativeDo
     DataKinds
     DeriveAnyClass
     DerivingStrategies
     DerivingVia
+    DuplicateRecordFields
     FunctionalDependencies
     GADTs
     LambdaCase
     MultiWayIf
+    NoImplicitPrelude
+    OverloadedRecordDot
     OverloadedStrings
     PatternSynonyms
+    StrictData
     TypeFamilyDependencies
     TypeOperators
 
@@ -42,8 +46,45 @@ common common-lang
 
 library
   import:          common-lang
-  exposed-modules: Lib
-  build-depends:   base >=4.19.0.0 && <4.21
+  other-modules:   Paths_todo
+  autogen-modules: Paths_todo
+  exposed-modules:
+    Todo
+    Todo.Data.Task
+    Todo.Data.Task.Render
+    Todo.Data.Task.Render.Utils
+    Todo.Data.Task.Sorted
+    Todo.Data.Task.Sorted.Internal
+    Todo.Data.Task.TaskId
+    Todo.Data.Task.TaskPriority
+    Todo.Data.Task.TaskStatus
+    Todo.Data.Timestamp
+    Todo.Index
+    Todo.Index.Internal
+    Todo.Prelude
+    Todo.Runner
+    Todo.Runner.Args
+
+  build-depends:
+    , aeson                 ^>=2.2.0.0
+    , base                  >=4.19.0.0 && <4.21
+    , containers            >=0.6.2.1  && <0.8
+    , effects-exceptions    ^>=0.1
+    , effects-fs            ^>=0.1
+    , effects-optparse      ^>=0.1
+    , effects-terminal      ^>=0.1
+    , effects-time          ^>=0.1
+    , nonempty-containers   >=0.3.4.2  && <0.4
+    , optparse-applicative  >=0.15     && <0.19
+    , pretty-terminal       ^>=0.1
+    , text                  >=2.0      && <2.2
+    , text-display          >=0.0.3.0  && <0.6
+    , time                  >=1.9.3    && <1.15
+
+  -- For tuple syntax
+  if impl(ghc >=9.10.1)
+    build-depends: ghc-experimental ^>=0.1.0.0
+
   hs-source-dirs:  src
 
 executable todo
@@ -55,3 +96,50 @@ executable todo
 
   hs-source-dirs: app
   ghc-options:    -threaded -with-rtsopts=-N
+
+test-suite unit
+  import:         common-lang
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+  other-modules:
+    Unit.Prelude
+    Unit.Todo.Data.Task
+    Unit.Todo.Data.Task.Sorted
+
+  build-depends:
+    , aeson
+    , base
+    , bytestring
+    , hedgehog             >=1.0.2   && <1.5
+    , nonempty-containers
+    , tasty                >=1.1.0.3 && <1.6
+    , tasty-hedgehog       >=1.2.0.0 && <1.5
+    , tasty-hunit          >=0.9     && <0.11
+    , text
+    , time
+    , todo
+
+  hs-source-dirs: test/unit
+  ghc-options:    -threaded -with-rtsopts=-N
+
+test-suite functional
+  import:         common-lang
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+  other-modules:
+    Functional.List
+    Functional.Prelude
+
+  build-depends:
+    , base
+    , bytestring
+    , effects-env
+    , effects-exceptions
+    , effects-fs
+    , effects-terminal
+    , mtl                 >=2.2.1    && <2.4
+    , tasty               >=1.1.0.3  && <1.6
+    , tasty-golden        ^>=2.3.1.1
+    , todo
+
+  hs-source-dirs: test/functional

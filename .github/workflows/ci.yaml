@@ -36,6 +36,12 @@ jobs:
 
       - name: Compile
         run: cabal build
+
+      - name: Unit tests
+        run: cabal test unit --test-options '--hedgehog-tests 10000'
+
+      - name: Functional tests
+        run: cabal test functional
   stack:
     strategy:
       fail-fast: false
