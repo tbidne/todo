@@ -12,14 +12,15 @@ where
 
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
+import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff, ColorOn))
 import Todo.Data.Task.Render.Utils qualified as Render.Utils
 import Todo.Data.Task.TaskId.Internal (TaskId (unTaskId), parseTaskId)
 import Todo.Prelude
 
 -- | Renders a TaskId.
-render :: Bool -> TaskId -> Builder
-render False = displayBuilder . (.unTaskId)
-render True = Render.Utils.colorBuilder Pretty.Blue . (.unTaskId)
+render :: ColorSwitch -> TaskId -> Builder
+render ColorOff = displayBuilder . (.unTaskId)
+render ColorOn = Render.Utils.colorBuilder Pretty.Blue . (.unTaskId)
 
 -- | neSeqToTextCustom with no extra logic.
 neSeqToText :: NESeq TaskId -> Text

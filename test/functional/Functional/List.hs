@@ -17,42 +17,86 @@ sortExampleTests =
   testGroup
     "Example sorts"
     [ testExample,
+      testExampleUnicode,
       testExamplePriority,
+      testExamplePriorityUnicode,
       testExampleStatus,
+      testExampleStatusUnicode,
       testExamplePriorityStatus,
-      testExampleStatusPriority
+      testExamplePriorityStatusUnicode,
+      testExampleStatusPriority,
+      testExampleStatusPriorityUnicode
     ]
 
 testExample :: TestTree
-testExample = testGoldenExample "Default sort" Nothing "example"
+testExample =
+  testGoldenExampleUnicodeOff
+    "Default sort"
+    Nothing
+    "example"
+
+testExampleUnicode :: TestTree
+testExampleUnicode =
+  testGoldenExampleUnicodeOn
+    "Default sort (unicode)"
+    Nothing
+    "example_unicode"
 
 testExamplePriority :: TestTree
 testExamplePriority =
-  testGoldenExample
+  testGoldenExampleUnicodeOff
     "Sorted by priority"
     (Just "priority")
     "example_priority"
 
+testExamplePriorityUnicode :: TestTree
+testExamplePriorityUnicode =
+  testGoldenExampleUnicodeOn
+    "Sorted by priority (unicode)"
+    (Just "priority")
+    "example_priority_unicode"
+
 testExampleStatus :: TestTree
 testExampleStatus =
-  testGoldenExample
+  testGoldenExampleUnicodeOff
     "Sorted by status"
     (Just "status")
     "example_status"
 
+testExampleStatusUnicode :: TestTree
+testExampleStatusUnicode =
+  testGoldenExampleUnicodeOn
+    "Sorted by status (unicode)"
+    (Just "status")
+    "example_status_unicode"
+
 testExamplePriorityStatus :: TestTree
 testExamplePriorityStatus =
-  testGoldenExample
+  testGoldenExampleUnicodeOff
     "Sorted by priority_status"
     (Just "priority_status")
     "example_priority_status"
 
+testExamplePriorityStatusUnicode :: TestTree
+testExamplePriorityStatusUnicode =
+  testGoldenExampleUnicodeOn
+    "Sorted by priority_status (unicode)"
+    (Just "priority_status")
+    "example_priority_status_unicode"
+
 testExampleStatusPriority :: TestTree
 testExampleStatusPriority =
-  testGoldenExample
+  testGoldenExampleUnicodeOff
     "Sorted by status_priority"
     (Just "status_priority")
     "example_status_priority"
+
+testExampleStatusPriorityUnicode :: TestTree
+testExampleStatusPriorityUnicode =
+  testGoldenExampleUnicodeOn
+    "Sorted by status_priority (unicode)"
+    (Just "status_priority")
+    "example_status_priority_unicode"
 
 failureTests :: TestTree
 failureTests =
@@ -116,8 +160,19 @@ testStatusBlockedIdsEmptyFails =
     "Blocked ids empty status fails"
     "status_blocked_ids_empty"
 
-testGoldenExample :: TestName -> Maybe String -> FilePath -> TestTree
-testGoldenExample desc mSortArg goldenFilenName = goldenVsString desc path $ do
+testGoldenExampleUnicodeOff :: TestName -> Maybe String -> FilePath -> TestTree
+testGoldenExampleUnicodeOff = testGoldenExample extraArgs
+  where
+    extraArgs =
+      [ "--unicode",
+        "off"
+      ]
+
+testGoldenExampleUnicodeOn :: TestName -> Maybe String -> FilePath -> TestTree
+testGoldenExampleUnicodeOn = testGoldenExample []
+
+testGoldenExample :: List String -> TestName -> Maybe String -> FilePath -> TestTree
+testGoldenExample extraArgs desc mSortArg goldenFilenName = goldenVsString desc path $ do
   result <- run args
   pure $ toBSL result
   where
@@ -129,6 +184,7 @@ testGoldenExample desc mSortArg goldenFilenName = goldenVsString desc path $ do
         "off"
       ]
         ++ sortArgs
+        ++ extraArgs
     sortArgs = maybe [] (\a -> ["--sort", a]) mSortArg
 
     path = outputDir `cfp` goldenFilenName <> ".golden"
@@ -143,6 +199,8 @@ testGolden runner desc fileName = goldenVsString desc path $ do
         inputDir `cfp` fileName <> ".json",
         "list",
         "--color",
+        "off",
+        "--unicode",
         "off"
       ]
 

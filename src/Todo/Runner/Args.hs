@@ -31,6 +31,10 @@ import Options.Applicative.Help.Chunk qualified as Chunk
 import Options.Applicative.Help.Pretty qualified as Pretty
 import Options.Applicative.Types (ArgPolicy (Intersperse))
 import Paths_todo qualified as Paths
+import Todo.Data.Task.Render.Utils
+  ( ColorSwitch (ColorOff, ColorOn),
+    UnicodeSwitch (UnicodeOff, UnicodeOn),
+  )
 import Todo.Data.Task.Sorted
 import Todo.Prelude
 
@@ -86,7 +90,7 @@ version =
 versNum :: String
 versNum = "Version: " <> L.intercalate "." (show <$> versionBranch Paths.version)
 
-colorParser :: Parser (Maybe Bool)
+colorParser :: Parser (Maybe ColorSwitch)
 colorParser =
   OA.optional
     $ OA.option
@@ -101,9 +105,28 @@ colorParser =
     helpTxt = "If enabled, colors output. Defaults to on."
     readColor =
       OA.str >>= \case
-        "on" -> pure True
-        "off" -> pure False
+        "on" -> pure ColorOn
+        "off" -> pure ColorOff
         other -> fail $ "Unrecognized color: " <> unpack other
+
+unicodeParser :: Parser (Maybe UnicodeSwitch)
+unicodeParser =
+  OA.optional
+    $ OA.option
+      readUnicode
+      ( mconcat
+          [ OA.long "unicode",
+            OA.metavar "(on | off)",
+            mkHelp helpTxt
+          ]
+      )
+  where
+    helpTxt = "If enabled, uses unicode in output. Defaults to on."
+    readUnicode =
+      OA.str >>= \case
+        "on" -> pure UnicodeOn
+        "off" -> pure UnicodeOff
+        other -> fail $ "Unrecognized unicode: " <> unpack other
 
 pathParser :: Parser (Maybe OsPath)
 pathParser =
@@ -124,22 +147,23 @@ pathParser =
         ]
 
 data Command
-  = CmdList (Maybe Bool) (Maybe SortType)
+  = CmdList (Maybe ColorSwitch) (Maybe UnicodeSwitch) (Maybe SortType)
   deriving stock (Eq, Show)
 
 commandParser :: Parser Command
 commandParser =
   OA.hsubparser
     ( mconcat
-        [ mkCommand "list" delParser delTxt
+        [ mkCommand "list" listParser listTxt
         ]
     )
   where
-    delTxt = mkCmdDesc "Lists the todo index."
+    listTxt = mkCmdDesc "Lists the todo index."
 
-    delParser =
+    listParser =
       CmdList
         <$> colorParser
+        <*> unicodeParser
         <*> sortTypeParser
 
 sortTypeParser :: Parser (Maybe SortType)

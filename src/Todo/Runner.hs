@@ -7,8 +7,16 @@ where
 
 import Effects.FileSystem.PathReader (getXdgConfig)
 import Todo qualified
+import Todo.Data.Task.Render.Utils
+  ( ColorSwitch (ColorOn),
+    UnicodeSwitch (UnicodeOn),
+  )
 import Todo.Prelude
-import Todo.Runner.Args (Args (command, path), Command (CmdList), getArgs)
+import Todo.Runner.Args
+  ( Args (command, path),
+    Command (CmdList),
+    getArgs,
+  )
 
 -- | Runs todo app.
 runTodo ::
@@ -25,9 +33,11 @@ runTodo = do
   args <- getArgs
   path <- getPath args.path
   case args.command of
-    CmdList mColor mSortType -> Todo.listTasks path (defColor mColor) mSortType
+    CmdList mColor mUnicode mSortType ->
+      Todo.listTasks path (defColor mColor) (defUnicode mUnicode) mSortType
   where
-    defColor = fromMaybe True
+    defColor = fromMaybe ColorOn
+    defUnicode = fromMaybe UnicodeOn
 
 getPath ::
   ( HasCallStack,

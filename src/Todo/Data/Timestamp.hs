@@ -18,6 +18,7 @@ import Data.Time.LocalTime
 import Data.Time.LocalTime qualified as LT
 import Effects.Time qualified as Time
 import System.Console.Pretty (Color (Cyan, Magenta, Red))
+import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff, ColorOn))
 import Todo.Data.Task.Render.Utils qualified as Render.Utils
 import Todo.Prelude
 
@@ -60,9 +61,9 @@ formatTimestamp (Zoned zt) = Time.formatZonedTime zt
 dateFormat :: String
 dateFormat = "%0Y-%m-%d"
 
-render :: Bool -> ZonedTime -> Timestamp -> Builder
-render False _ ts = displayBuilder $ formatTimestamp ts
-render True zt ts = Render.Utils.colorBuilder c (pack $ formatTimestamp ts)
+render :: ColorSwitch -> ZonedTime -> Timestamp -> Builder
+render ColorOff _ ts = displayBuilder $ formatTimestamp ts
+render ColorOn zt ts = Render.Utils.colorBuilder c (pack $ formatTimestamp ts)
   where
     c = timestampToColor zt ts
 

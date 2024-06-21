@@ -7,6 +7,7 @@ import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder qualified as TLB
 import Effects.Time (MonadTime (getSystemZonedTime))
 import Todo.Data.Task.Render qualified as Render
+import Todo.Data.Task.Render.Utils (ColorSwitch, UnicodeSwitch)
 import Todo.Data.Task.Sorted (SortType)
 import Todo.Data.Task.Sorted qualified as Sorted
 import Todo.Index qualified as Index
@@ -22,11 +23,13 @@ listTasks ::
   -- | Path to tasks.json.
   OsPath ->
   -- | Is color enabled.
-  Bool ->
+  ColorSwitch ->
+  -- | Is unicode enabled.
+  UnicodeSwitch ->
   -- | The sort type.
   Maybe SortType ->
   m ()
-listTasks path color msortType = do
+listTasks path color unicode msortType = do
   index <- Index.readIndex path
 
   let xs = Index.toList index
@@ -37,4 +40,4 @@ listTasks path color msortType = do
   putTextLn
     $ TL.toStrict
     $ TLB.toLazyText
-    $ Render.renderSorted currTime color sorted
+    $ Render.renderSorted currTime color unicode sorted

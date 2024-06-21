@@ -6,6 +6,7 @@ where
 
 import Data.Aeson qualified as Asn
 import System.Console.Pretty qualified as Pretty
+import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff, ColorOn))
 import Todo.Data.Task.Render.Utils qualified as Render.Utils
 import Todo.Prelude
 
@@ -34,10 +35,10 @@ instance ToJSON TaskPriority where
   toJSON Normal = "normal"
   toJSON High = "high"
 
-render :: Bool -> TaskPriority -> Builder
-render False Low = "low"
-render False Normal = "normal"
-render False High = "high"
-render True Low = Render.Utils.colorBuilder Pretty.Yellow "low"
-render True Normal = Render.Utils.colorBuilder Pretty.Cyan "normal"
-render True High = Render.Utils.colorBuilder Pretty.Red "high"
+render :: ColorSwitch -> TaskPriority -> Builder
+render ColorOff Low = "low"
+render ColorOff Normal = "normal"
+render ColorOff High = "high"
+render ColorOn Low = Render.Utils.colorBuilder Pretty.Yellow "low"
+render ColorOn Normal = Render.Utils.colorBuilder Pretty.Cyan "normal"
+render ColorOn High = Render.Utils.colorBuilder Pretty.Red "high"

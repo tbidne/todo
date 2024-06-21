@@ -13,6 +13,7 @@ import Data.Aeson.Types (Parser)
 import Data.Set qualified as Set
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
+import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff, ColorOn))
 import Todo.Data.Task.Render.Utils qualified as Render.Utils
 import Todo.Data.Task.TaskId (TaskId (unTaskId))
 import Todo.Data.Task.TaskId qualified as TaskId
@@ -88,15 +89,15 @@ isCompleted Completed = True
 isCompleted _ = False
 
 -- | Renders to Builder.
-render :: Bool -> TaskStatus -> Builder
-render False Completed = "completed"
-render False InProgress = "in-progress"
-render False (Blocked tids) = displayBuilder $ "blocked: " <> taskIdsToText tids
-render False NotStarted = "not-started"
-render True Completed = Render.Utils.colorBuilder Pretty.Green "completed"
-render True InProgress = Render.Utils.colorBuilder Pretty.Yellow "in-progress"
-render True (Blocked tids) = Render.Utils.colorBuilder Pretty.Red $ "blocked: " <> taskIdsToText tids
-render True NotStarted = Render.Utils.colorBuilder Pretty.Cyan "not-started"
+render :: ColorSwitch -> TaskStatus -> Builder
+render ColorOff Completed = "completed"
+render ColorOff InProgress = "in-progress"
+render ColorOff (Blocked tids) = displayBuilder $ "blocked: " <> taskIdsToText tids
+render ColorOff NotStarted = "not-started"
+render ColorOn Completed = Render.Utils.colorBuilder Pretty.Green "completed"
+render ColorOn InProgress = Render.Utils.colorBuilder Pretty.Yellow "in-progress"
+render ColorOn (Blocked tids) = Render.Utils.colorBuilder Pretty.Red $ "blocked: " <> taskIdsToText tids
+render ColorOn NotStarted = Render.Utils.colorBuilder Pretty.Cyan "not-started"
 
 taskIdsToText :: NESeq TaskId -> Text
 taskIdsToText = T.intercalate ", " . toList . fmap (\t -> showt t.unTaskId)

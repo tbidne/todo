@@ -12,6 +12,10 @@ import Todo.Data.Task
     TaskGroup (subtasks, taskId),
   )
 import Todo.Data.Task qualified as Task
+import Todo.Data.Task.Render.Utils
+  ( ColorSwitch,
+    UnicodeSwitch (UnicodeOff, UnicodeOn),
+  )
 import Todo.Data.Task.Sorted (SortedTasks (unSortedTasks))
 import Todo.Data.Task.TaskId qualified as TaskId
 import Todo.Data.Task.TaskPriority qualified as TaskPriority
@@ -24,35 +28,62 @@ renderSorted ::
   -- | Current time, for coloring deadlines.
   ZonedTime ->
   -- | Color?
-  Bool ->
+  ColorSwitch ->
+  -- | Unicode?
+  UnicodeSwitch ->
   -- | Tasks to render.
   SortedTasks ->
   Builder
-renderSorted currTime b = renderSomeTasks currTime b 0 . unSortedTasks
+renderSorted currTime color unicode =
+  renderSomeTasks currTime color unicode 0
+    . unSortedTasks
 
-renderSomeTasks :: (Foldable f, Functor f) => ZonedTime -> Bool -> Word8 -> f SomeTask -> Builder
-renderSomeTasks currTime b nestLvl tasks = vsep (renderSomeTask currTime b nestLvl <$> tasks)
+renderSomeTasks ::
+  (Foldable f, Functor f) =>
+  ZonedTime ->
+  ColorSwitch ->
+  UnicodeSwitch ->
+  Word8 ->
+  f SomeTask ->
+  Builder
+renderSomeTasks currTime color unicode nestLvl tasks =
+  vsep (renderSomeTask currTime color unicode nestLvl <$> tasks)
 
-renderSomeTask :: ZonedTime -> Bool -> Word8 -> SomeTask -> Builder
-renderSomeTask currTime b nestLvl (SingleTask t) = renderTask currTime b nestLvl t
-renderSomeTask currTime b nestLvl (MultiTask tg) = renderTaskGroup currTime b nestLvl tg
+renderSomeTask :: ZonedTime -> ColorSwitch -> UnicodeSwitch -> Word8 -> SomeTask -> Builder
+renderSomeTask currTime color unicode !nestLvl st = case st of
+  SingleTask t -> renderTask currTime color unicode nestLvl t
+  MultiTask tg -> renderTaskGroup currTime color unicode nestLvl tg
 
-renderTaskGroup :: ZonedTime -> Bool -> Word8 -> TaskGroup -> Builder
-renderTaskGroup currTime b nestLvl tg =
+renderTaskGroup ::
+  ZonedTime ->
+  ColorSwitch ->
+  UnicodeSwitch ->
+  Word8 ->
+  TaskGroup ->
+  Builder
+renderTaskGroup currTime color unicode nestLvl tg =
   vsep
-    [ indent nestLvl $ "id: " <> TaskId.render b tg.taskId,
-      indent nestLvl $ "status: " <> TaskStatus.render b (Task.taskGroupStatus tg),
-      indent nestLvl $ "priority: " <> TaskPriority.render b (Task.taskGroupPriority tg),
+    [ indent nestLvl $ bullet <> "id: " <> TaskId.render color tg.taskId,
+      indent nestLvl $ bulletIndent <> "status: " <> TaskStatus.render color (Task.taskGroupStatus tg),
+      indent nestLvl $ bulletIndent <> "priority: " <> TaskPriority.render color (Task.taskGroupPriority tg),
       line
     ]
-    <> vsep (renderSomeTask currTime b (nestLvl + 1) <$> tg.subtasks)
+    <> vsep (renderSomeTask currTime color unicode (nestLvl + 1) <$> tg.subtasks)
+  where
+    (bullet, bulletIndent) = statusToBullet unicode (MultiTask tg)
 
-renderTask :: ZonedTime -> Bool -> Word8 -> Task -> Builder
-renderTask currTime b nestLvl t =
+renderTask ::
+  ZonedTime ->
+  ColorSwitch ->
+  UnicodeSwitch ->
+  Word8 ->
+  Task ->
+  Builder
+renderTask currTime color unicode nestLvl t =
   vsepLine
-    [ indent nestLvl $ "id: " <> TaskId.render b t.taskId,
-      indent nestLvl $ "status: " <> TaskStatus.render b t.status,
-      indent nestLvl $ "priority: " <> TaskPriority.render b t.priority
+    [ indent nestLvl $ bullet <> "id: " <> TaskId.render color t.taskId,
+      indent nestLvl $ bulletIndent <> "status: " <> TaskStatus.render color t.status,
+      indent nestLvl $ bulletIndent <> "priority: " <> TaskPriority.render color t.priority
     ]
     <> mDeadline
     <> mDescription
@@ -62,11 +93,13 @@ renderTask currTime b nestLvl t =
         nestLvl
         (renderTimestamp <$> t.deadline)
 
-    renderTimestamp ts = "deadline: " <> Timestamp.render b currTime ts <> line
+    renderTimestamp ts = bulletIndent <> "deadline: " <> Timestamp.render color currTime ts <> line
     mDescription =
       renderMaybeEmpty
         nestLvl
-        ((\d -> "description: " <> displayBuilder d <> line) <$> t.description)
+        ((\d -> bulletIndent <> "description: " <> displayBuilder d <> line) <$> t.description)
+
+    (bullet, bulletIndent) = statusToBullet unicode (SingleTask t)
 
 vsep :: (Foldable f) => f Builder -> Builder
 vsep = concatWith (\x y -> x <> line <> y)
@@ -98,3 +131,9 @@ renderMaybeEmpty ::
   Builder
 renderMaybeEmpty _ Nothing = ""
 renderMaybeEmpty nestLvl (Just b) = indent nestLvl b
+
+statusToBullet :: UnicodeSwitch -> SomeTask -> Tuple2 Builder Builder
+statusToBullet UnicodeOff _ = ("- ", "  ")
+statusToBullet UnicodeOn st
+  | Task.someTaskIsCompleted st = ("✅ ", "   ")
+  | otherwise = ("❌ ", "   ")
