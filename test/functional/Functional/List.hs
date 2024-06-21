@@ -110,89 +110,29 @@ failureTests :: TestTree
 failureTests =
   testGroup
     "Failures"
-    [ testDuplicateIdFails,
-      testRefBadIdFails,
-      testBadStatusFails,
-      testBlockedEmptyFails,
-      testBlockedIdsEmptyFails,
+    [ testIdDupsFails,
       testIdEmptyFails,
-      testIdCommaFails
+      testIdCommaFails,
+      testStatusBlockedBadRefFails,
+      testStatusBadFails,
+      testStatusBlockedEmptFails,
+      testStatusBlockedIdsEmptyFails
     ]
 
-testDuplicateIdFails :: TestTree
-testDuplicateIdFails = goldenVsString "Duplicate id fails" path $ do
+testIdDupsFails :: TestTree
+testIdDupsFails = goldenVsString "Duplicate id fails" path $ do
   result <- runException @DuplicateIdE args
   pure $ toBSL result
   where
     args =
       [ "--path",
-        inputDir `cfp` "dup_ids.json",
+        inputDir `cfp` "id_dups.json",
         "list",
         "--color",
         "off"
       ]
 
-    path = outputDir `cfp` "dup_ids.golden"
-
-testRefBadIdFails :: TestTree
-testRefBadIdFails = goldenVsString "Non-extant id reference fails" path $ do
-  result <- runException @BlockedIdRefE args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "ref_bad_id.json",
-        "list",
-        "--color",
-        "off"
-      ]
-
-    path = outputDir `cfp` "ref_bad_id.golden"
-
-testBadStatusFails :: TestTree
-testBadStatusFails = goldenVsString "Bad status fails" path $ do
-  result <- runException @AesonException args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "bad_status.json",
-        "list",
-        "--color",
-        "off"
-      ]
-
-    path = outputDir `cfp` "bad_status.golden"
-
-testBlockedEmptyFails :: TestTree
-testBlockedEmptyFails = goldenVsString "Blocked empty status fails" path $ do
-  result <- runException @AesonException args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "blocked_empty.json",
-        "list",
-        "--color",
-        "off"
-      ]
-
-    path = outputDir `cfp` "blocked_empty.golden"
-
-testBlockedIdsEmptyFails :: TestTree
-testBlockedIdsEmptyFails = goldenVsString "Blocked ids empty status fails" path $ do
-  result <- runException @AesonException args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "blocked_ids_empty.json",
-        "list",
-        "--color",
-        "off"
-      ]
-
-    path = outputDir `cfp` "blocked_ids_empty.golden"
+    path = outputDir `cfp` "id_dups.golden"
 
 testIdEmptyFails :: TestTree
 testIdEmptyFails = goldenVsString "Empty id fails" path $ do
@@ -223,6 +163,66 @@ testIdCommaFails = goldenVsString "Id with comma fails" path $ do
       ]
 
     path = outputDir `cfp` "id_comma.golden"
+
+testStatusBlockedBadRefFails :: TestTree
+testStatusBlockedBadRefFails = goldenVsString desc path $ do
+  result <- runException @BlockedIdRefE args
+  pure $ toBSL result
+  where
+    args =
+      [ "--path",
+        inputDir `cfp` "status_blocked_bad_ref.json",
+        "list",
+        "--color",
+        "off"
+      ]
+    desc = "Status blocked non-extant id reference fails"
+    path = outputDir `cfp` "status_blocked_bad_ref.golden"
+
+testStatusBadFails :: TestTree
+testStatusBadFails = goldenVsString "Bad status fails" path $ do
+  result <- runException @AesonException args
+  pure $ toBSL result
+  where
+    args =
+      [ "--path",
+        inputDir `cfp` "status_bad.json",
+        "list",
+        "--color",
+        "off"
+      ]
+
+    path = outputDir `cfp` "status_bad.golden"
+
+testStatusBlockedEmptFails :: TestTree
+testStatusBlockedEmptFails = goldenVsString "Blocked empty status fails" path $ do
+  result <- runException @AesonException args
+  pure $ toBSL result
+  where
+    args =
+      [ "--path",
+        inputDir `cfp` "status_blocked_empty.json",
+        "list",
+        "--color",
+        "off"
+      ]
+
+    path = outputDir `cfp` "status_blocked_empty.golden"
+
+testStatusBlockedIdsEmptyFails :: TestTree
+testStatusBlockedIdsEmptyFails = goldenVsString "Blocked ids empty status fails" path $ do
+  result <- runException @AesonException args
+  pure $ toBSL result
+  where
+    args =
+      [ "--path",
+        inputDir `cfp` "status_blocked_ids_empty.json",
+        "list",
+        "--color",
+        "off"
+      ]
+
+    path = outputDir `cfp` "status_blocked_ids_empty.golden"
 
 inputDir :: FilePath
 inputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "List" `cfp` "input"

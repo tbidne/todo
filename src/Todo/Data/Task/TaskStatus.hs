@@ -41,7 +41,7 @@ instance Monoid TaskStatus where
 instance FromJSON TaskStatus where
   parseJSON = Asn.withText "TaskStatus" $ \t ->
     foldMappersAltA t parsers >>= \case
-      Nothing -> fail $ "Unexpected status value: " <> T.unpack t
+      Nothing -> fail $ "Unexpected status value: " <> quoteTxt t
       Just r -> pure r
     where
       parsers :: List (Text -> Parser (Maybe TaskStatus))
