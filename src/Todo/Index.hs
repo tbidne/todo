@@ -60,11 +60,11 @@ toList :: Index -> List SomeTask
 toList = (.unIndex)
 
 -- | Error for two tasks t1.name and t2.name having the same id.
-newtype DuplicateIdE = MkDuplicateKeyException TaskId
+newtype DuplicateIdE = MkDuplicateIdE TaskId
   deriving stock (Eq, Show)
 
 instance Exception DuplicateIdE where
-  displayException (MkDuplicateKeyException id) =
+  displayException (MkDuplicateIdE id) =
     mconcat
       [ "Found duplicate tasks with id '",
         unpack id.unTaskId,
@@ -73,7 +73,7 @@ instance Exception DuplicateIdE where
 
 -- | Error for a task t1 referencing task ids that do not exist.
 data BlockedIdRefE
-  = MkBlockedKeyRefException
+  = MkBlockedIdRefE
       -- | t1.id
       TaskId
       -- | t1.refIds
@@ -81,7 +81,7 @@ data BlockedIdRefE
   deriving stock (Eq, Show)
 
 instance Exception BlockedIdRefE where
-  displayException (MkBlockedKeyRefException id refIds) =
+  displayException (MkBlockedIdRefE id refIds) =
     mconcat
       [ "Task with id '",
         unpack id.unTaskId,
@@ -125,7 +125,7 @@ fromList xs = do
     let nonExtantRefIds = NESeq.filter (`Set.notMember` foundKeys) refIds
     case nonExtantRefIds of
       Empty -> pure ()
-      (r :<| rs) -> throwM $ MkBlockedKeyRefException taskId (r :<|| rs)
+      (r :<| rs) -> throwM $ MkBlockedIdRefE taskId (r :<|| rs)
 
   pure $ UnsafeIndex xs
   where
@@ -140,7 +140,7 @@ fromList xs = do
           if Set.notMember t.taskId foundKeys
             then pure ()
             else
-              throwM $ MkDuplicateKeyException t.taskId
+              throwM $ MkDuplicateIdE t.taskId
 
           foundKeys' <- updateTaskMap (SingleTask t) foundKeys
 
@@ -178,7 +178,7 @@ fromList xs = do
 
           case Set.toList intersect of
             [] -> pure ()
-            (dupId : _) -> throwM $ MkDuplicateKeyException dupId
+            (dupId : _) -> throwM $ MkDuplicateIdE dupId
 
           let blockedKeys' = Map.union blockedKeys blockedKeysAcc
               foundKeys' = Set.union foundKeys foundKeysAcc
@@ -193,7 +193,7 @@ fromList xs = do
     updateTaskMap val s =
       if Set.notMember val.taskId s
         then pure $ Set.insert val.taskId s
-        else throwM $ MkDuplicateKeyException val.taskId
+        else throwM $ MkDuplicateIdE val.taskId
 
 forWithKey :: (Applicative f) => Map k a -> (k -> a -> f b) -> f (Map k b)
 forWithKey = flip Map.traverseWithKey

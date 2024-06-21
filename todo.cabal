@@ -131,6 +131,7 @@ test-suite functional
     Functional.Prelude
 
   build-depends:
+    , aeson
     , base
     , bytestring
     , effects-env

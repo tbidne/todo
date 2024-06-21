@@ -1,4 +1,5 @@
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -Wno-deprecations #-}
 
 module Todo.Data.Task.TaskStatus
   ( TaskStatus (..),
@@ -8,6 +9,7 @@ module Todo.Data.Task.TaskStatus
 where
 
 import Data.Aeson qualified as Asn
+import Data.Aeson.Types (Parser)
 import Data.Set qualified as Set
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
@@ -38,27 +40,39 @@ instance Monoid TaskStatus where
 
 instance FromJSON TaskStatus where
   parseJSON = Asn.withText "TaskStatus" $ \t ->
-    case foldMappersAlt t parsers of
+    foldMappersAltA t parsers >>= \case
+      Nothing -> fail $ "Unexpected status value: " <> T.unpack t
       Just r -> pure r
-      Nothing -> fail $ "Unexpected value: " <> T.unpack t
     where
+      parsers :: List (Text -> Parser (Maybe TaskStatus))
       parsers =
         [ parseBlocked,
           parseExact "not-started" NotStarted,
           parseExact "in-progress" InProgress,
           parseExact "completed" Completed
         ]
-      parseBlocked (T.stripPrefix "blocked: " -> Just rest) =
-        let idStrs = T.strip <$> T.split (== ',') rest
-         in case idStrs of
-              (x : xs) -> Just $ Blocked $ MkTaskId <$> (x :<|| listToSeq xs)
-              [] -> Nothing -- TODO: Improve error message
-      parseBlocked _ = Nothing
 
+      parseBlocked :: Text -> Parser (Maybe TaskStatus)
+      parseBlocked (T.stripPrefix "blocked:" -> Just rest) =
+        case T.strip rest of
+          "" -> fail $ "Received empty list for 'blocked' status: " <> quoteTxt rest
+          nonEmpty ->
+            let splitStrs = T.strip <$> T.split (== ',') nonEmpty
+                nonEmpties = filter (not . T.null) splitStrs
+             in case nonEmpties of
+                  (x : xs) -> pure $ Just $ Blocked $ MkTaskId <$> (x :<|| listToSeq xs)
+                  [] -> fail $ "Received no non-empty ids for 'blocked' status: " <> quoteTxt rest
+      parseBlocked _ = pure Nothing
+
+      parseExact :: Text -> TaskStatus -> Text -> Parser (Maybe TaskStatus)
       parseExact e c t =
-        if e == t
-          then Just c
-          else Nothing
+        pure
+          $ if e == t
+            then Just c
+            else Nothing
+
+      quoteTxt :: Text -> String
+      quoteTxt t = "'" <> unpack t <> "'"
 
 instance ToJSON TaskStatus where
   toJSON (Blocked ts) = toJSON $ "blocked: " <> TaskId.neSeqToText ts

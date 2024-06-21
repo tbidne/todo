@@ -20,6 +20,7 @@ module Todo.Prelude
     -- * Folding
     foldMapAlt,
     foldMappersAlt,
+    foldMappersAltA,
 
     -- * From List
     listToSeq,
@@ -42,7 +43,7 @@ where
 
 import Control.Applicative as X
   ( Alternative (empty, (<|>)),
-    Applicative (pure, (<*>)),
+    Applicative (liftA2, pure, (<*>)),
     asum,
     (*>),
     (<*),
@@ -129,13 +130,43 @@ type Tuple3 a b c = (a, b, c)
 identity :: forall a. a -> a
 identity x = x
 
-foldMapAlt :: forall f t a b. (Alternative f, Foldable t) => (a -> f b) -> t a -> f b
+-- | foldMap for Alternative.
+foldMapAlt ::
+  forall t f a b.
+  ( Alternative f,
+    Foldable t
+  ) =>
+  (a -> f b) ->
+  t a ->
+  f b
 foldMapAlt f = foldr ((<|>) . f) empty
 {-# INLINEABLE foldMapAlt #-}
 
-foldMappersAlt :: forall f t a b. (Alternative f, Foldable t) => a -> t (a -> f b) -> f b
+-- | Like 'foldMapAlt', except we fold over mapping functions, rather than
+-- the inputs.
+foldMappersAlt ::
+  forall t f a b.
+  ( Alternative f,
+    Foldable t
+  ) =>
+  a ->
+  t (a -> f b) ->
+  f b
 foldMappersAlt x = foldMapAlt (\p -> p x)
 {-# INLINEABLE foldMappersAlt #-}
+
+-- | Effectful version of 'foldMappersAlt'.
+foldMappersAltA ::
+  forall m t f a b.
+  ( Alternative f,
+    Applicative m,
+    Foldable t
+  ) =>
+  a ->
+  t (a -> m (f b)) ->
+  m (f b)
+foldMappersAltA x = foldr (\g -> liftA2 (<|>) (g x)) (pure empty)
+{-# INLINEABLE foldMappersAltA #-}
 
 listToSeq :: List a -> Seq a
 listToSeq = Seq.fromList
