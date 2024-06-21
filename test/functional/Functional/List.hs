@@ -24,87 +24,35 @@ sortExampleTests =
     ]
 
 testExample :: TestTree
-testExample = goldenVsString "Default sort" path $ do
-  result <- run args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        "examples" `cfp` "todo.json",
-        "list",
-        "--color",
-        "off"
-      ]
-
-    path = outputDir `cfp` "example.golden"
+testExample = testGoldenExample "Default sort" Nothing "example"
 
 testExamplePriority :: TestTree
-testExamplePriority = goldenVsString "Sorted by priority" path $ do
-  result <- run args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        "examples" `cfp` "todo.json",
-        "list",
-        "--color",
-        "off",
-        "--sort",
-        "priority"
-      ]
-
-    path = outputDir `cfp` "example_priority.golden"
+testExamplePriority =
+  testGoldenExample
+    "Sorted by priority"
+    (Just "priority")
+    "example_priority"
 
 testExampleStatus :: TestTree
-testExampleStatus = goldenVsString "Sorted by status" path $ do
-  result <- run args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        "examples" `cfp` "todo.json",
-        "list",
-        "--color",
-        "off",
-        "--sort",
-        "status"
-      ]
-
-    path = outputDir `cfp` "example_status.golden"
+testExampleStatus =
+  testGoldenExample
+    "Sorted by status"
+    (Just "status")
+    "example_status"
 
 testExamplePriorityStatus :: TestTree
-testExamplePriorityStatus = goldenVsString "Sorted by priority_status" path $ do
-  result <- run args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        "examples" `cfp` "todo.json",
-        "list",
-        "--color",
-        "off",
-        "--sort",
-        "priority_status"
-      ]
-
-    path = outputDir `cfp` "example_priority_status.golden"
+testExamplePriorityStatus =
+  testGoldenExample
+    "Sorted by priority_status"
+    (Just "priority_status")
+    "example_priority_status"
 
 testExampleStatusPriority :: TestTree
-testExampleStatusPriority = goldenVsString "Sorted by status_priority" path $ do
-  result <- run args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        "examples" `cfp` "todo.json",
-        "list",
-        "--color",
-        "off",
-        "--sort",
-        "status_priority"
-      ]
-
-    path = outputDir `cfp` "example_status_priority.golden"
+testExampleStatusPriority =
+  testGoldenExample
+    "Sorted by status_priority"
+    (Just "status_priority")
+    "example_status_priority"
 
 failureTests :: TestTree
 failureTests =
@@ -115,114 +63,90 @@ failureTests =
       testIdCommaFails,
       testStatusBlockedBadRefFails,
       testStatusBadFails,
-      testStatusBlockedEmptFails,
+      testStatusBlockedEmptyFails,
       testStatusBlockedIdsEmptyFails
     ]
 
 testIdDupsFails :: TestTree
-testIdDupsFails = goldenVsString "Duplicate id fails" path $ do
-  result <- runException @DuplicateIdE args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "id_dups.json",
-        "list",
-        "--color",
-        "off"
-      ]
-
-    path = outputDir `cfp` "id_dups.golden"
+testIdDupsFails =
+  testGolden
+    (runException @DuplicateIdE)
+    "Duplicate id fails"
+    "id_dups"
 
 testIdEmptyFails :: TestTree
-testIdEmptyFails = goldenVsString "Empty id fails" path $ do
-  result <- runException @AesonException args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "id_empty.json",
-        "list",
-        "--color",
-        "off"
-      ]
-
-    path = outputDir `cfp` "id_empty.golden"
+testIdEmptyFails =
+  testGolden
+    (runException @AesonException)
+    "Empty id fails"
+    "id_empty"
 
 testIdCommaFails :: TestTree
-testIdCommaFails = goldenVsString "Id with comma fails" path $ do
-  result <- runException @AesonException args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "id_comma.json",
-        "list",
-        "--color",
-        "off"
-      ]
-
-    path = outputDir `cfp` "id_comma.golden"
+testIdCommaFails =
+  testGolden
+    (runException @AesonException)
+    "Id with comma fails"
+    "id_comma"
 
 testStatusBlockedBadRefFails :: TestTree
-testStatusBlockedBadRefFails = goldenVsString desc path $ do
-  result <- runException @BlockedIdRefE args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "status_blocked_bad_ref.json",
-        "list",
-        "--color",
-        "off"
-      ]
-    desc = "Status blocked non-extant id reference fails"
-    path = outputDir `cfp` "status_blocked_bad_ref.golden"
+testStatusBlockedBadRefFails =
+  testGolden
+    (runException @BlockedIdRefE)
+    "Status blocked non-extant id reference fails"
+    "status_blocked_bad_ref"
 
 testStatusBadFails :: TestTree
-testStatusBadFails = goldenVsString "Bad status fails" path $ do
-  result <- runException @AesonException args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "status_bad.json",
-        "list",
-        "--color",
-        "off"
-      ]
+testStatusBadFails =
+  testGolden
+    (runException @AesonException)
+    "Bad status fails"
+    "status_bad"
 
-    path = outputDir `cfp` "status_bad.golden"
-
-testStatusBlockedEmptFails :: TestTree
-testStatusBlockedEmptFails = goldenVsString "Blocked empty status fails" path $ do
-  result <- runException @AesonException args
-  pure $ toBSL result
-  where
-    args =
-      [ "--path",
-        inputDir `cfp` "status_blocked_empty.json",
-        "list",
-        "--color",
-        "off"
-      ]
-
-    path = outputDir `cfp` "status_blocked_empty.golden"
+testStatusBlockedEmptyFails :: TestTree
+testStatusBlockedEmptyFails =
+  testGolden
+    (runException @AesonException)
+    "Blocked empty status fails"
+    "status_blocked_empty"
 
 testStatusBlockedIdsEmptyFails :: TestTree
-testStatusBlockedIdsEmptyFails = goldenVsString "Blocked ids empty status fails" path $ do
-  result <- runException @AesonException args
+testStatusBlockedIdsEmptyFails =
+  testGolden
+    (runException @AesonException)
+    "Blocked ids empty status fails"
+    "status_blocked_ids_empty"
+
+testGoldenExample :: TestName -> Maybe String -> FilePath -> TestTree
+testGoldenExample desc mSortArg goldenFilenName = goldenVsString desc path $ do
+  result <- run args
   pure $ toBSL result
   where
     args =
       [ "--path",
-        inputDir `cfp` "status_blocked_ids_empty.json",
+        "examples" `cfp` "todo.json",
+        "list",
+        "--color",
+        "off"
+      ]
+        ++ sortArgs
+    sortArgs = maybe [] (\a -> ["--sort", a]) mSortArg
+
+    path = outputDir `cfp` goldenFilenName <> ".golden"
+
+testGolden :: (List String -> IO Text) -> TestName -> FilePath -> TestTree
+testGolden runner desc fileName = goldenVsString desc path $ do
+  result <- runner args
+  pure $ toBSL result
+  where
+    args =
+      [ "--path",
+        inputDir `cfp` fileName <> ".json",
         "list",
         "--color",
         "off"
       ]
 
-    path = outputDir `cfp` "status_blocked_ids_empty.golden"
+    path = outputDir `cfp` fileName <> ".golden"
 
 inputDir :: FilePath
 inputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "List" `cfp` "input"

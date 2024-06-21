@@ -66,14 +66,14 @@ import Data.Functor as X (Functor (fmap), (<$>))
 import Data.Int as X (Int)
 import Data.Kind as X (Constraint, Type)
 #if MIN_VERSION_base(4, 20, 0)
-import Data.List as X (List, filter)
+import Data.List as X (List, filter, (++))
 #else
-import Data.List as X (filter)
+import Data.List as X (filter, (++))
 #endif
 import Data.List.NonEmpty as X (NonEmpty ((:|)), (<|))
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict as X (Map)
-import Data.Maybe as X (Maybe (Just, Nothing), fromMaybe)
+import Data.Maybe as X (Maybe (Just, Nothing), fromMaybe, maybe)
 import Data.Monoid as X (Monoid (mconcat, mempty))
 import Data.Ord as X (Ord (compare, (<=)), Ordering (EQ, GT, LT), max, min)
 import Data.Semigroup as X (Semigroup (sconcat, (<>)))
