@@ -25,7 +25,8 @@ import Todo.Data.Task
       ),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
-import Todo.Data.Task.TaskId (TaskId (MkTaskId))
+import Todo.Data.Task.TaskId (TaskId)
+import Todo.Data.Task.TaskId qualified as TaskId
 import Todo.Data.Task.TaskPriority (TaskPriority)
 import Todo.Data.Task.TaskStatus
   ( TaskStatus
@@ -192,7 +193,7 @@ genTaskPriority = Gen.enumBounded
 -- We do not allow whitespace because it is currently stripped when reading
 -- Blocked TaskIds.
 genTaskId :: Gen TaskId
-genTaskId = MkTaskId <$> genMassaged
+genTaskId = genMassaged >>= TaskId.parseTaskId
   where
     genMassaged = Gen.filter (not . badTxt) genRaw
     genRaw = stripBad <$> Gen.text (Range.linearFrom 1 1 20) Gen.unicode

@@ -114,7 +114,9 @@ failureTests =
       testRefBadIdFails,
       testBadStatusFails,
       testBlockedEmptyFails,
-      testBlockedIdsEmptyFails
+      testBlockedIdsEmptyFails,
+      testIdEmptyFails,
+      testIdCommaFails
     ]
 
 testDuplicateIdFails :: TestTree
@@ -191,6 +193,36 @@ testBlockedIdsEmptyFails = goldenVsString "Blocked ids empty status fails" path 
       ]
 
     path = outputDir `cfp` "blocked_ids_empty.golden"
+
+testIdEmptyFails :: TestTree
+testIdEmptyFails = goldenVsString "Empty id fails" path $ do
+  result <- runException @AesonException args
+  pure $ toBSL result
+  where
+    args =
+      [ "--path",
+        inputDir `cfp` "id_empty.json",
+        "list",
+        "--color",
+        "off"
+      ]
+
+    path = outputDir `cfp` "id_empty.golden"
+
+testIdCommaFails :: TestTree
+testIdCommaFails = goldenVsString "Id with comma fails" path $ do
+  result <- runException @AesonException args
+  pure $ toBSL result
+  where
+    args =
+      [ "--path",
+        inputDir `cfp` "id_comma.json",
+        "list",
+        "--color",
+        "off"
+      ]
+
+    path = outputDir `cfp` "id_comma.golden"
 
 inputDir :: FilePath
 inputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "List" `cfp` "input"

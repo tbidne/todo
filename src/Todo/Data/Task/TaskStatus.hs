@@ -14,7 +14,7 @@ import Data.Set qualified as Set
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
 import Todo.Data.Task.Render.Utils qualified as Render.Utils
-import Todo.Data.Task.TaskId (TaskId (MkTaskId, unTaskId))
+import Todo.Data.Task.TaskId (TaskId (unTaskId))
 import Todo.Data.Task.TaskId qualified as TaskId
 import Todo.Prelude
 
@@ -60,7 +60,9 @@ instance FromJSON TaskStatus where
             let splitStrs = T.strip <$> T.split (== ',') nonEmpty
                 nonEmpties = filter (not . T.null) splitStrs
              in case nonEmpties of
-                  (x : xs) -> pure $ Just $ Blocked $ MkTaskId <$> (x :<|| listToSeq xs)
+                  (x : xs) -> do
+                    ids <- traverse TaskId.parseTaskId (x :<|| listToSeq xs)
+                    pure $ Just $ Blocked ids
                   [] -> fail $ "Received no non-empty ids for 'blocked' status: " <> quoteTxt rest
       parseBlocked _ = pure Nothing
 

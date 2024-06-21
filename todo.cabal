@@ -56,6 +56,7 @@ library
     Todo.Data.Task.Sorted
     Todo.Data.Task.Sorted.Internal
     Todo.Data.Task.TaskId
+    Todo.Data.Task.TaskId.Internal
     Todo.Data.Task.TaskPriority
     Todo.Data.Task.TaskStatus
     Todo.Data.Timestamp
