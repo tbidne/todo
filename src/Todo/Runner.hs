@@ -10,6 +10,7 @@ import Todo qualified
 import Todo.Prelude
 import Todo.Runner.Args (Args (command, path), Command (CmdList), getArgs)
 
+-- | Runs todo app.
 runTodo ::
   ( HasCallStack,
     MonadFileReader m,

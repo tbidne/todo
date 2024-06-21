@@ -80,10 +80,12 @@ instance ToJSON TaskStatus where
   toJSON InProgress = "in-progress"
   toJSON Completed = "completed"
 
+-- | True iff Completed.
 isCompleted :: TaskStatus -> Bool
 isCompleted Completed = True
 isCompleted _ = False
 
+-- | Renders to Builder.
 render :: Bool -> TaskStatus -> Builder
 render False Completed = "completed"
 render False InProgress = "in-progress"

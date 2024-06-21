@@ -38,8 +38,11 @@ import Todo.Prelude
 getArgs :: (HasCallStack, MonadOptparse m) => m Args
 getArgs = execParser parserInfoArgs
 
+-- | CLI args.
 data Args = MkArgs
-  { command :: Command,
+  { -- | Command.
+    command :: Command,
+    -- | Path to todo json file.
     path :: Maybe OsPath
   }
   deriving stock (Eq, Show)

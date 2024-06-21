@@ -19,7 +19,15 @@ import Todo.Data.Task.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Prelude
 
-renderSorted :: ZonedTime -> Bool -> SortedTasks -> Builder
+-- | Renders a list of sorted tasks.
+renderSorted ::
+  -- | Current time, for coloring deadlines.
+  ZonedTime ->
+  -- | Color?
+  Bool ->
+  -- | Tasks to render.
+  SortedTasks ->
+  Builder
 renderSorted currTime b = renderSomeTasks currTime b 0 . unSortedTasks
 
 renderSomeTasks :: (Foldable f, Functor f) => ZonedTime -> Bool -> Word8 -> f SomeTask -> Builder

@@ -15,13 +15,7 @@ import Data.Sequence.NonEmpty qualified as NESeq
 import Todo.Data.Task
   ( SomeTask (MultiTask, SingleTask),
     Task,
-    TaskGroup
-      ( MkTaskGroup,
-        priority,
-        status,
-        subtasks,
-        taskId
-      ),
+    TaskGroup (subtasks),
     traverseSomeTasks,
   )
 import Todo.Data.Task qualified as Task
@@ -84,13 +78,7 @@ sortSomeTaskSubtasks c (MultiTask t) =
   MultiTask $ sortTaskGroupSubtasks c t
 
 sortTaskGroupSubtasks :: (SomeTask -> SomeTask -> Ordering) -> TaskGroup -> TaskGroup
-sortTaskGroupSubtasks c t =
-  MkTaskGroup
-    { priority = t.priority,
-      status = t.status,
-      subtasks = NESeq.sortBy c t.subtasks,
-      taskId = t.taskId
-    }
+sortTaskGroupSubtasks c t = t {subtasks = NESeq.sortBy c t.subtasks}
 
 cSomeTask :: (Ord a) => (SomeTask -> a) -> SomeTask -> SomeTask -> Ordering
 cSomeTask f x y = f x `compare` f y

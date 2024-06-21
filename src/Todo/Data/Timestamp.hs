@@ -21,6 +21,7 @@ import System.Console.Pretty (Color (Cyan, Magenta, Red))
 import Todo.Data.Task.Render.Utils qualified as Render.Utils
 import Todo.Prelude
 
+-- | Task timestamps.
 data Timestamp
   = Date Day
   | Local LocalTime

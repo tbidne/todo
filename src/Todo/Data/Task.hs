@@ -29,10 +29,15 @@ import Todo.Prelude
 
 -- | Task data.
 data Task = MkTask
-  { deadline :: Maybe Timestamp,
+  { -- | Optional deadline.
+    deadline :: Maybe Timestamp,
+    -- | Optional description.
     description :: Maybe Text,
+    -- | Priority.
     priority :: TaskPriority,
+    -- | Status.
     status :: TaskStatus,
+    -- | Id.
     taskId :: TaskId
   }
   deriving stock (Eq, Show)
@@ -66,10 +71,15 @@ instance ToJSON Task where
         "status" .= t.status
       ]
 
+-- | Multiple tasks.
 data TaskGroup = MkTaskGroup
-  { priority :: Maybe TaskPriority,
+  { -- | Optional priority.
+    priority :: Maybe TaskPriority,
+    -- | Optional status.
     status :: Maybe TaskStatus,
+    -- | List of subtasks.
     subtasks :: NESeq SomeTask,
+    -- | Id.
     taskId :: TaskId
   }
   deriving stock (Eq, Show)
@@ -100,16 +110,21 @@ instance ToJSON TaskGroup where
         "subtasks" .= t.subtasks
       ]
 
+-- | Takes either the status (if it is set), or the greatest status of its
+-- subtasks.
 taskGroupStatus :: TaskGroup -> TaskStatus
 taskGroupStatus tg = case tg.status of
   Just s -> s
   Nothing -> sconcat ((.status) <$> toNonEmpty tg.subtasks)
 
+-- | Takes either the priority (if it is set), or the greatest priority of its
+-- subtasks.
 taskGroupPriority :: TaskGroup -> TaskPriority
 taskGroupPriority tg = case tg.priority of
   Just p -> p
   Nothing -> sconcat ((.priority) <$> toNonEmpty tg.subtasks)
 
+-- | Wrapper for either a single 'Task' or 'TaskGroup'.
 data SomeTask
   = SingleTask Task
   | MultiTask TaskGroup
@@ -143,10 +158,17 @@ instance ToJSON SomeTask where
   toJSON (SingleTask t) = toJSON t
   toJSON (MultiTask t) = toJSON t
 
+-- | Returns true iff the task / all subtasks are completed.
 someTaskIsCompleted :: SomeTask -> Bool
 someTaskIsCompleted st = isCompleted st.status
 
-traverseSomeTasks :: forall a. (Task -> a) -> (TaskGroup -> a) -> List SomeTask -> List a
+-- | Traverses a list of 'SomeTask's.
+traverseSomeTasks ::
+  forall a.
+  (Task -> a) ->
+  (TaskGroup -> a) ->
+  List SomeTask ->
+  List a
 traverseSomeTasks fromTask fromTaskGroup = (>>= go)
   where
     go :: SomeTask -> List a
