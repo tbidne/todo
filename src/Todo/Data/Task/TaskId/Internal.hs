@@ -1,5 +1,6 @@
 module Todo.Data.Task.TaskId.Internal
   ( TaskId (..),
+    mkTaskId,
     parseTaskId,
   )
 where
@@ -16,12 +17,18 @@ newtype TaskId = UnsafeTaskId {unTaskId :: Text}
 instance FromJSON TaskId where
   parseJSON = Asn.withText "TaskId" parseTaskId
 
--- | Parses task id.
-parseTaskId :: (MonadFail m) => Text -> m TaskId
-parseTaskId txt
-  | T.null stripped = fail $ "Received empty task id: " <> quoted
-  | T.elem ',' stripped = fail $ "Task id contained comma: " <> quoted
-  | otherwise = pure $ UnsafeTaskId stripped
+-- | Constructs a task id.
+mkTaskId :: Text -> Either String TaskId
+mkTaskId txt
+  | T.null stripped = Left $ "Received empty task id: " <> quoted
+  | T.elem ',' stripped = Left $ "Task id contained comma: " <> quoted
+  | otherwise = Right $ UnsafeTaskId stripped
   where
     stripped = T.strip txt
     quoted = "'" <> unpack txt <> "'"
+
+-- | Parses task id.
+parseTaskId :: (MonadFail m) => Text -> m TaskId
+parseTaskId txt = case mkTaskId txt of
+  Left err -> fail err
+  Right x -> pure x

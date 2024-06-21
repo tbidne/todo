@@ -4,6 +4,7 @@ module Todo.Data.Task.TaskId
 
     -- * Functions
     parseTaskId,
+    unsafeTaskId,
     render,
     neSeqToText,
     neSeqToTextCustom,
@@ -14,8 +15,18 @@ import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
 import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff, ColorOn))
 import Todo.Data.Task.Render.Utils qualified as Render.Utils
-import Todo.Data.Task.TaskId.Internal (TaskId (unTaskId), parseTaskId)
+import Todo.Data.Task.TaskId.Internal
+  ( TaskId (unTaskId),
+    mkTaskId,
+    parseTaskId,
+  )
 import Todo.Prelude
+
+-- | Unsafe task id creation.
+unsafeTaskId :: (HasCallStack) => Text -> TaskId
+unsafeTaskId txt = case mkTaskId txt of
+  Left err -> error err
+  Right x -> x
 
 -- | Renders a TaskId.
 render :: ColorSwitch -> TaskId -> Builder

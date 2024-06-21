@@ -25,9 +25,10 @@ import Todo.Data.Task
       ),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
+import Todo.Data.Task qualified as Task
 import Todo.Data.Task.TaskId (TaskId)
 import Todo.Data.Task.TaskId qualified as TaskId
-import Todo.Data.Task.TaskPriority (TaskPriority)
+import Todo.Data.Task.TaskPriority (TaskPriority (High, Low, Normal))
 import Todo.Data.Task.TaskStatus
   ( TaskStatus
       ( Blocked,
@@ -43,6 +44,104 @@ tests :: TestTree
 tests =
   testGroup
     "Todo.Data.Task"
+    [ taskGroupTasks,
+      jsonTests
+    ]
+
+taskGroupTasks :: TestTree
+taskGroupTasks =
+  testGroup
+    "TaskGroup"
+    [ testTaskGroupUsesSetStatus tasks,
+      testTaskGroupDerivesStatus tasks,
+      testTaskGroupUsesSetPriority tasks,
+      testTaskGroupDerivesPriority tasks
+    ]
+  where
+    t1 =
+      MkTask
+        { taskId = TaskId.unsafeTaskId "t1",
+          priority = Low,
+          status = InProgress,
+          deadline = Nothing,
+          description = Nothing
+        }
+    t2 =
+      MkTask
+        { taskId = TaskId.unsafeTaskId "t2",
+          priority = Normal,
+          status = NotStarted,
+          deadline = Nothing,
+          description = Nothing
+        }
+    t3 =
+      MkTask
+        { taskId = TaskId.unsafeTaskId "t3",
+          priority = High,
+          status = Completed,
+          deadline = Nothing,
+          description = Nothing
+        }
+    tasks = SingleTask t1 :<|| (SingleTask t2 :<| SingleTask t3 :<| Empty)
+
+testTaskGroupUsesSetStatus :: NESeq SomeTask -> TestTree
+testTaskGroupUsesSetStatus subtasks = testCase "TaskGroup uses set status" $ do
+  let result = Task.taskGroupStatus taskGroup
+  Completed @=? result
+  where
+    taskGroup =
+      MkTaskGroup
+        { taskId = TaskId.unsafeTaskId "tg",
+          priority = Nothing,
+          status = Just Completed,
+          subtasks
+        }
+
+testTaskGroupDerivesStatus :: NESeq SomeTask -> TestTree
+testTaskGroupDerivesStatus subtasks = testCase "TaskGroup derives status" $ do
+  let result = Task.taskGroupStatus taskGroup
+  -- NotStarted is the greatest subtask status
+  NotStarted @=? result
+  where
+    taskGroup =
+      MkTaskGroup
+        { taskId = TaskId.unsafeTaskId "tg",
+          priority = Nothing,
+          status = Nothing,
+          subtasks
+        }
+
+testTaskGroupUsesSetPriority :: NESeq SomeTask -> TestTree
+testTaskGroupUsesSetPriority subtasks = testCase "TaskGroup uses set priority" $ do
+  let result = Task.taskGroupPriority taskGroup
+  Low @=? result
+  where
+    taskGroup =
+      MkTaskGroup
+        { taskId = TaskId.unsafeTaskId "tg",
+          priority = Just Low,
+          status = Nothing,
+          subtasks
+        }
+
+testTaskGroupDerivesPriority :: NESeq SomeTask -> TestTree
+testTaskGroupDerivesPriority subtasks = testCase "TaskGroup derives priority" $ do
+  let result = Task.taskGroupPriority taskGroup
+  -- NotStarted is the greatest _non-complete_ subtask status
+  Normal @=? result
+  where
+    taskGroup =
+      MkTaskGroup
+        { taskId = TaskId.unsafeTaskId "tg",
+          priority = Nothing,
+          status = Nothing,
+          subtasks
+        }
+
+jsonTests :: TestTree
+jsonTests =
+  testGroup
+    "JSON"
     [ testJsonRoundtrip,
       testTaskJsonRoundtrip,
       testTaskStatusJsonRoundtrip

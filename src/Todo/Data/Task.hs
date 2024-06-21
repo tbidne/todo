@@ -22,9 +22,9 @@ import Data.Aeson.KeyMap qualified as KM
 import Data.Aeson.Types (Object, Parser)
 import GHC.Records (HasField (getField))
 import Todo.Data.Task.TaskId (TaskId)
-import Todo.Data.Task.TaskPriority
+import Todo.Data.Task.TaskPriority (TaskPriority)
 import Todo.Data.Task.TaskStatus (TaskStatus, isCompleted)
-import Todo.Data.Timestamp
+import Todo.Data.Timestamp (Timestamp)
 import Todo.Prelude
 
 -- | Task data.
@@ -115,14 +115,32 @@ instance ToJSON TaskGroup where
 taskGroupStatus :: TaskGroup -> TaskStatus
 taskGroupStatus tg = case tg.status of
   Just s -> s
-  Nothing -> sconcat ((.status) <$> toNonEmpty tg.subtasks)
+  Nothing -> deriveStatus tg.subtasks
+    where
+      deriveStatus =
+        sconcat
+          . fmap (.status)
+          . toNonEmpty
 
 -- | Takes either the priority (if it is set), or the greatest priority of its
 -- subtasks.
 taskGroupPriority :: TaskGroup -> TaskPriority
 taskGroupPriority tg = case tg.priority of
   Just p -> p
-  Nothing -> sconcat ((.priority) <$> toNonEmpty tg.subtasks)
+  Nothing -> derivePriority tg.subtasks
+  where
+    -- Like deriveStatus, except we filter out complete tasks, because we
+    -- don't want e.g. a TaskGroup to derive a High priority if its only
+    -- priority High subtask is already completed.
+    --
+    -- This forces us to use mconcat, since we may filter out all tasks.
+    -- That's okay though, since Priority's identity is Low, which is what we
+    -- want to default to.
+    derivePriority =
+      mconcat
+        . fmap (.priority)
+        . filter (not . someTaskIsCompleted)
+        . toList
 
 -- | Wrapper for either a single 'Task' or 'TaskGroup'.
 data SomeTask
