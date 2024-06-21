@@ -19,7 +19,7 @@ listTasks ::
     MonadTime m,
     MonadThrow m
   ) =>
-  -- | Path to todo.json.
+  -- | Path to tasks.json.
   OsPath ->
   -- | Is color enabled.
   Bool ->

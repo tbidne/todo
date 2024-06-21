@@ -123,7 +123,7 @@ testGoldenExample desc mSortArg goldenFilenName = goldenVsString desc path $ do
   where
     args =
       [ "--path",
-        "examples" `cfp` "todo.json",
+        "examples" `cfp` "tasks.json",
         "list",
         "--color",
         "off"

@@ -38,4 +38,4 @@ getPath ::
 getPath (Just path) = pure path
 getPath Nothing = do
   xdgConfigDir <- getXdgConfig [osp|todo|]
-  pure $ xdgConfigDir </> [osp|todo.json|]
+  pure $ xdgConfigDir </> [osp|tasks.json|]
