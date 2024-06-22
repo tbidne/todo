@@ -22,7 +22,7 @@ import Data.Aeson.KeyMap qualified as KM
 import Data.Aeson.Types (Object, Parser)
 import GHC.Records (HasField (getField))
 import Todo.Data.Task.TaskId (TaskId)
-import Todo.Data.Task.TaskPriority (TaskPriority)
+import Todo.Data.Task.TaskPriority (TaskPriority (Normal))
 import Todo.Data.Task.TaskStatus (TaskStatus, isCompleted)
 import Todo.Data.Timestamp (Timestamp)
 import Todo.Prelude
@@ -133,11 +133,11 @@ taskGroupPriority tg = case tg.priority of
     -- don't want e.g. a TaskGroup to derive a High priority if its only
     -- priority High subtask is already completed.
     --
-    -- This forces us to use mconcat, since we may filter out all tasks.
-    -- That's okay though, since Priority's identity is Low, which is what we
-    -- want to default to.
+    -- Because filter could give us an empty list, we need to add a default
+    -- to use sconcat. We choose normal, as that is the most sensible choice.
     derivePriority =
-      mconcat
+      sconcat
+        . (Normal :|)
         . fmap (.priority)
         . filter (not . someTaskIsCompleted)
         . toList
