@@ -1,4 +1,4 @@
-Create task group (y/n)? Task id: Task status: Task priority: Description (leave blank for none): Deadline (leave blank for none): 
+Create task group (y/n)? Task id: Task status (completed | in-progress | not-started | blocked: <ids>): Task priority (low | normal | high): Description (leave blank for none): Deadline (leave blank for none): 
 
 ❌ id: groceries
    status: blocked: "fix_car", "paycheck"

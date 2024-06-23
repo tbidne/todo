@@ -33,6 +33,7 @@ module Todo.Prelude
     traceFileLine,
 
     -- * Misc
+    EitherString (..),
     whileM,
     whileM_,
     identity,
@@ -95,7 +96,7 @@ import Data.String as X (String)
 import Data.Text as X (Text, pack, unpack)
 import Data.Text.Display as X (Display (displayBuilder), display)
 import Data.Text.Lazy.Builder as X (Builder)
-import Data.Traversable as X (Traversable (traverse))
+import Data.Traversable as X (Traversable (traverse, sequenceA))
 import Data.Tuple as X (snd)
 #if MIN_VERSION_base(4, 20, 0)
 import Data.Tuple.Experimental as X (Tuple2, Tuple3)
@@ -253,3 +254,34 @@ whileM_ mb mx = go
       b <- mb
       when b (mx *> go)
 {-# INLINEABLE whileM_ #-}
+
+-- | Either, specializing Left to String, for the purposes of MonadFail.
+data EitherString a
+  = EitherLeft String
+  | EitherRight a
+  deriving stock (Eq, Functor, Show)
+
+instance Applicative EitherString where
+  pure = EitherRight
+
+  EitherRight f <*> EitherRight x = EitherRight (f x)
+  EitherLeft x <*> _ = EitherLeft x
+  _ <*> EitherLeft x = EitherLeft x
+
+instance Monad EitherString where
+  EitherRight x >>= f = f x
+  EitherLeft x >>= _ = EitherLeft x
+
+instance Foldable EitherString where
+  foldr _ e (EitherLeft _) = e
+  foldr f e (EitherRight x) = f x e
+
+instance Traversable EitherString where
+  sequenceA (EitherLeft x) = pure (EitherLeft x)
+  sequenceA (EitherRight x) = EitherRight <$> x
+
+  traverse _ (EitherLeft x) = pure (EitherLeft x)
+  traverse f (EitherRight x) = EitherRight <$> f x
+
+instance MonadFail EitherString where
+  fail = EitherLeft

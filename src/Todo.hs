@@ -77,14 +77,17 @@ insertTask tasksPath = do
   where
     mkTaskGroup :: Index -> m TaskGroup
     mkTaskGroup index = do
-      putText "Task group id: "
-      taskId <- getTaskId index
+      taskId <- getTaskId "Task group id: " index
 
-      putText "Task status (leave blank for none): "
-      status <- traverse TaskStatus.parseTaskStatus =<< getStrippedLineEmpty
+      status <-
+        askParseEmptyQ
+          "Task status (leave blank for none): "
+          TaskStatus.parseTaskStatus
 
-      putText "Task priority (leave blank for none): "
-      priority <- traverse TaskPriority.parseTaskPriority =<< getStrippedLineEmpty
+      priority <-
+        askParseEmptyQ
+          "Task priority (leave blank for none): "
+          TaskPriority.parseTaskPriority
 
       putTextLn "Now enter subtask(s) information"
 
@@ -102,23 +105,25 @@ insertTask tasksPath = do
 
     mkOneTask :: Index -> m Task
     mkOneTask index = do
-      putText "Task id: "
-      taskId <- getTaskId index
+      taskId <- getTaskId "Task id: " index
 
-      putText "Task status: "
-      statusTxt <- getStrippedLine
-      status <- TaskStatus.parseTaskStatus statusTxt
+      status <-
+        askParseQ
+          "Task status (completed | in-progress | not-started | blocked: <ids>): "
+          TaskStatus.parseTaskStatus
 
-      putText "Task priority: "
-      priorityTxt <- getStrippedLine
-      priority <- TaskPriority.parseTaskPriority priorityTxt
+      priority <-
+        askParseQ
+          "Task priority (low | normal | high): "
+          TaskPriority.parseTaskPriority
 
       putText "Description (leave blank for none): "
       description <- getStrippedLineEmpty
 
-      putText "Deadline (leave blank for none): "
-      deadlineTxt <- getStrippedLineEmpty
-      deadline <- traverse (Timestamp.parseTimestamp . unpack) deadlineTxt
+      deadline <-
+        askParseEmptyQ
+          "Deadline (leave blank for none): "
+          (Timestamp.parseTimestamp . unpack)
 
       pure
         $ MkTask
@@ -129,12 +134,23 @@ insertTask tasksPath = do
             taskId
           }
 
-    getTaskId :: Index -> m TaskId
-    getTaskId index = do
-      idTxt <- getStrippedLine
-      taskId <- TaskId.parseTaskId idTxt
-      when (taskId ∈ index) $ throwM $ MkDuplicateIdE taskId
-      pure taskId
+    getTaskId :: Text -> Index -> m TaskId
+    getTaskId qsn index = go
+      where
+        go = do
+          putText qsn
+          idTxt <- getStrippedLine
+          case TaskId.parseTaskId idTxt of
+            EitherLeft err -> do
+              putTextLn $ "Bad response: " <> pack err
+              go
+            EitherRight taskId -> do
+              if taskId ∈ index
+                then do
+                  putStrLn $ displayException $ MkDuplicateIdE taskId
+                  go
+                else
+                  pure taskId
 
     getMoreTasksAns :: m Bool
     getMoreTasksAns = askYesNoQ "Another task (y/n)? "
@@ -152,6 +168,35 @@ insertTask tasksPath = do
             | otherwise -> do
                 putTextLn "Bad answer, expected 'y' or 'n'."
                 go
+
+    askParseQ :: Text -> (Text -> EitherString a) -> m a
+    askParseQ qsn parser = go
+      where
+        go = do
+          putText qsn
+
+          txt <- getStrippedLine
+          case parser txt of
+            EitherLeft err -> do
+              putTextLn $ "Bad response: " <> pack err
+              go
+            EitherRight x -> pure x
+
+    askParseEmptyQ :: Text -> (Text -> EitherString a) -> m (Maybe a)
+    askParseEmptyQ qsn parser = go
+      where
+        go = do
+          putText qsn
+
+          getStrippedLineEmpty >>= \case
+            Nothing -> pure Nothing
+            Just txt ->
+              case parser txt of
+                EitherLeft err -> do
+                  putTextLn $ "Bad answer: " <> pack err
+                  go
+                EitherRight x -> pure $ Just x
+
 
     getStrippedLine :: m Text
     getStrippedLine = T.strip . pack <$> getLine
