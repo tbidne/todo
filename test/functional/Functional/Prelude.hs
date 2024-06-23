@@ -9,9 +9,9 @@ module Functional.Prelude
     TestEnv (..),
 
     -- * Runners
-    run,
-    runResponsesTodo,
-    runException,
+    runTodo,
+    runTodoResponses,
+    runTodoException,
 
     -- * Misc
     getTestDir,
@@ -90,11 +90,12 @@ instance MonadTerminal FuncIO where
 runFuncIO :: FuncEnv -> FuncIO a -> IO a
 runFuncIO funcEnv (MkFuncIO rdr) = runReaderT rdr funcEnv
 
--- TODO: Rename to runTodo
-run ::
+-- | Runs todo.
+runTodo ::
+  -- | CLI args
   List String ->
   IO Text
-run args = do
+runTodo args = do
   terminalResponsesRef <- newIORef []
   terminalRef <- newIORef ""
 
@@ -104,11 +105,14 @@ run args = do
 
   readIORef terminalRef
 
-runResponsesTodo ::
+-- | Runs todo with terminal responses.
+runTodoResponses ::
+  -- | Terminal responses
   List Text ->
+  -- | CLI args
   List String ->
   IO Text
-runResponsesTodo responses args = do
+runTodoResponses responses args = do
   terminalResponsesRef <- newIORef responses
   terminalRef <- newIORef ""
 
@@ -118,13 +122,14 @@ runResponsesTodo responses args = do
 
   readIORef terminalRef
 
--- TODO: Rename to runTodoException
-runException ::
+-- | Runs todo, expecting an exception
+runTodoException ::
   forall e.
   (Exception e) =>
+  -- | CLI args
   List String ->
   IO Text
-runException args = do
+runTodoException args = do
   terminalResponsesRef <- newIORef []
   terminalRef <- newIORef ""
 

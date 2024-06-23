@@ -26,7 +26,7 @@ testInsertOne testEnv = goldenVsString desc goldenPath $ do
   copyFileWithMetadata exampleJson newPath
 
   -- run insert
-  insertResult <- runResponsesTodo responses insertArgs
+  insertResult <- runTodoResponses responses insertArgs
 
   let listArgs =
         [ "--path",
@@ -37,7 +37,7 @@ testInsertOne testEnv = goldenVsString desc goldenPath $ do
         ]
 
   -- run list
-  listResult <- run listArgs
+  listResult <- runTodo listArgs
 
   pure $ toBSL $ insertResult <> "\n\n" <> listResult
   where
@@ -69,7 +69,7 @@ testInsertGroup testEnv = goldenVsString desc goldenPath $ do
   copyFileWithMetadata exampleJson newPath
 
   -- run insert
-  insertResult <- runResponsesTodo responses insertArgs
+  insertResult <- runTodoResponses responses insertArgs
 
   let listArgs =
         [ "--path",
@@ -80,7 +80,7 @@ testInsertGroup testEnv = goldenVsString desc goldenPath $ do
         ]
 
   -- run list
-  listResult <- run listArgs
+  listResult <- runTodo listArgs
 
   pure $ toBSL $ insertResult <> "\n\n" <> listResult
   where

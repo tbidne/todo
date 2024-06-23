@@ -114,49 +114,49 @@ failureTests =
 testIdDupsFails :: TestTree
 testIdDupsFails =
   testGolden
-    (runException @DuplicateIdE)
+    (runTodoException @DuplicateIdE)
     "Duplicate id fails"
     "id_dups"
 
 testIdEmptyFails :: TestTree
 testIdEmptyFails =
   testGolden
-    (runException @AesonException)
+    (runTodoException @AesonException)
     "Empty id fails"
     "id_empty"
 
 testIdCommaFails :: TestTree
 testIdCommaFails =
   testGolden
-    (runException @AesonException)
+    (runTodoException @AesonException)
     "Id with comma fails"
     "id_comma"
 
 testStatusBlockedBadRefFails :: TestTree
 testStatusBlockedBadRefFails =
   testGolden
-    (runException @BlockedIdRefE)
+    (runTodoException @BlockedIdRefE)
     "Status blocked non-extant id reference fails"
     "status_blocked_bad_ref"
 
 testStatusBadFails :: TestTree
 testStatusBadFails =
   testGolden
-    (runException @AesonException)
+    (runTodoException @AesonException)
     "Bad status fails"
     "status_bad"
 
 testStatusBlockedEmptyFails :: TestTree
 testStatusBlockedEmptyFails =
   testGolden
-    (runException @AesonException)
+    (runTodoException @AesonException)
     "Blocked empty status fails"
     "status_blocked_empty"
 
 testStatusBlockedIdsEmptyFails :: TestTree
 testStatusBlockedIdsEmptyFails =
   testGolden
-    (runException @AesonException)
+    (runTodoException @AesonException)
     "Blocked ids empty status fails"
     "status_blocked_ids_empty"
 
@@ -173,7 +173,7 @@ testGoldenExampleUnicodeOn = testGoldenExample []
 
 testGoldenExample :: List String -> TestName -> Maybe String -> FilePath -> TestTree
 testGoldenExample extraArgs desc mSortArg goldenFilenName = goldenVsString desc path $ do
-  result <- run args
+  result <- runTodo args
   pure $ toBSL result
   where
     args =

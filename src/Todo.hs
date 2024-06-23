@@ -197,7 +197,6 @@ insertTask tasksPath = do
                   go
                 EitherRight x -> pure $ Just x
 
-
     getStrippedLine :: m Text
     getStrippedLine = T.strip . pack <$> getLine
 
