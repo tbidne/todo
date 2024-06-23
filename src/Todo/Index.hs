@@ -2,10 +2,22 @@ module Todo.Index
   ( -- * Types
     Index (unIndex),
 
-    -- * Functions
+    -- * Creation
     readIndex,
     readTaskList,
     fromList,
+
+    -- * Membership
+    member,
+    (∈),
+    notMember,
+    (∉),
+
+    -- * Insertion
+    reallyUnsafeInsert,
+
+    -- * Elimination
+    writeIndex,
     toList,
 
     -- * Exceptions,
@@ -15,8 +27,10 @@ module Todo.Index
 where
 
 import Data.Aeson (AesonException (AesonException))
-import Data.Aeson.Decoding qualified as Asn
+import Data.Aeson qualified as Asn
+import Data.ByteString.Lazy qualified as BSL
 import Data.Map.Strict qualified as Map
+import Data.Maybe (isJust)
 import Data.Sequence.NonEmpty qualified as NESeq
 import Data.Set (Set)
 import Data.Set qualified as Set
@@ -24,7 +38,7 @@ import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
 import Todo.Data.Task
   ( SomeTask (MultiTask, SingleTask),
     Task (status, taskId),
-    TaskGroup (subtasks),
+    TaskGroup (subtasks, taskId),
   )
 import Todo.Data.Task.TaskId (TaskId (unTaskId))
 import Todo.Data.Task.TaskId qualified as TaskId
@@ -42,6 +56,18 @@ readIndex ::
   m Index
 readIndex = readTaskList >=> fromList
 
+-- | Writes the index to the path.
+writeIndex ::
+  ( HasCallStack,
+    MonadFileWriter m
+  ) =>
+  OsPath ->
+  Index ->
+  m ()
+writeIndex path index = writeBinaryFile path encoded
+  where
+    encoded = BSL.toStrict $ Asn.encode index.unIndex
+
 -- | Reads the file to a task list.
 readTaskList ::
   ( HasCallStack,
@@ -55,6 +81,12 @@ readTaskList path = do
   case Asn.eitherDecodeStrict contents of
     Right xs -> pure xs
     Left err -> throwM $ AesonException err
+
+-- | Inserts a task into the index. Note that this does __not__ check that
+-- the id is not a duplicate i.e. this should only be used when the check has
+-- already been performed.
+reallyUnsafeInsert :: SomeTask -> Index -> Index
+reallyUnsafeInsert task (UnsafeIndex idx) = UnsafeIndex $ task : idx
 
 toList :: Index -> List SomeTask
 toList = (.unIndex)
@@ -194,6 +226,43 @@ fromList xs = do
       if Set.notMember val.taskId s
         then pure $ Set.insert val.taskId s
         else throwM $ MkDuplicateIdE val.taskId
+
+-- | Looks up the TaskId in the Index.
+lookup :: TaskId -> Index -> Maybe SomeTask
+lookup taskId index = foldMapAlt go idx
+  where
+    go (SingleTask t) =
+      if t.taskId == taskId
+        then Just $ SingleTask t
+        else Nothing
+    go (MultiTask tg) =
+      if tg.taskId == taskId
+        then Just $ MultiTask tg
+        else foldMapAlt go tg.subtasks
+
+    idx = index.unIndex
+
+-- | Returns 'True' iff the TaskId exists in the index.
+member :: TaskId -> Index -> Bool
+member taskId = isJust . lookup taskId
+
+-- | Operator alias for 'member'. U+2216.
+(∈) :: TaskId -> Index -> Bool
+(∈) = member
+
+infix 4 ∈
+
+-- | Negation of 'member'.
+notMember :: TaskId -> Index -> Bool
+notMember taskId = not . member taskId
+
+-- | Negation of '(∈)'. U+2209.
+--
+-- @since 0.1
+(∉) :: TaskId -> Index -> Bool
+(∉) = notMember
+
+infix 4 ∉
 
 forWithKey :: (Applicative f) => Map k a -> (k -> a -> f b) -> f (Map k b)
 forWithKey = flip Map.traverseWithKey

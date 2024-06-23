@@ -48,7 +48,7 @@ import Control.Applicative as X
     (*>),
     (<*),
   )
-import Control.Monad as X (Monad ((>>=)), join, void, when, (>=>))
+import Control.Monad as X (Monad ((>>=)), join, void, when, (=<<), (>=>))
 import Control.Monad.Fail as X (MonadFail (fail))
 import Control.Monad.IO.Class as X (MonadIO (liftIO))
 import Data.Aeson as X (FromJSON (parseJSON), ToJSON (toJSON))
@@ -62,7 +62,7 @@ import Data.Foldable as X
   )
 import Data.Foldable1 as X (Foldable1 (toNonEmpty))
 import Data.Function as X (flip, ($), (.))
-import Data.Functor as X (Functor (fmap), (<$>))
+import Data.Functor as X (Functor (fmap), (<$>), (<&>))
 import Data.Int as X (Int)
 import Data.Kind as X (Constraint, Type)
 #if MIN_VERSION_base(4, 20, 0)
@@ -99,12 +99,20 @@ import Effects.Exception as X
   )
 import Effects.Exception qualified as Ex
 import Effects.FileSystem.FileReader as X (MonadFileReader)
-import Effects.FileSystem.FileWriter (appendFileUtf8)
+import Effects.FileSystem.FileWriter as X
+  ( MonadFileWriter (writeBinaryFile),
+    appendFileUtf8,
+  )
 import Effects.FileSystem.PathReader as X (MonadPathReader)
 import Effects.FileSystem.Utils as X (OsPath, encodeUtf8, osp, (</>))
 import Effects.FileSystem.Utils qualified as FsUtils
 import Effects.Optparse as X (MonadOptparse)
-import Effects.System.Terminal as X (MonadTerminal (putStrLn), putTextLn)
+import Effects.System.Terminal as X
+  ( MonadTerminal (putStrLn),
+    getLine,
+    putText,
+    putTextLn,
+  )
 import Effects.Time as X (MonadTime)
 import GHC.Base (RuntimeRep, TYPE, raise#, seq)
 import GHC.Enum as X (Bounded, Enum)

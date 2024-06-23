@@ -5,6 +5,9 @@ module Todo.Runner
   )
 where
 
+import Effects.FileSystem.HandleWriter
+  ( MonadHandleWriter,
+  )
 import Effects.FileSystem.PathReader (getXdgConfig)
 import Todo qualified
 import Todo.Data.Task.Render.Utils
@@ -14,14 +17,17 @@ import Todo.Data.Task.Render.Utils
 import Todo.Prelude
 import Todo.Runner.Args
   ( Args (command, path),
-    Command (CmdList),
+    Command (CmdInsert, CmdList),
     getArgs,
   )
 
 -- | Runs todo app.
 runTodo ::
   ( HasCallStack,
+    MonadFail m,
     MonadFileReader m,
+    MonadFileWriter m,
+    MonadHandleWriter m,
     MonadOptparse m,
     MonadPathReader m,
     MonadTerminal m,
@@ -31,10 +37,11 @@ runTodo ::
   m ()
 runTodo = do
   args <- getArgs
-  path <- getPath args.path
+  tasksPath <- getPath args.path
   case args.command of
+    CmdInsert -> Todo.insertTask tasksPath
     CmdList mColor mUnicode mSortType ->
-      Todo.listTasks path (defColor mColor) (defUnicode mUnicode) mSortType
+      Todo.listTasks tasksPath (defColor mColor) (defUnicode mUnicode) mSortType
   where
     defColor = fromMaybe ColorOn
     defUnicode = fromMaybe UnicodeOn

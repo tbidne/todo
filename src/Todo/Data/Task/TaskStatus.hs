@@ -3,13 +3,13 @@
 
 module Todo.Data.Task.TaskStatus
   ( TaskStatus (..),
+    parseTaskStatus,
     isCompleted,
     render,
   )
 where
 
 import Data.Aeson qualified as Asn
-import Data.Aeson.Types (Parser)
 import Data.Set qualified as Set
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
@@ -40,42 +40,45 @@ instance Monoid TaskStatus where
   mempty = Completed
 
 instance FromJSON TaskStatus where
-  parseJSON = Asn.withText "TaskStatus" $ \t ->
-    foldMappersAltA t parsers >>= \case
-      Nothing -> fail $ "Unexpected status value: " <> quoteTxt t
-      Just r -> pure r
-    where
-      parsers :: List (Text -> Parser (Maybe TaskStatus))
-      parsers =
-        [ parseBlocked,
-          parseExact "not-started" NotStarted,
-          parseExact "in-progress" InProgress,
-          parseExact "completed" Completed
-        ]
+  parseJSON = Asn.withText "TaskStatus" parseTaskStatus
 
-      parseBlocked :: Text -> Parser (Maybe TaskStatus)
-      parseBlocked (T.stripPrefix "blocked:" -> Just rest) =
-        case T.strip rest of
-          "" -> fail $ "Received empty list for 'blocked' status: " <> quoteTxt rest
-          nonEmpty ->
-            let splitStrs = T.strip <$> T.split (== ',') nonEmpty
-                nonEmpties = filter (not . T.null) splitStrs
-             in case nonEmpties of
-                  (x : xs) -> do
-                    ids <- traverse TaskId.parseTaskId (x :<|| listToSeq xs)
-                    pure $ Just $ Blocked ids
-                  [] -> fail $ "Received no non-empty ids for 'blocked' status: " <> quoteTxt rest
-      parseBlocked _ = pure Nothing
+parseTaskStatus :: forall m. (MonadFail m) => Text -> m TaskStatus
+parseTaskStatus txt = do
+  foldMappersAltA txt parsers >>= \case
+    Nothing -> fail $ "Unexpected status value: " <> quoteTxt txt
+    Just r -> pure r
+  where
+    parsers :: List (Text -> m (Maybe TaskStatus))
+    parsers =
+      [ parseBlocked,
+        parseExact "not-started" NotStarted,
+        parseExact "in-progress" InProgress,
+        parseExact "completed" Completed
+      ]
 
-      parseExact :: Text -> TaskStatus -> Text -> Parser (Maybe TaskStatus)
-      parseExact e c t =
-        pure
-          $ if e == t
-            then Just c
-            else Nothing
+    parseBlocked :: Text -> m (Maybe TaskStatus)
+    parseBlocked (T.stripPrefix "blocked:" -> Just rest) =
+      case T.strip rest of
+        "" -> fail $ "Received empty list for 'blocked' status: " <> quoteTxt rest
+        nonEmpty ->
+          let splitStrs = T.strip <$> T.split (== ',') nonEmpty
+              nonEmpties = filter (not . T.null) splitStrs
+           in case nonEmpties of
+                (x : xs) -> do
+                  ids <- traverse TaskId.parseTaskId (x :<|| listToSeq xs)
+                  pure $ Just $ Blocked ids
+                [] -> fail $ "Received no non-empty ids for 'blocked' status: " <> quoteTxt rest
+    parseBlocked _ = pure Nothing
 
-      quoteTxt :: Text -> String
-      quoteTxt t = "'" <> unpack t <> "'"
+    parseExact :: Text -> TaskStatus -> Text -> m (Maybe TaskStatus)
+    parseExact e c t =
+      pure
+        $ if e == t
+          then Just c
+          else Nothing
+
+    quoteTxt :: Text -> String
+    quoteTxt t = "'" <> unpack t <> "'"
 
 instance ToJSON TaskStatus where
   toJSON (Blocked ts) = toJSON $ "blocked: " <> TaskId.neSeqToText ts

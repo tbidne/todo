@@ -147,19 +147,23 @@ pathParser =
         ]
 
 data Command
-  = CmdList (Maybe ColorSwitch) (Maybe UnicodeSwitch) (Maybe SortType)
+  = CmdInsert
+  | CmdList (Maybe ColorSwitch) (Maybe UnicodeSwitch) (Maybe SortType)
   deriving stock (Eq, Show)
 
 commandParser :: Parser Command
 commandParser =
   OA.hsubparser
     ( mconcat
-        [ mkCommand "list" listParser listTxt
+        [ mkCommand "insert" insertParser insertTxt,
+          mkCommand "list" listParser listTxt
         ]
     )
   where
+    insertTxt = mkCmdDesc "Inserts a new task"
     listTxt = mkCmdDesc "Lists the todo index."
 
+    insertParser = pure CmdInsert
     listParser =
       CmdList
         <$> colorParser

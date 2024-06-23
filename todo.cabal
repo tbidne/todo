@@ -68,19 +68,20 @@ library
 
   build-depends:
     , aeson                 ^>=2.2.0.0
-    , base                  >=4.19.0.0 && <4.21
-    , containers            >=0.6.2.1  && <0.8
+    , base                  >=4.19.0.0  && <4.21
+    , bytestring            >=0.10.12.0 && <0.13
+    , containers            >=0.6.2.1   && <0.8
     , effects-exceptions    ^>=0.1
     , effects-fs            ^>=0.1
     , effects-optparse      ^>=0.1
     , effects-terminal      ^>=0.1
     , effects-time          ^>=0.1
-    , nonempty-containers   >=0.3.4.2  && <0.4
-    , optparse-applicative  >=0.15     && <0.19
+    , nonempty-containers   >=0.3.4.2   && <0.4
+    , optparse-applicative  >=0.15      && <0.19
     , pretty-terminal       ^>=0.1
-    , text                  >=2.0      && <2.2
-    , text-display          >=0.0.3.0  && <0.6
-    , time                  >=1.9.3    && <1.15
+    , text                  >=2.0       && <2.2
+    , text-display          >=0.0.3.0   && <0.6
+    , time                  >=1.9.3     && <1.15
 
   -- For tuple syntax
   if impl(ghc >=9.10.1)
@@ -128,6 +129,7 @@ test-suite functional
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
+    Functional.Insert
     Functional.List
     Functional.Prelude
 
@@ -139,6 +141,7 @@ test-suite functional
     , effects-exceptions
     , effects-fs
     , effects-terminal
+    , env-guard           ^>=0.2
     , mtl                 >=2.2.1    && <2.4
     , tasty               >=1.1.0.3  && <1.6
     , tasty-golden        ^>=2.3.1.1

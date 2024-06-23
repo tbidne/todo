@@ -1,5 +1,6 @@
 module Todo.Data.Task.TaskPriority
   ( TaskPriority (..),
+    parseTaskPriority,
     render,
   )
 where
@@ -24,11 +25,13 @@ instance Monoid TaskPriority where
   mempty = Low
 
 instance FromJSON TaskPriority where
-  parseJSON = Asn.withText "TaskPriority" $ \case
-    "low" -> pure Low
-    "normal" -> pure Normal
-    "high" -> pure High
-    other -> fail $ "Unexpected value: " <> unpack other
+  parseJSON = Asn.withText "TaskPriority" parseTaskPriority
+
+parseTaskPriority :: (MonadFail f) => Text -> f TaskPriority
+parseTaskPriority "low" = pure Low
+parseTaskPriority "normal" = pure Normal
+parseTaskPriority "high" = pure High
+parseTaskPriority other = fail $ "Unexpected priority value: " <> unpack other
 
 instance ToJSON TaskPriority where
   toJSON Low = "low"
