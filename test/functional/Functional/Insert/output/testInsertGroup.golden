@@ -1,4 +1,5 @@
-Create task group (y/n)? Task id: Task status: Task priority: Description (leave blank for none): Deadline (leave blank for none): 
+Create task group (y/n)? Task group id: Task status (leave blank for none): Task priority (leave blank for none): Now enter subtask(s) information
+Task id: Task status: Task priority: Description (leave blank for none): Deadline (leave blank for none): Another task (y/n)? Task id: Task status: Task priority: Description (leave blank for none): Deadline (leave blank for none): Another task (y/n)? 
 
 ❌ id: groceries
    status: blocked: "fix_car", "paycheck"
@@ -39,13 +40,23 @@ Create task group (y/n)? Task id: Task status: Task priority: Description (leave
    deadline: 2024-06-22 12:15:00 UTC
    description: Car needs brakes fixed
 
-❌ id: new_id
-   status: not-started
-   priority: normal
-
 ❌ id: haircut
    status: not-started
    priority: low
+
+❌ id: group_id
+   status: in-progress
+   priority: high
+
+  ❌ id: task_b
+     status: in-progress
+     priority: high
+     deadline: 2020-04-08
+
+  ✅ id: task_a
+     status: completed
+     priority: normal
+     description: some description
 
 ❌ id: paycheck
    status: in-progress

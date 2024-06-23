@@ -33,6 +33,8 @@ module Todo.Prelude
     traceFileLine,
 
     -- * Misc
+    whileM,
+    whileM_,
     identity,
     showt,
     setUncaughtExceptionHandlerDisplay,
@@ -48,7 +50,15 @@ import Control.Applicative as X
     (*>),
     (<*),
   )
-import Control.Monad as X (Monad ((>>=)), join, void, when, (=<<), (>=>))
+import Control.Monad as X
+  ( Monad ((>>=)),
+    join,
+    unless,
+    void,
+    when,
+    (=<<),
+    (>=>),
+  )
 import Control.Monad.Fail as X (MonadFail (fail))
 import Control.Monad.IO.Class as X (MonadIO (liftIO))
 import Data.Aeson as X (FromJSON (parseJSON), ToJSON (toJSON))
@@ -223,3 +233,23 @@ setUncaughtExceptionHandlerDisplay =
 #endif
 
 {- ORMOLU_ENABLE -}
+
+whileM :: (Monad m) => m Bool -> m a -> m (Seq a)
+whileM mb mx = go
+  where
+    go = do
+      b <- mb
+      if b
+        then do
+          x <- mx
+          (x :<|) <$> go
+        else pure Empty
+{-# INLINEABLE whileM #-}
+
+whileM_ :: (Monad m) => m Bool -> m a -> m ()
+whileM_ mb mx = go
+  where
+    go = do
+      b <- mb
+      when b (mx *> go)
+{-# INLINEABLE whileM_ #-}

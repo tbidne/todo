@@ -8,7 +8,8 @@ tests :: IO TestEnv -> TestTree
 tests testEnv =
   testGroup
     "Insert"
-    [ testInsertOne testEnv
+    [ testInsertOne testEnv,
+      testInsertGroup testEnv
     ]
 
 testInsertOne :: IO TestEnv -> TestTree
@@ -46,11 +47,65 @@ testInsertOne testEnv = goldenVsString desc goldenPath $ do
     goldenPath = path <> ".golden"
 
     responses =
-      [ "new_id",
+      [ "n",
+        "new_id",
         "not-started",
         "normal",
         "",
         ""
+      ]
+
+testInsertGroup :: IO TestEnv -> TestTree
+testInsertGroup testEnv = goldenVsString desc goldenPath $ do
+  testDir <- getTestDir' testEnv name
+  let newPath = testDir </> [osp|tasks.json|]
+      insertArgs =
+        [ "--path",
+          unsafeDecodeOsToFp newPath,
+          "insert"
+        ]
+
+  -- copy example to test dir
+  copyFileWithMetadata exampleJson newPath
+
+  -- run insert
+  insertResult <- runResponsesTodo responses insertArgs
+
+  let listArgs =
+        [ "--path",
+          unsafeDecodeOsToFp newPath,
+          "list",
+          "--color",
+          "off"
+        ]
+
+  -- run list
+  listResult <- run listArgs
+
+  pure $ toBSL $ insertResult <> "\n\n" <> listResult
+  where
+    name = [osp|testInsertGroup|]
+    desc = "Inserts a single task"
+    path = outputDir `cfp` "testInsertGroup"
+    goldenPath = path <> ".golden"
+
+    responses =
+      [ "y",
+        "group_id",
+        "",
+        "",
+        "task_a",
+        "completed",
+        "normal",
+        "some description",
+        "",
+        "y",
+        "task_b",
+        "in-progress",
+        "high",
+        "",
+        "2020-04-08",
+        "n"
       ]
 
 getTestDir' :: IO TestEnv -> OsPath -> IO OsPath
