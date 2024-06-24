@@ -9,7 +9,8 @@ tests testEnv =
   testGroup
     "Insert"
     [ testInsertOne testEnv,
-      testInsertGroup testEnv
+      testInsertGroup testEnv,
+      testFailureRetry testEnv
     ]
 
 testInsertOne :: IO TestEnv -> TestTree
@@ -106,6 +107,53 @@ testInsertGroup testEnv = goldenVsString desc goldenPath $ do
         "",
         "2020-04-08",
         "n"
+      ]
+
+testFailureRetry :: IO TestEnv -> TestTree
+testFailureRetry testEnv = goldenVsString desc goldenPath $ do
+  testDir <- getTestDir' testEnv name
+  let newPath = testDir </> [osp|tasks.json|]
+      insertArgs =
+        [ "--path",
+          unsafeDecodeOsToFp newPath,
+          "insert"
+        ]
+
+  -- copy example to test dir
+  copyFileWithMetadata exampleJson newPath
+
+  -- run insert
+  insertResult <- runTodoResponses responses insertArgs
+
+  let listArgs =
+        [ "--path",
+          unsafeDecodeOsToFp newPath,
+          "list",
+          "--color",
+          "off"
+        ]
+
+  -- run list
+  listResult <- runTodo listArgs
+
+  pure $ toBSL $ insertResult <> "\n\n" <> listResult
+  where
+    name = [osp|testFailureRetry|]
+    desc = "Failures invokes retries"
+    path = outputDir `cfp` "testFailureRetry"
+    goldenPath = path <> ".golden"
+
+    responses =
+      [ "n",
+        "groceries",
+        "test_id",
+        "bad_status",
+        "completed",
+        "bad_priority",
+        "high",
+        "",
+        "bad_deadline",
+        "2020-05-09"
       ]
 
 getTestDir' :: IO TestEnv -> OsPath -> IO OsPath
