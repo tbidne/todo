@@ -18,7 +18,7 @@ main =
       testGroup
         "Functional Tests"
         [ Insert.tests env,
-          List.tests
+          List.tests env
         ]
 
 setup :: IO TestEnv

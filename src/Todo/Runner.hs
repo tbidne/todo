@@ -5,10 +5,15 @@ module Todo.Runner
   )
 where
 
+import Effects.FileSystem.FileWriter qualified as FW
 import Effects.FileSystem.HandleWriter
   ( MonadHandleWriter,
   )
 import Effects.FileSystem.PathReader (getXdgConfig)
+import Effects.FileSystem.PathReader qualified as PR
+import Effects.FileSystem.PathWriter qualified as PW
+import Effects.FileSystem.Utils qualified as FsUtils
+import System.OsPath qualified as FP
 import Todo qualified
 import Todo.Data.Task.Render.Utils
   ( ColorSwitch (ColorOn),
@@ -30,6 +35,7 @@ runTodo ::
     MonadHandleWriter m,
     MonadOptparse m,
     MonadPathReader m,
+    MonadPathWriter m,
     MonadTerminal m,
     MonadTime m,
     MonadThrow m
@@ -48,11 +54,40 @@ runTodo = do
 
 getPath ::
   ( HasCallStack,
-    MonadPathReader m
+    MonadFileWriter m,
+    MonadPathReader m,
+    MonadPathWriter m,
+    MonadTerminal m
   ) =>
   Maybe OsPath ->
   m OsPath
-getPath (Just path) = pure path
+getPath (Just path) = createJsonIfNotExists path
 getPath Nothing = do
   xdgConfigDir <- getXdgConfig [osp|todo|]
-  pure $ xdgConfigDir </> [osp|tasks.json|]
+  createJsonIfNotExists $ xdgConfigDir </> [osp|tasks.json|]
+
+createJsonIfNotExists ::
+  ( HasCallStack,
+    MonadFileWriter m,
+    MonadPathReader m,
+    MonadPathWriter m,
+    MonadTerminal m
+  ) =>
+  OsPath ->
+  m OsPath
+createJsonIfNotExists path = do
+  exists <- PR.doesFileExist path
+  if exists
+    then pure path
+    else do
+      putTextLn
+        $ mconcat
+          [ "File does not exist at path: '",
+            pack (FsUtils.decodeOsToFpShow path),
+            "'. Creating one."
+          ]
+      let dirName = FP.takeDirectory path
+      PW.createDirectoryIfMissing True dirName
+
+      FW.writeFileUtf8 path "[]"
+      pure path

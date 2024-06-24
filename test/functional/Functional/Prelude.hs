@@ -31,7 +31,7 @@ import Data.Proxy as X (Proxy (Proxy))
 import Data.Sequence qualified as Seq
 import Effects.Exception (throwString, tryCS)
 import Effects.FileSystem.HandleWriter (MonadHandleWriter)
-import Effects.FileSystem.PathWriter as X (MonadPathWriter, copyFileWithMetadata)
+import Effects.FileSystem.PathWriter as X (copyFileWithMetadata)
 import Effects.FileSystem.PathWriter qualified as PW
 import Effects.FileSystem.Utils as X (unsafeDecodeOsToFp)
 import Effects.FileSystem.Utils qualified as FsUtils
@@ -68,6 +68,7 @@ newtype FuncIO a = MkFuncIO (ReaderT FuncEnv IO a)
       MonadIO,
       MonadOptparse,
       MonadPathReader,
+      MonadPathWriter,
       MonadReader FuncEnv,
       MonadTime,
       MonadThrow

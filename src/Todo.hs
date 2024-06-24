@@ -27,10 +27,13 @@ import Todo.Data.Task
         status,
         taskId
       ),
-    TaskGroup (..),
+    TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
 import Todo.Data.Task.Render qualified as Render
-import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff), UnicodeSwitch (UnicodeOff))
+import Todo.Data.Task.Render.Utils
+  ( ColorSwitch (ColorOff),
+    UnicodeSwitch (UnicodeOff),
+  )
 import Todo.Data.Task.Sorted (SortType)
 import Todo.Data.Task.Sorted qualified as Sorted
 import Todo.Data.Task.TaskId (TaskId)

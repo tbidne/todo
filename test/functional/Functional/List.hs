@@ -1,15 +1,19 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module Functional.List (tests) where
 
 import Data.Aeson (AesonException)
 import Functional.Prelude
+import Text.Regex.TDFA ((=~))
 import Todo.Index (BlockedIdRefE, DuplicateIdE)
 
-tests :: TestTree
-tests =
+tests :: IO TestEnv -> TestTree
+tests testEnv =
   testGroup
     "List"
     [ sortExampleTests,
-      failureTests
+      failureTests,
+      miscTests testEnv
     ]
 
 sortExampleTests :: TestTree
@@ -160,6 +164,45 @@ testStatusBlockedIdsEmptyFails =
     "Blocked ids empty status fails"
     "status_blocked_ids_empty"
 
+miscTests :: IO TestEnv -> TestTree
+miscTests testEnv =
+  testGroup
+    "Miscellaneous"
+    [ testNonExtantPathSucceeds testEnv
+    ]
+
+testNonExtantPathSucceeds :: IO TestEnv -> TestTree
+testNonExtantPathSucceeds testEnv = goldenVsString desc goldenPath $ do
+  testDir <- getTestDir' testEnv name
+  let newPath = testDir </> [osp|non-extant|] </> [osp|tasks.json|]
+      args =
+        [ "--path",
+          unsafeDecodeOsToFp newPath,
+          "list"
+        ]
+
+  -- run list
+  result <- runTodo args
+
+  -- Result includes a non-deterministic dir like:
+  --
+  --     tmp/nix-shell.XXoKKb/todo/functional/list/testNonExtantPathSucceeds/non-extant/tasks.json
+  --
+  -- To make this test work, we replace the problem dir i.e. tmp/<dir>/todo/...
+  let regex :: Text
+      regex = "(.*)/tmp/(.*)/todo/(.*)"
+      (_, _, _, matches) = result =~ regex :: (Text, Text, Text, List Text)
+      result' = case matches of
+        (prologue : _ : epilogue) -> prologue <> "/tmp/<dir>/todo/" <> mconcat epilogue
+        other -> error $ "Bad format: " <> unpack (mconcat other)
+
+  pure $ toBSL result'
+  where
+    name = [osp|testNonExtantPathSucceeds|]
+    desc = "Non-extant path succeeds"
+    path = outputDir `cfp` "testNonExtantPathSucceeds"
+    goldenPath = path <> ".golden"
+
 testGoldenExampleUnicodeOff :: TestName -> Maybe String -> FilePath -> TestTree
 testGoldenExampleUnicodeOff = testGoldenExample extraArgs
   where
@@ -211,3 +254,6 @@ inputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "List" `cfp` "inpu
 
 outputDir :: FilePath
 outputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "List" `cfp` "output"
+
+getTestDir' :: IO TestEnv -> OsPath -> IO OsPath
+getTestDir' testEnv name = getTestDir testEnv ([osp|list|] </> name)
