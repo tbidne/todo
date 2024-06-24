@@ -30,7 +30,7 @@ import Todo.Data.Task
     TaskGroup (..),
   )
 import Todo.Data.Task.Render qualified as Render
-import Todo.Data.Task.Render.Utils (ColorSwitch, UnicodeSwitch)
+import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff), UnicodeSwitch (UnicodeOff))
 import Todo.Data.Task.Sorted (SortType)
 import Todo.Data.Task.Sorted qualified as Sorted
 import Todo.Data.Task.TaskId (TaskId)
@@ -51,6 +51,7 @@ insertTask ::
     MonadFileWriter m,
     MonadHandleWriter m,
     MonadTerminal m,
+    MonadTime m,
     MonadThrow m
   ) =>
   OsPath ->
@@ -62,18 +63,27 @@ insertTask tasksPath = do
 
   shouldMkTaskGroup <- askYesNoQ "Create task group (y/n)? "
 
-  index' <-
+  newTask <-
     if shouldMkTaskGroup
       then do
         taskGroup <- mkTaskGroup index
-        pure $ Index.reallyUnsafeInsert (MultiTask taskGroup) index
+        pure $ MultiTask taskGroup
       else do
         task <- mkOneTask index
-        pure $ Index.reallyUnsafeInsert (SingleTask task) index
+        pure $ SingleTask task
+
+  let index' = Index.reallyUnsafeInsert newTask index
 
   lineBuffering
 
   Index.writeIndex tasksPath index'
+
+  currTime <- getSystemZonedTime
+  let builder = Render.renderSomeTask currTime ColorOff UnicodeOff 0 newTask
+      rendered = builderToTxt builder
+
+  putTextLn "Successfully added task:\n"
+  putTextLn rendered
   where
     mkTaskGroup :: Index -> m TaskGroup
     mkTaskGroup index = do

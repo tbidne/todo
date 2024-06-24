@@ -18,6 +18,15 @@ Deadline (leave blank for none):
 Bad answer: Could not parse timestamp: bad_deadline
 
 Deadline (leave blank for none): 
+Successfully added task:
+
+
+- id: test_id
+  status: completed
+  priority: high
+  deadline: 2020-05-09
+
+
 
 ❌ id: groceries
    status: blocked: "fix_car", "paycheck"

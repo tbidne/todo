@@ -21,6 +21,23 @@ Description (leave blank for none):
 Deadline (leave blank for none): 
 
 Another task (y/n)? 
+Successfully added task:
+
+
+- id: group_id
+  status: in-progress
+
+  - id: task_a
+    status: completed
+    priority: normal
+    description: some description
+
+  - id: task_b
+    status: in-progress
+    priority: high
+    deadline: 2020-04-08
+
+
 
 ❌ id: groceries
    status: blocked: "fix_car", "paycheck"

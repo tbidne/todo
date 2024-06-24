@@ -5,6 +5,14 @@ Task status (completed | in-progress | not-started | blocked: <ids>):
 Task priority (low | normal | high): 
 Description (leave blank for none): 
 Deadline (leave blank for none): 
+Successfully added task:
+
+
+- id: new_id
+  status: not-started
+  priority: normal
+
+
 
 ❌ id: groceries
    status: blocked: "fix_car", "paycheck"

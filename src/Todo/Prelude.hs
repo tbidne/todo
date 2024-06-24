@@ -34,6 +34,7 @@ module Todo.Prelude
 
     -- * Misc
     EitherString (..),
+    builderToTxt,
     whileM,
     whileM_,
     identity,
@@ -95,7 +96,9 @@ import Data.Sequence.NonEmpty qualified as NESeq
 import Data.String as X (String)
 import Data.Text as X (Text, pack, unpack)
 import Data.Text.Display as X (Display (displayBuilder), display)
+import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder as X (Builder)
+import Data.Text.Lazy.Builder qualified as TLB
 import Data.Traversable as X (Traversable (sequenceA, traverse))
 import Data.Tuple as X (snd)
 #if MIN_VERSION_base(4, 20, 0)
@@ -121,6 +124,7 @@ import Effects.Optparse as X (MonadOptparse)
 import Effects.System.Terminal as X
   ( MonadTerminal (putStrLn),
     getLine,
+    print,
     putText,
     putTextLn,
   )
@@ -186,6 +190,9 @@ foldMappersAltA ::
   m (f b)
 foldMappersAltA x = foldr (\g -> liftA2 (<|>) (g x)) (pure empty)
 {-# INLINEABLE foldMappersAltA #-}
+
+builderToTxt :: Builder -> Text
+builderToTxt = TL.toStrict . TLB.toLazyText
 
 listToSeq :: List a -> Seq a
 listToSeq = Seq.fromList

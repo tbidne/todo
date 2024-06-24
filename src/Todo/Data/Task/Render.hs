@@ -1,5 +1,6 @@
 module Todo.Data.Task.Render
   ( renderSorted,
+    renderSomeTask,
   )
 where
 
