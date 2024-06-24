@@ -28,6 +28,7 @@ where
 
 import Data.Aeson (AesonException (AesonException))
 import Data.Aeson qualified as Asn
+import Data.Aeson.Encode.Pretty qualified as AsnPretty
 import Data.ByteString.Lazy qualified as BSL
 import Data.Map.Strict qualified as Map
 import Data.Maybe (isJust)
@@ -66,7 +67,9 @@ writeIndex ::
   m ()
 writeIndex path index = writeBinaryFile path encoded
   where
-    encoded = BSL.toStrict $ Asn.encode index.unIndex
+    encoded =
+      BSL.toStrict
+        $ AsnPretty.encodePretty' AsnPretty.defConfig index.unIndex
 
 -- | Reads the file to a task list.
 readTaskList ::
