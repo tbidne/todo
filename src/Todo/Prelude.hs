@@ -67,7 +67,7 @@ import Data.Bool as X (Bool (False, True), not, otherwise, (&&), (||))
 import Data.Either as X (Either (Left, Right))
 import Data.Eq as X (Eq ((==)), (/=))
 import Data.Foldable as X
-  ( Foldable (foldMap, foldl', foldr, length, null, toList),
+  ( Foldable (fold, foldMap, foldl', foldr, length, null, toList),
     foldr1,
     for_,
   )

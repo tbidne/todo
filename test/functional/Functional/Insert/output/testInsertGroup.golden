@@ -1,5 +1,26 @@
-Create task group (y/n)? Task group id: Task status (leave blank for none): Task priority (leave blank for none): Now enter subtask(s) information
-Task id: Task status (completed | in-progress | not-started | blocked: <ids>): Task priority (low | normal | high): Description (leave blank for none): Deadline (leave blank for none): Another task (y/n)? Task id: Task status (completed | in-progress | not-started | blocked: <ids>): Task priority (low | normal | high): Description (leave blank for none): Deadline (leave blank for none): Another task (y/n)? 
+Create task group (y/n)? 
+Task group id: 
+Task status (leave blank for none): 
+Task priority (leave blank for none): 
+
+Now enter subtask(s) information
+
+
+Task id: 
+Task status (completed | in-progress | not-started | blocked: <ids>): 
+Task priority (low | normal | high): 
+Description (leave blank for none): 
+Deadline (leave blank for none): 
+
+Another task (y/n)? 
+
+Task id: 
+Task status (completed | in-progress | not-started | blocked: <ids>): 
+Task priority (low | normal | high): 
+Description (leave blank for none): 
+Deadline (leave blank for none): 
+
+Another task (y/n)? 
 
 ❌ id: groceries
    status: blocked: "fix_car", "paycheck"

@@ -89,7 +89,7 @@ insertTask tasksPath = do
           "Task priority (leave blank for none): "
           TaskPriority.parseTaskPriority
 
-      putTextLn "Now enter subtask(s) information"
+      putTextLn "\nNow enter subtask(s) information"
 
       t <- mkOneTask index
 
@@ -105,7 +105,7 @@ insertTask tasksPath = do
 
     mkOneTask :: Index -> m Task
     mkOneTask index = do
-      taskId <- getTaskId "Task id: " index
+      taskId <- getTaskId "\nTask id: " index
 
       status <-
         askParseQ
@@ -153,7 +153,7 @@ insertTask tasksPath = do
                   pure taskId
 
     getMoreTasksAns :: m Bool
-    getMoreTasksAns = askYesNoQ "Another task (y/n)? "
+    getMoreTasksAns = askYesNoQ "\nAnother task (y/n)? "
 
     askYesNoQ :: Text -> m Bool
     askYesNoQ qsn = go

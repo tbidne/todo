@@ -28,6 +28,7 @@ import Control.Monad.Reader
 import Data.ByteString.Lazy qualified as BSL
 import Data.IORef (IORef, modifyIORef', newIORef, readIORef, writeIORef)
 import Data.Proxy as X (Proxy (Proxy))
+import Data.Sequence qualified as Seq
 import Effects.Exception (throwString, tryCS)
 import Effects.FileSystem.HandleWriter (MonadHandleWriter)
 import Effects.FileSystem.PathWriter as X (MonadPathWriter, copyFileWithMetadata)
@@ -49,7 +50,7 @@ newtype TestEnv = MkTestEnv
 
 -- | Environment for 'FuncIO'.
 data FuncEnv = MkFuncEnv
-  { terminalRef :: IORef Text,
+  { terminalRef :: IORef (Seq Text),
     terminalResponsesRef :: IORef (List Text)
   }
 
@@ -76,7 +77,7 @@ newtype FuncIO a = MkFuncIO (ReaderT FuncEnv IO a)
 instance MonadTerminal FuncIO where
   putStr s = do
     terminalRef <- asks (.terminalRef)
-    liftIO $ modifyIORef' terminalRef (\xs -> xs <> pack s)
+    liftIO $ modifyIORef' terminalRef (:|> pack s)
 
   getLine = do
     responsesRef <- asks (.terminalResponsesRef)
@@ -97,13 +98,13 @@ runTodo ::
   IO Text
 runTodo args = do
   terminalResponsesRef <- newIORef []
-  terminalRef <- newIORef ""
+  terminalRef <- newIORef Empty
 
   let funcEnv = MkFuncEnv terminalRef terminalResponsesRef
 
   withArgs args (runFuncIO funcEnv Runner.runTodo)
 
-  readIORef terminalRef
+  concatSeq <$> readIORef terminalRef
 
 -- | Runs todo with terminal responses.
 runTodoResponses ::
@@ -114,13 +115,13 @@ runTodoResponses ::
   IO Text
 runTodoResponses responses args = do
   terminalResponsesRef <- newIORef responses
-  terminalRef <- newIORef ""
+  terminalRef <- newIORef Empty
 
   let funcEnv = MkFuncEnv terminalRef terminalResponsesRef
 
   withArgs args (runFuncIO funcEnv Runner.runTodo)
 
-  readIORef terminalRef
+  concatSeq <$> readIORef terminalRef
 
 -- | Runs todo, expecting an exception
 runTodoException ::
@@ -131,7 +132,7 @@ runTodoException ::
   IO Text
 runTodoException args = do
   terminalResponsesRef <- newIORef []
-  terminalRef <- newIORef ""
+  terminalRef <- newIORef Empty
 
   let funcEnv = MkFuncEnv terminalRef terminalResponsesRef
 
@@ -155,3 +156,6 @@ getTestDir testEnv path = do
   let path' = testDir </> path
   PW.createDirectoryIfMissing True path'
   pure path'
+
+concatSeq :: Seq Text -> Text
+concatSeq = fold . Seq.intersperse "\n"
