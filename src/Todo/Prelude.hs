@@ -35,6 +35,7 @@ module Todo.Prelude
     -- * Misc
     EitherString (..),
     builderToTxt,
+    stripNulls,
     whileM,
     whileM_,
     identity,
@@ -63,7 +64,8 @@ import Control.Monad as X
   )
 import Control.Monad.Fail as X (MonadFail (fail))
 import Control.Monad.IO.Class as X (MonadIO (liftIO))
-import Data.Aeson as X (FromJSON (parseJSON), ToJSON (toJSON))
+import Data.Aeson as X (FromJSON (parseJSON), ToJSON (toJSON), Value (Null))
+import Data.Aeson.Types (Pair)
 import Data.Bool as X (Bool (False, True), not, otherwise, (&&), (||))
 import Data.Either as X (Either (Left, Right))
 import Data.Eq as X (Eq ((==)), (/=))
@@ -293,3 +295,7 @@ instance Traversable EitherString where
 
 instance MonadFail EitherString where
   fail = EitherLeft
+
+-- | Removes nulls for aeson encoding.
+stripNulls :: [Pair] -> [Pair]
+stripNulls = filter (\(_, v) -> v /= Null)

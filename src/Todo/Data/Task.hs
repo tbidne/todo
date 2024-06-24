@@ -63,12 +63,13 @@ parseTaskObj v = do
 instance ToJSON Task where
   toJSON t =
     Asn.object
-      [ "deadline" .= t.deadline,
-        "description" .= t.description,
-        "id" .= t.taskId,
-        "priority" .= t.priority,
-        "status" .= t.status
-      ]
+      $ stripNulls
+        [ "deadline" .= t.deadline,
+          "description" .= t.description,
+          "id" .= t.taskId,
+          "priority" .= t.priority,
+          "status" .= t.status
+        ]
 
 -- | Multiple tasks.
 data TaskGroup = MkTaskGroup
@@ -103,11 +104,12 @@ parseTaskGroupObj v = do
 instance ToJSON TaskGroup where
   toJSON t =
     Asn.object
-      [ "id" .= t.taskId,
-        "priority" .= t.priority,
-        "status" .= t.status,
-        "subtasks" .= t.subtasks
-      ]
+      $ stripNulls
+        [ "id" .= t.taskId,
+          "priority" .= t.priority,
+          "status" .= t.status,
+          "subtasks" .= t.subtasks
+        ]
 
 -- | Takes either the status (if it is set), or the greatest status of its
 -- subtasks.

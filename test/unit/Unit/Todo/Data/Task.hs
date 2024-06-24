@@ -2,6 +2,7 @@ module Unit.Todo.Data.Task (tests) where
 
 import Data.Aeson qualified as Asn
 import Data.ByteString.Lazy qualified as BSL
+import Data.Foldable (any)
 import Data.Sequence.NonEmpty qualified as NESeq
 import Data.Text qualified as T
 import Data.Time.Calendar (Day (ModifiedJulianDay))
@@ -11,6 +12,7 @@ import Data.Time.LocalTime
     ZonedTime (ZonedTime),
     utc,
   )
+import Hedgehog (assert)
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
 import Todo.Data.Task
@@ -150,10 +152,14 @@ testJsonRoundtrip :: TestTree
 testJsonRoundtrip = testPropertyNamed desc "testJsonRoundtrip" $ property $ do
   tasks <- forAll genSomeTaskList
 
-  let encoded = BSL.toStrict $ Asn.encode tasks
+  let asnValue = Asn.toJSON tasks
+      encoded = BSL.toStrict $ Asn.encode tasks
       eDecoded = Asn.eitherDecodeStrict encoded
 
+  annotateShow asnValue
   annotateShow encoded
+
+  assert $ not $ containsNull asnValue
 
   case eDecoded of
     Left err -> do
@@ -173,10 +179,14 @@ testTaskJsonRoundtrip :: TestTree
 testTaskJsonRoundtrip = testPropertyNamed desc "testTaskJsonRoundtrip" $ property $ do
   task <- forAll genTask
 
-  let encoded = BSL.toStrict $ Asn.encode task
+  let asnValue = Asn.toJSON task
+      encoded = BSL.toStrict $ Asn.encode task
       eDecoded = Asn.eitherDecodeStrict encoded
 
+  annotateShow asnValue
   annotateShow encoded
+
+  assert $ not $ containsNull asnValue
 
   case eDecoded of
     Left err -> do
@@ -301,3 +311,11 @@ genTaskId = genMassaged >>= TaskId.parseTaskId
 
 genText :: Int -> Gen Text
 genText upperBound = Gen.text (Range.linearFrom 0 0 upperBound) Gen.unicode
+
+containsNull :: Value -> Bool
+containsNull Null = True
+containsNull (Asn.Object km) = any containsNull km
+containsNull (Asn.Array _) = False
+containsNull (Asn.Bool _) = False
+containsNull (Asn.Number _) = False
+containsNull (Asn.String _) = False
