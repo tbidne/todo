@@ -66,9 +66,6 @@ testExamplePriority =
     "testExamplePriority"
     (Just SortPriority)
     [ "fix_car",
-      "groceries",
-      "bananas",
-      "apples",
       "paycheck",
       "walk_dog",
       "haircut",
@@ -76,7 +73,10 @@ testExamplePriority =
       "equipment",
       "cleats",
       "ball",
-      "pack_bananas"
+      "pack_bananas",
+      "groceries",
+      "bananas",
+      "apples"
     ]
 
 testExampleStatus :: TestTree
@@ -105,10 +105,7 @@ testExamplePriorityStatus =
     "Example sorted by (Priority, Status)"
     "testExamplePriorityStatus"
     (Just SortPriorityStatus)
-    [ "groceries",
-      "bananas",
-      "apples",
-      "fix_car",
+    [ "fix_car",
       "paycheck",
       "walk_dog",
       "soccer_match",
@@ -116,7 +113,10 @@ testExamplePriorityStatus =
       "equipment",
       "cleats",
       "ball",
-      "haircut"
+      "haircut",
+      "groceries",
+      "bananas",
+      "apples"
     ]
 
 testExampleStatusPriority :: TestTree

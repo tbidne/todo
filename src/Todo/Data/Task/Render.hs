@@ -63,13 +63,21 @@ renderTaskGroup ::
   Builder
 renderTaskGroup currTime color unicode nestLvl tg =
   vsep
-    [ indent nestLvl $ bullet <> "id: " <> TaskId.render color tg.taskId,
-      indent nestLvl $ bulletIndent <> "status: " <> TaskStatus.render color (Task.taskGroupStatus tg),
-      indent nestLvl $ bulletIndent <> "priority: " <> TaskPriority.render color (Task.taskGroupPriority tg),
-      line
-    ]
+    ( [ indent nestLvl $ bullet <> "id: " <> TaskId.render color tg.taskId,
+        indent nestLvl $ bulletIndent <> "status: " <> TaskStatus.render color (Task.taskGroupStatus tg)
+      ]
+        ++ mPriority
+        ++ [line]
+    )
     <> vsep (renderSomeTask currTime color unicode (nestLvl + 1) <$> tg.subtasks)
   where
+    mPriority =
+      renderMaybeEmptyList
+        nestLvl
+        (renderPriority <$> tg.priority)
+
+    renderPriority p = bulletIndent <> "priority: " <> TaskPriority.render color p
+
     (bullet, bulletIndent) = statusToBullet unicode (MultiTask tg)
 
 renderTask ::
@@ -94,6 +102,7 @@ renderTask currTime color unicode nestLvl t =
         (renderTimestamp <$> t.deadline)
 
     renderTimestamp ts = bulletIndent <> "deadline: " <> Timestamp.render color currTime ts <> line
+
     mDescription =
       renderMaybeEmpty
         nestLvl
@@ -131,6 +140,13 @@ renderMaybeEmpty ::
   Builder
 renderMaybeEmpty _ Nothing = ""
 renderMaybeEmpty nestLvl (Just b) = indent nestLvl b
+
+renderMaybeEmptyList ::
+  Word8 ->
+  Maybe Builder ->
+  List Builder
+renderMaybeEmptyList _ Nothing = []
+renderMaybeEmptyList nestLvl (Just b) = [indent nestLvl b]
 
 statusToBullet :: UnicodeSwitch -> SomeTask -> Tuple2 Builder Builder
 statusToBullet UnicodeOff _ = ("- ", "  ")

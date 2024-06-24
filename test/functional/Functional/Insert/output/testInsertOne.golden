@@ -8,7 +8,6 @@ Deadline (leave blank for none):
 
 ❌ id: groceries
    status: blocked: "fix_car", "paycheck"
-   priority: high
 
   ❌ id: bananas
      status: not-started

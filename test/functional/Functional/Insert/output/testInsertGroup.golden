@@ -24,7 +24,6 @@ Another task (y/n)?
 
 ❌ id: groceries
    status: blocked: "fix_car", "paycheck"
-   priority: high
 
   ❌ id: bananas
      status: not-started
@@ -65,9 +64,13 @@ Another task (y/n)?
    status: not-started
    priority: low
 
-❌ id: group_id
+❌ id: paycheck
    status: in-progress
    priority: high
+   deadline: 2024-08-12 12:00:00
+
+❌ id: group_id
+   status: in-progress
 
   ❌ id: task_b
      status: in-progress
@@ -78,11 +81,6 @@ Another task (y/n)?
      status: completed
      priority: normal
      description: some description
-
-❌ id: paycheck
-   status: in-progress
-   priority: high
-   deadline: 2024-08-12 12:00:00
 
 ✅ id: walk_dog
    status: completed

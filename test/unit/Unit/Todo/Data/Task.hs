@@ -55,7 +55,7 @@ taskGroupTasks =
     [ testTaskGroupUsesSetStatus tasks,
       testTaskGroupDerivesStatus tasks,
       testTaskGroupUsesSetPriority tasks,
-      testTaskGroupDerivesPriority tasks
+      testTaskGroupNoDerivesPriority tasks
     ]
   where
     t1 =
@@ -113,8 +113,8 @@ testTaskGroupDerivesStatus subtasks = testCase "TaskGroup derives status" $ do
 
 testTaskGroupUsesSetPriority :: NESeq SomeTask -> TestTree
 testTaskGroupUsesSetPriority subtasks = testCase "TaskGroup uses set priority" $ do
-  let result = Task.taskGroupPriority taskGroup
-  Low @=? result
+  let result = taskGroup.priority
+  Just Low @=? result
   where
     taskGroup =
       MkTaskGroup
@@ -124,11 +124,10 @@ testTaskGroupUsesSetPriority subtasks = testCase "TaskGroup uses set priority" $
           subtasks
         }
 
-testTaskGroupDerivesPriority :: NESeq SomeTask -> TestTree
-testTaskGroupDerivesPriority subtasks = testCase "TaskGroup derives priority" $ do
-  let result = Task.taskGroupPriority taskGroup
-  -- NotStarted is the greatest _non-complete_ subtask status
-  Normal @=? result
+testTaskGroupNoDerivesPriority :: NESeq SomeTask -> TestTree
+testTaskGroupNoDerivesPriority subtasks = testCase "TaskGroup does not derive priority" $ do
+  let result = taskGroup.priority
+  Nothing @=? result
   where
     taskGroup =
       MkTaskGroup

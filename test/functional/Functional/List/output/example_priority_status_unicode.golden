@@ -1,15 +1,3 @@
-❌ id: groceries
-   status: blocked: "fix_car", "paycheck"
-   priority: high
-
-  ❌ id: bananas
-     status: not-started
-     priority: high
-
-  ❌ id: apples
-     status: not-started
-     priority: normal
-
 ❌ id: fix_car
    status: not-started
    priority: high
@@ -50,5 +38,16 @@
 ❌ id: haircut
    status: not-started
    priority: low
+
+❌ id: groceries
+   status: blocked: "fix_car", "paycheck"
+
+  ❌ id: bananas
+     status: not-started
+     priority: high
+
+  ❌ id: apples
+     status: not-started
+     priority: normal
 
 
