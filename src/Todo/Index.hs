@@ -18,7 +18,6 @@ module Todo.Index
 
     -- * Insertion
     reallyUnsafeInsert,
-    reallyUnsafeInsertAll,
     reallyUnsafeInsertAtTaskId,
 
     -- * Deletion
@@ -111,6 +110,9 @@ readTaskList path = do
 reallyUnsafeInsert :: SomeTask -> Index -> Index
 reallyUnsafeInsert task (UnsafeIndex idx) = UnsafeIndex $ task : idx
 
+-- | Inserts a new task t1 at the task id. Like 'reallyUnsafeInsert', this is
+-- unsafe in that t1's id is not verified for uniqueness, and the given
+-- task id may not exist in the index (in which case t1 will not be added).
 reallyUnsafeInsertAtTaskId :: TaskId -> SomeTask -> Index -> Index
 reallyUnsafeInsertAtTaskId taskId task (UnsafeIndex idx) =
   UnsafeIndex $ foldr go [] idx
@@ -124,56 +126,9 @@ reallyUnsafeInsertAtTaskId taskId task (UnsafeIndex idx) =
           let subtasks' = foldr go [] tg.subtasks
            in MultiTask (tg {subtasks = Seq.fromList subtasks'}) : acc
 
-reallyUnsafeInsertAll :: (Foldable f) => f SomeTask -> Index -> Index
-reallyUnsafeInsertAll tasks (UnsafeIndex idx) =
-  UnsafeIndex $ F.toList tasks <> idx
-
+-- | Returns a list representation of the index.
 toList :: Index -> List SomeTask
 toList = (.unIndex)
-
--- | Error for two tasks t1.name and t2.name having the same id.
-newtype DuplicateIdE = MkDuplicateIdE TaskId
-  deriving stock (Eq, Show)
-
-instance Exception DuplicateIdE where
-  displayException (MkDuplicateIdE id) =
-    mconcat
-      [ "Found duplicate tasks with id '",
-        unpack id.unTaskId,
-        "'."
-      ]
-
-newtype TaskIdNotFoundE = MkTaskIdNotFoundE TaskId
-  deriving stock (Eq, Show)
-
-instance Exception TaskIdNotFoundE where
-  displayException (MkTaskIdNotFoundE taskId) =
-    mconcat
-      [ "Task id '",
-        unpack taskId.unTaskId,
-        "' not found in the index."
-      ]
-
--- | Error for a task t1 referencing task ids that do not exist.
-data BlockedIdRefE
-  = MkBlockedIdRefE
-      -- | t1.id
-      TaskId
-      -- | t1.refIds
-      (NESet TaskId)
-  deriving stock (Eq, Show)
-
-instance Exception BlockedIdRefE where
-  displayException (MkBlockedIdRefE id refIds) =
-    mconcat
-      [ "Task with id '",
-        unpack id.unTaskId,
-        "' references non-extant id(s): ",
-        unpack displayIds,
-        "."
-      ]
-    where
-      displayIds = TaskId.taskIdsToTextQuote refIds
 
 type IdSet = Set TaskId
 
@@ -277,7 +232,13 @@ fromList xs = do
         then pure $ Set.insert val.taskId s
         else throwM $ MkDuplicateIdE val.taskId
 
-filterOnIds :: Set TaskId -> Index -> Index
+-- | Filters the index on the task ids.
+filterOnIds ::
+  -- | Ids to take.
+  Set TaskId ->
+  -- | Index
+  Index ->
+  Index
 filterOnIds taskIds = filter go
   where
     go :: SomeTask -> Bool
@@ -285,8 +246,9 @@ filterOnIds taskIds = filter go
     go (MultiTask tg) =
       Set.member tg.taskId taskIds || F.any go tg.subtasks
 
+-- | Filters the index on some predicate.
 filter :: (SomeTask -> Bool) -> Index -> Index
-filter f (UnsafeIndex idx) = UnsafeIndex $ L.filter f idx
+filter p = UnsafeIndex . L.filter p . (.unIndex)
 
 -- | Looks up the TaskId in the Index.
 lookup :: TaskId -> Index -> Maybe SomeTask
@@ -327,24 +289,6 @@ type DeleteAcc =
   Tuple2
     (List SomeTask)
     (Maybe SomeTask)
-
--- | Errors when deleting a task.
-data DeleteE
-  = -- | Attempted to delete an id that was not found
-    DeleteTaskIdNotFound TaskIdNotFoundE
-  | -- | Attempted to delete a task that is referenced by other tasks.
-    DeleteRefId TaskId (NESet TaskId)
-  deriving stock (Eq, Show)
-
-instance Exception DeleteE where
-  displayException (DeleteTaskIdNotFound err) = displayException err
-  displayException (DeleteRefId taskId ids) =
-    mconcat
-      [ "Task id '",
-        unpack taskId.unTaskId,
-        "' is referenced by other tasks, so it cannot be deleted: ",
-        unpack (TaskId.taskIdsToTextQuote ids)
-      ]
 
 -- REVIEW: With all the different collections we are using (NESet, Seq, Map,
 -- etc.), it is lkely we are doing some unnecessary conversions in this
@@ -405,3 +349,66 @@ forWithKey = flip Map.traverseWithKey
 
 forWithKey_ :: (Applicative f) => Map k a -> (k -> a -> f b) -> f ()
 forWithKey_ mp = void . forWithKey mp
+
+-- | Error for two tasks t1.name and t2.name having the same id.
+newtype DuplicateIdE = MkDuplicateIdE TaskId
+  deriving stock (Eq, Show)
+
+instance Exception DuplicateIdE where
+  displayException (MkDuplicateIdE id) =
+    mconcat
+      [ "Found duplicate tasks with id '",
+        unpack id.unTaskId,
+        "'."
+      ]
+
+-- | Error for not finding a task id in the index.
+newtype TaskIdNotFoundE = MkTaskIdNotFoundE TaskId
+  deriving stock (Eq, Show)
+
+instance Exception TaskIdNotFoundE where
+  displayException (MkTaskIdNotFoundE taskId) =
+    mconcat
+      [ "Task id '",
+        unpack taskId.unTaskId,
+        "' not found in the index."
+      ]
+
+-- | Error for a task t1 referencing task ids that do not exist.
+data BlockedIdRefE
+  = MkBlockedIdRefE
+      -- | t1.id
+      TaskId
+      -- | t1.refIds
+      (NESet TaskId)
+  deriving stock (Eq, Show)
+
+instance Exception BlockedIdRefE where
+  displayException (MkBlockedIdRefE id refIds) =
+    mconcat
+      [ "Task with id '",
+        unpack id.unTaskId,
+        "' references non-extant id(s): ",
+        unpack displayIds,
+        "."
+      ]
+    where
+      displayIds = TaskId.taskIdsToTextQuote refIds
+
+-- | Errors when deleting a task.
+data DeleteE
+  = -- | Attempted to delete an id that was not found
+    DeleteTaskIdNotFound TaskIdNotFoundE
+  | -- | Attempted to delete a task that is referenced by other tasks.
+    DeleteRefId TaskId (NESet TaskId)
+  deriving stock (Eq, Show)
+
+instance Exception DeleteE where
+  displayException (DeleteTaskIdNotFound err) = displayException err
+  displayException (DeleteRefId taskId ids) =
+    mconcat
+      [ "Task id '",
+        unpack taskId.unTaskId,
+        "' is referenced by other tasks, so it cannot be deleted: ",
+        unpack (TaskId.taskIdsToTextQuote ids)
+      ]
