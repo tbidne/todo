@@ -194,7 +194,16 @@ testNonExtantPathSucceeds testEnv = goldenVsString desc goldenPath $ do
       (_, _, _, matches) = result =~ regex :: (Text, Text, Text, List Text)
       result' = case matches of
         (prologue : _ : epilogue) -> prologue <> "/tmp/<dir>/todo/" <> mconcat epilogue
-        other -> error $ "Bad format: " <> unpack (mconcat other)
+        other ->
+          error
+            $ mconcat
+              [ "Bad format! Match result:\n\n'",
+                unpack (mconcat other),
+                "'\n\n",
+                "Original:\n\n'",
+                unpack result,
+                "'"
+              ]
 
   pure $ toBSL result'
   where
