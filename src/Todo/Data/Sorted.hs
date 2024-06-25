@@ -1,4 +1,4 @@
-module Todo.Data.Task.Sorted
+module Todo.Data.Sorted
   ( -- * Types
     SortedTasks (unSortedTasks),
     SortType (..),
@@ -19,7 +19,7 @@ import Todo.Data.Task
     traverseSomeTasks,
   )
 import Todo.Data.Task qualified as Task
-import Todo.Data.Task.Sorted.Internal
+import Todo.Data.Sorted.Internal
   ( SortedTasks (UnsafeSortedTasks, unSortedTasks),
   )
 import Todo.Prelude

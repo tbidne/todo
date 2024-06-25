@@ -15,7 +15,7 @@ import Effects.FileSystem.PathWriter qualified as PW
 import Effects.FileSystem.Utils qualified as FsUtils
 import System.OsPath qualified as FP
 import Todo qualified
-import Todo.Data.Task.Render.Utils
+import Todo.Render.Utils
   ( ColorSwitch (ColorOn),
     UnicodeSwitch (UnicodeOn),
   )

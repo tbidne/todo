@@ -1,4 +1,4 @@
-module Todo.Data.Task.TaskId.Internal
+module Todo.Data.TaskId.Internal
   ( TaskId (..),
     mkTaskId,
     parseTaskId,

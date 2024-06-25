@@ -1,4 +1,4 @@
-module Unit.Todo.Data.Task.Sorted (tests) where
+module Unit.Todo.Data.Sorted (tests) where
 
 import Hedgehog.Gen qualified as G
 import Todo.Data.Task
@@ -6,7 +6,7 @@ import Todo.Data.Task
     Task (taskId),
     TaskGroup (taskId),
   )
-import Todo.Data.Task.Sorted
+import Todo.Data.Sorted
   ( SortType
       ( SortPriority,
         SortPriorityStatus,
@@ -15,8 +15,8 @@ import Todo.Data.Task.Sorted
       ),
     SortedTasks,
   )
-import Todo.Data.Task.Sorted qualified as Sorted
-import Todo.Data.Task.TaskId (TaskId (unTaskId))
+import Todo.Data.Sorted qualified as Sorted
+import Todo.Data.TaskId (TaskId (unTaskId))
 import Todo.Index (Index (unIndex))
 import Todo.Index qualified as Index
 import Unit.Prelude
@@ -24,7 +24,7 @@ import Unit.Prelude
 tests :: TestTree
 tests =
   testGroup
-    "Todo.Data.Task.Sorted"
+    "Todo.Data.Sorted"
     [ exampleTests
     ]
 

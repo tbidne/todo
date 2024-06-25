@@ -1,4 +1,4 @@
-module Todo.Data.Task.TaskId
+module Todo.Data.TaskId
   ( -- * Type
     TaskId (unTaskId),
 
@@ -14,9 +14,9 @@ where
 
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
-import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff, ColorOn))
-import Todo.Data.Task.Render.Utils qualified as Render.Utils
-import Todo.Data.Task.TaskId.Internal
+import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
+import Todo.Render.Utils qualified as Render.Utils
+import Todo.Data.TaskId.Internal
   ( TaskId (unTaskId),
     mkTaskId,
     parseTaskId,

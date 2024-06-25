@@ -18,8 +18,8 @@ import Data.Time.LocalTime
 import Data.Time.LocalTime qualified as LT
 import Effects.Time qualified as Time
 import System.Console.Pretty (Color (Cyan, Magenta, Red))
-import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff, ColorOn))
-import Todo.Data.Task.Render.Utils qualified as Render.Utils
+import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
+import Todo.Render.Utils qualified as Render.Utils
 import Todo.Prelude
 
 -- | Task timestamps.

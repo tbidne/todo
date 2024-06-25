@@ -20,9 +20,9 @@ import Data.Aeson qualified as Asn
 import Data.Aeson.KeyMap qualified as KM
 import Data.Aeson.Types (Object, Parser)
 import GHC.Records (HasField (getField))
-import Todo.Data.Task.TaskId (TaskId)
-import Todo.Data.Task.TaskPriority (TaskPriority)
-import Todo.Data.Task.TaskStatus (TaskStatus, isCompleted)
+import Todo.Data.TaskId (TaskId)
+import Todo.Data.TaskPriority (TaskPriority)
+import Todo.Data.TaskStatus (TaskStatus, isCompleted)
 import Todo.Data.Timestamp (Timestamp)
 import Todo.Prelude
 

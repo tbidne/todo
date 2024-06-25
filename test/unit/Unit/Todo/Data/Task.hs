@@ -29,10 +29,10 @@ import Todo.Data.Task
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
 import Todo.Data.Task qualified as Task
-import Todo.Data.Task.TaskId (TaskId)
-import Todo.Data.Task.TaskId qualified as TaskId
-import Todo.Data.Task.TaskPriority (TaskPriority (High, Low, Normal))
-import Todo.Data.Task.TaskStatus
+import Todo.Data.TaskId (TaskId)
+import Todo.Data.TaskId qualified as TaskId
+import Todo.Data.TaskPriority (TaskPriority (High, Low, Normal))
+import Todo.Data.TaskStatus
   ( TaskStatus
       ( Blocked,
         Completed,

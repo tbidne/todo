@@ -49,9 +49,9 @@ import Todo.Data.Task
     Task (status, taskId),
     TaskGroup (status, subtasks, taskId),
   )
-import Todo.Data.Task.TaskId (TaskId (unTaskId))
-import Todo.Data.Task.TaskId qualified as TaskId
-import Todo.Data.Task.TaskStatus (TaskStatus (Blocked))
+import Todo.Data.TaskId (TaskId (unTaskId))
+import Todo.Data.TaskId qualified as TaskId
+import Todo.Data.TaskStatus (TaskStatus (Blocked))
 import Todo.Index.Internal (Index (UnsafeIndex, unIndex))
 import Todo.Prelude hiding (toList)
 

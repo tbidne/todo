@@ -31,13 +31,13 @@ import Options.Applicative.Help.Chunk qualified as Chunk
 import Options.Applicative.Help.Pretty qualified as Pretty
 import Options.Applicative.Types (ArgPolicy (Intersperse))
 import Paths_todo qualified as Paths
-import Todo.Data.Task.Render.Utils
+import Todo.Render.Utils
   ( ColorSwitch (ColorOff, ColorOn),
     UnicodeSwitch (UnicodeOff, UnicodeOn),
   )
-import Todo.Data.Task.Sorted
-import Todo.Data.Task.TaskId (TaskId)
-import Todo.Data.Task.TaskId qualified as TaskId
+import Todo.Data.Sorted
+import Todo.Data.TaskId (TaskId)
+import Todo.Data.TaskId qualified as TaskId
 import Todo.Prelude
 
 -- | Retrieves CLI args.

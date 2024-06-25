@@ -1,4 +1,4 @@
-module Todo.Data.Task.Render
+module Todo.Render
   ( -- * High level
     renderOneNoStyle,
 
@@ -17,14 +17,14 @@ import Todo.Data.Task
     TaskGroup (subtasks, taskId),
   )
 import Todo.Data.Task qualified as Task
-import Todo.Data.Task.Render.Utils
+import Todo.Render.Utils
   ( ColorSwitch (ColorOff),
     UnicodeSwitch (UnicodeOff, UnicodeOn),
   )
-import Todo.Data.Task.Sorted (SortedTasks (unSortedTasks))
-import Todo.Data.Task.TaskId qualified as TaskId
-import Todo.Data.Task.TaskPriority qualified as TaskPriority
-import Todo.Data.Task.TaskStatus qualified as TaskStatus
+import Todo.Data.Sorted (SortedTasks (unSortedTasks))
+import Todo.Data.TaskId qualified as TaskId
+import Todo.Data.TaskPriority qualified as TaskPriority
+import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Prelude
 

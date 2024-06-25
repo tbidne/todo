@@ -30,14 +30,14 @@ import Todo.Data.Task
       ),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
-import Todo.Data.Task.Render qualified as Render
-import Todo.Data.Task.Render.Utils (ColorSwitch, UnicodeSwitch)
-import Todo.Data.Task.Sorted (SortType)
-import Todo.Data.Task.Sorted qualified as Sorted
-import Todo.Data.Task.TaskId (TaskId)
-import Todo.Data.Task.TaskId qualified as TaskId
-import Todo.Data.Task.TaskPriority qualified as TaskPriority
-import Todo.Data.Task.TaskStatus qualified as TaskStatus
+import Todo.Render qualified as Render
+import Todo.Render.Utils (ColorSwitch, UnicodeSwitch)
+import Todo.Data.Sorted (SortType)
+import Todo.Data.Sorted qualified as Sorted
+import Todo.Data.TaskId (TaskId)
+import Todo.Data.TaskId qualified as TaskId
+import Todo.Data.TaskPriority qualified as TaskPriority
+import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Index (DuplicateIdE (MkDuplicateIdE), Index, (∈))
 import Todo.Index qualified as Index

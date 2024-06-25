@@ -1,4 +1,4 @@
-module Todo.Data.Task.Render.Utils
+module Todo.Render.Utils
   ( ColorSwitch (..),
     UnicodeSwitch (..),
     colorBuilder,

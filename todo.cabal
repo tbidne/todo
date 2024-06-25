@@ -51,14 +51,14 @@ library
   exposed-modules:
     Todo
     Todo.Data.Task
-    Todo.Data.Task.Render
-    Todo.Data.Task.Render.Utils
-    Todo.Data.Task.Sorted
-    Todo.Data.Task.Sorted.Internal
-    Todo.Data.Task.TaskId
-    Todo.Data.Task.TaskId.Internal
-    Todo.Data.Task.TaskPriority
-    Todo.Data.Task.TaskStatus
+    Todo.Render
+    Todo.Render.Utils
+    Todo.Data.Sorted
+    Todo.Data.Sorted.Internal
+    Todo.Data.TaskId
+    Todo.Data.TaskId.Internal
+    Todo.Data.TaskPriority
+    Todo.Data.TaskStatus
     Todo.Data.Timestamp
     Todo.Index
     Todo.Index.Internal
@@ -108,7 +108,7 @@ test-suite unit
   other-modules:
     Unit.Prelude
     Unit.Todo.Data.Task
-    Unit.Todo.Data.Task.Sorted
+    Unit.Todo.Data.Sorted
     Unit.Todo.Index
 
   build-depends:

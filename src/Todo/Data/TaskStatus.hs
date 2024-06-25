@@ -1,7 +1,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wno-deprecations #-}
 
-module Todo.Data.Task.TaskStatus
+module Todo.Data.TaskStatus
   ( TaskStatus (..),
     parseTaskStatus,
     isCompleted,
@@ -13,10 +13,10 @@ import Data.Aeson qualified as Asn
 import Data.Set.NonEmpty qualified as NESet
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
-import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff, ColorOn))
-import Todo.Data.Task.Render.Utils qualified as Render.Utils
-import Todo.Data.Task.TaskId (TaskId)
-import Todo.Data.Task.TaskId qualified as TaskId
+import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
+import Todo.Render.Utils qualified as Render.Utils
+import Todo.Data.TaskId (TaskId)
+import Todo.Data.TaskId qualified as TaskId
 import Todo.Prelude
 
 -- | Task status.

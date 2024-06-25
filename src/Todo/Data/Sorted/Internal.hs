@@ -1,4 +1,4 @@
-module Todo.Data.Task.Sorted.Internal
+module Todo.Data.Sorted.Internal
   ( SortedTasks (..),
   )
 where
