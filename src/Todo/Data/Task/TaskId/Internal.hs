@@ -6,6 +6,7 @@ module Todo.Data.Task.TaskId.Internal
 where
 
 import Data.Aeson qualified as Asn
+import Data.String (IsString (fromString))
 import Data.Text qualified as T
 import Todo.Prelude
 
@@ -13,6 +14,11 @@ import Todo.Prelude
 newtype TaskId = UnsafeTaskId {unTaskId :: Text}
   deriving stock (Show)
   deriving newtype (Eq, Ord, ToJSON)
+
+instance IsString TaskId where
+  fromString str = case mkTaskId (pack str) of
+    Left err -> error err
+    Right x -> x
 
 instance FromJSON TaskId where
   parseJSON = Asn.withText "TaskId" parseTaskId

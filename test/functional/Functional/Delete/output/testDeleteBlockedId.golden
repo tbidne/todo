@@ -1,3 +1,5 @@
+Task id 'fix_car' is referenced by other tasks, so it cannot be deleted: 'ball', 'cleats', 'groceries'
+
 ❌ id: groceries
    status: blocked: 'fix_car', 'paycheck'
 

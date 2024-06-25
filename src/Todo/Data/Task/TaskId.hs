@@ -6,8 +6,9 @@ module Todo.Data.Task.TaskId
     parseTaskId,
     unsafeTaskId,
     render,
-    neSeqToText,
-    neSeqToTextCustom,
+    taskIdsToText,
+    taskIdsToTextQuote,
+    taskIdsToTextCustom,
   )
 where
 
@@ -33,10 +34,19 @@ render :: ColorSwitch -> TaskId -> Builder
 render ColorOff = displayBuilder . (.unTaskId)
 render ColorOn = Render.Utils.colorBuilder Pretty.Blue . (.unTaskId)
 
--- | neSeqToTextCustom with no extra logic.
-neSeqToText :: NESeq TaskId -> Text
-neSeqToText = neSeqToTextCustom (.unTaskId)
+-- | taskIdsToTextCustom with no extra logic.
+taskIdsToText :: NESet TaskId -> Text
+taskIdsToText = taskIdsToTextCustom (.unTaskId)
+
+-- | taskIdsToTextCustom that single-quotes the text
+taskIdsToTextQuote :: NESet TaskId -> Text
+taskIdsToTextQuote = taskIdsToTextCustom (\t -> quote t.unTaskId)
+  where
+    quote t = "'" <> t <> "'"
 
 -- | Comma separates TaskIds together, using the provided function.
-neSeqToTextCustom :: (TaskId -> Text) -> NESeq TaskId -> Text
-neSeqToTextCustom toText ids = T.intercalate ", " (toText <$> toList ids)
+taskIdsToTextCustom :: (TaskId -> Text) -> NESet TaskId -> Text
+taskIdsToTextCustom toText =
+  T.intercalate ", "
+    . fmap toText
+    . toList

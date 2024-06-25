@@ -78,7 +78,7 @@ data TaskGroup = MkTaskGroup
     -- | Optional status.
     status :: Maybe TaskStatus,
     -- | List of subtasks.
-    subtasks :: NESeq SomeTask,
+    subtasks :: Seq SomeTask,
     -- | Id.
     taskId :: TaskId
   }
@@ -119,9 +119,9 @@ taskGroupStatus tg = case tg.status of
   Nothing -> deriveStatus tg.subtasks
     where
       deriveStatus =
-        sconcat
+        mconcat
           . fmap (.status)
-          . toNonEmpty
+          . toList
 
 -- | Wrapper for either a single 'Task' or 'TaskGroup'.
 data SomeTask

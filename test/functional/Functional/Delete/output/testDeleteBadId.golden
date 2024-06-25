@@ -1,3 +1,5 @@
+Task id 'bad_id' not found in the index.
+
 ❌ id: groceries
    status: blocked: 'fix_car', 'paycheck'
 

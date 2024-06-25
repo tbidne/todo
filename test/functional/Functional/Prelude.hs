@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# OPTIONS_GHC -Wno-deprecations #-}
 {-# OPTIONS_GHC -Wno-missing-methods #-}
 
@@ -14,6 +15,7 @@ module Functional.Prelude
     runTodoException,
 
     -- * Misc
+    exampleJsonOsPath,
     getTestDir,
     toBSL,
     cfp,
@@ -160,3 +162,6 @@ getTestDir testEnv path = do
 
 concatSeq :: Seq Text -> Text
 concatSeq = fold . Seq.intersperse "\n"
+
+exampleJsonOsPath :: OsPath
+exampleJsonOsPath = [osp|examples|] </> [osp|tasks.json|]

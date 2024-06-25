@@ -4,6 +4,7 @@ module Main (main) where
 
 import Effects.FileSystem.PathReader qualified as PR
 import Effects.FileSystem.PathWriter qualified as PW
+import Functional.Delete qualified as Delete
 import Functional.Insert qualified as Insert
 import Functional.List qualified as List
 import Functional.Prelude
@@ -17,7 +18,8 @@ main =
     $ \env ->
       testGroup
         "Functional Tests"
-        [ Insert.tests env,
+        [ Delete.tests env,
+          Insert.tests env,
           List.tests env
         ]
 

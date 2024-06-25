@@ -16,6 +16,9 @@ module Todo.Index
     -- * Insertion
     reallyUnsafeInsert,
 
+    -- * Deletion
+    delete,
+
     -- * Elimination
     writeIndex,
     toList,
@@ -23,6 +26,10 @@ module Todo.Index
     -- * Exceptions,
     BlockedIdRefE (..),
     DuplicateIdE (..),
+    DeleteE (..),
+
+    -- * Misc
+    getBlockingIds,
   )
 where
 
@@ -30,16 +37,17 @@ import Data.Aeson (AesonException (AesonException))
 import Data.Aeson qualified as Asn
 import Data.Aeson.Encode.Pretty qualified as AsnPretty
 import Data.ByteString.Lazy qualified as BSL
+import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
 import Data.Maybe (isJust)
-import Data.Sequence.NonEmpty qualified as NESeq
-import Data.Set (Set)
+import Data.Sequence qualified as Seq
 import Data.Set qualified as Set
+import Data.Set.NonEmpty qualified as NESet
 import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
 import Todo.Data.Task
   ( SomeTask (MultiTask, SingleTask),
     Task (status, taskId),
-    TaskGroup (subtasks, taskId),
+    TaskGroup (status, subtasks, taskId),
   )
 import Todo.Data.Task.TaskId (TaskId (unTaskId))
 import Todo.Data.Task.TaskId qualified as TaskId
@@ -112,7 +120,7 @@ data BlockedIdRefE
       -- | t1.id
       TaskId
       -- | t1.refIds
-      (NESeq TaskId)
+      (NESet TaskId)
   deriving stock (Eq, Show)
 
 instance Exception BlockedIdRefE where
@@ -125,15 +133,14 @@ instance Exception BlockedIdRefE where
         "."
       ]
     where
-      toText t = "'" <> t.unTaskId <> "'"
-      displayIds = TaskId.neSeqToTextCustom toText refIds
+      displayIds = TaskId.taskIdsToTextQuote refIds
 
 type IdSet = Set TaskId
 
 -- | Map from a task's t's Id to its text name and referenced id (Blocked)
-type IdRefMap = Map TaskId (NESeq TaskId)
+type IdRefMap = Map TaskId (NESet TaskId)
 
-type Acc = Tuple2 IdSet IdRefMap
+type FromListAcc = Tuple2 IdSet IdRefMap
 
 -- NOTE: [Index representation]
 --
@@ -157,16 +164,16 @@ fromList xs = do
   (foundKeys, blockedKeys) <- mkMaps
 
   forWithKey_ blockedKeys $ \taskId refIds -> do
-    let nonExtantRefIds = NESeq.filter (`Set.notMember` foundKeys) refIds
-    case nonExtantRefIds of
-      Empty -> pure ()
-      (r :<| rs) -> throwM $ MkBlockedIdRefE taskId (r :<|| rs)
+    let nonExtantRefIds = NESet.filter (`Set.notMember` foundKeys) refIds
+    case Set.toList nonExtantRefIds of
+      [] -> pure ()
+      (r : rs) -> throwM $ MkBlockedIdRefE taskId (NESet.fromList (r :| rs))
 
   pure $ UnsafeIndex xs
   where
     mkMaps = foldr go (pure (Set.empty, Map.empty)) xs
 
-    go :: (HasCallStack) => SomeTask -> m Acc -> m Acc
+    go :: (HasCallStack) => SomeTask -> m FromListAcc -> m FromListAcc
     go st macc = do
       (foundKeys, blockedKeys) <- macc
 
@@ -177,7 +184,7 @@ fromList xs = do
             else
               throwM $ MkDuplicateIdE t.taskId
 
-          foundKeys' <- updateTaskMap (SingleTask t) foundKeys
+          foundKeys' <- updateFoundKeys (SingleTask t) foundKeys
 
           let blockedKeys' = case t.status of
                 Blocked tids -> Map.insert t.taskId tids blockedKeys
@@ -192,20 +199,20 @@ fromList xs = do
 
           -- Add upstream maps to list
           acc <- macc
-          let allAccs = acc :<|| NESeq.toSeq subtaskAccs
+          let allAccs = acc :<| subtaskAccs
 
           -- combine accs stuff
           (foundKeysAccs, blockedKeysAccs) <- concatAccs allAccs
 
           -- check duplicate keys
-          foundKeysAccs' <- updateTaskMap (MultiTask t) foundKeysAccs
+          foundKeysAccs' <- updateFoundKeys (MultiTask t) foundKeysAccs
 
           pure (foundKeysAccs', blockedKeysAccs)
 
-    concatAccs :: (HasCallStack) => NESeq Acc -> m Acc
+    concatAccs :: (HasCallStack) => Seq FromListAcc -> m FromListAcc
     concatAccs = foldl' f (pure (Set.empty, Map.empty))
       where
-        f :: m Acc -> Acc -> m Acc
+        f :: m FromListAcc -> FromListAcc -> m FromListAcc
         f macc (foundKeys, blockedKeys) = do
           (foundKeysAcc, blockedKeysAcc) <- macc
 
@@ -220,12 +227,12 @@ fromList xs = do
 
           pure (foundKeys', blockedKeys')
 
-    updateTaskMap ::
+    updateFoundKeys ::
       (HasCallStack) =>
       SomeTask ->
       IdSet ->
       m IdSet
-    updateTaskMap val s =
+    updateFoundKeys val s =
       if Set.notMember val.taskId s
         then pure $ Set.insert val.taskId s
         else throwM $ MkDuplicateIdE val.taskId
@@ -260,15 +267,93 @@ notMember :: TaskId -> Index -> Bool
 notMember taskId = not . member taskId
 
 -- | Negation of '(∈)'. U+2209.
---
--- @since 0.1
 (∉) :: TaskId -> Index -> Bool
 (∉) = notMember
 
 infix 4 ∉
+
+type DeleteAcc =
+  Tuple2
+    (List SomeTask)
+    (Maybe SomeTask)
+
+-- REVIEW: With all the different collections we are using (NESet, Seq, Map,
+-- etc.), it is lkely we are doing some unnecessary conversions in this
+-- module. Review this to see if there is anything we can eliminate.
+
+-- | If the task id exists in the index, returns the corresponding task and
+-- the index with that task removed.
+delete :: TaskId -> Index -> Either DeleteE (Tuple2 Index SomeTask)
+delete taskId index@(UnsafeIndex idx) = case foldr go ([], Nothing) idx of
+  (_, Nothing) -> Left $ TaskIdNotFound taskId
+  (newIdx, Just st) ->
+    let blockingIds = getBlockingIds index
+     in case Map.lookup taskId blockingIds of
+          Nothing -> Right (UnsafeIndex newIdx, st)
+          Just blockedIds -> Left $ IdIsReferenced taskId blockedIds
+  where
+    go :: SomeTask -> DeleteAcc -> DeleteAcc
+    go st@(SingleTask _) (tasks, mDeleted)
+      | st.taskId == taskId = (tasks, Just st)
+      | otherwise = (st : tasks, mDeleted)
+    go st@(MultiTask tg) (tasks, mDeleted)
+      | tg.taskId == taskId = (tasks, Just st)
+      | otherwise = case foldr go ([], Nothing) tg.subtasks of
+          (_, Nothing) -> (st : tasks, mDeleted)
+          (newSubtasks, Just deletedTask) ->
+            let newTaskGroup = tg {subtasks = Seq.fromList newSubtasks}
+             in (MultiTask newTaskGroup : tasks, Just deletedTask)
+
+-- | Returns a map of all blocking ids to blockees. For instance, if tasks
+-- t1 and t2 are both blocked by t3, then there should be an entry:
+--
+-- t3 -> [t1, t2]
+getBlockingIds :: Index -> Map TaskId (NESet TaskId)
+getBlockingIds (UnsafeIndex idx) = foldl' go Map.empty idx
+  where
+    go :: Map TaskId (NESet TaskId) -> SomeTask -> Map TaskId (NESet TaskId)
+    go mp (SingleTask t) = case t.status of
+      Blocked ids ->
+        let maps = idsToMaps t.taskId ids
+         in Map.unionsWith (<>) maps
+      _ -> mp
+    go mp (MultiTask tg) =
+      let subMaps = go Map.empty <$> tg.subtasks
+          groupMaps = case tg.status of
+            Just (Blocked ids) -> mp :<| neToSeq (idsToMaps tg.taskId ids)
+            _ -> mp :<| Empty
+       in Map.unionsWith (<>) (groupMaps <> subMaps)
+
+    idsToMaps :: TaskId -> NESet TaskId -> NonEmpty (Map TaskId (NESet TaskId))
+    idsToMaps taskId ids =
+      (\blockingId -> Map.singleton blockingId (NESet.singleton taskId))
+        <$> NESet.toList ids
+
+    neToSeq = Seq.fromList . NE.toList
 
 forWithKey :: (Applicative f) => Map k a -> (k -> a -> f b) -> f (Map k b)
 forWithKey = flip Map.traverseWithKey
 
 forWithKey_ :: (Applicative f) => Map k a -> (k -> a -> f b) -> f ()
 forWithKey_ mp = void . forWithKey mp
+
+-- | Errors when attempting to delete a task.
+data DeleteE
+  = IdIsReferenced TaskId (NESet TaskId)
+  | TaskIdNotFound TaskId
+  deriving stock (Eq, Show)
+
+instance Exception DeleteE where
+  displayException (IdIsReferenced taskId ids) =
+    mconcat
+      [ "Task id '",
+        unpack taskId.unTaskId,
+        "' is referenced by other tasks, so it cannot be deleted: ",
+        unpack (TaskId.taskIdsToTextQuote ids)
+      ]
+  displayException (TaskIdNotFound taskId) =
+    mconcat
+      [ "Task id '",
+        unpack taskId.unTaskId,
+        "' not found in the index."
+      ]

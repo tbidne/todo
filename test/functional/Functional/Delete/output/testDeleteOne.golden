@@ -1,3 +1,16 @@
+Found task:
+
+
+- id: walk_dog
+  status: completed
+  priority: normal
+  deadline: 2024-04-10
+
+
+Are you sure you want to delete (y/n)? 
+Successfully deleted task
+
+
 ❌ id: groceries
    status: blocked: 'fix_car', 'paycheck'
 
@@ -44,10 +57,5 @@
    status: in-progress
    priority: high
    deadline: 2024-08-12 12:00:00
-
-✅ id: walk_dog
-   status: completed
-   priority: normal
-   deadline: 2024-04-10
 
 

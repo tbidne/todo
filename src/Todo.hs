@@ -3,6 +3,7 @@ module Todo
     listTasks,
 
     -- * Update
+    deleteTask,
     insertTask,
   )
 where
@@ -30,10 +31,7 @@ import Todo.Data.Task
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
 import Todo.Data.Task.Render qualified as Render
-import Todo.Data.Task.Render.Utils
-  ( ColorSwitch (ColorOff),
-    UnicodeSwitch (UnicodeOff),
-  )
+import Todo.Data.Task.Render.Utils (ColorSwitch, UnicodeSwitch)
 import Todo.Data.Task.Sorted (SortType)
 import Todo.Data.Task.Sorted qualified as Sorted
 import Todo.Data.Task.TaskId (TaskId)
@@ -81,12 +79,10 @@ insertTask tasksPath = do
 
   Index.writeIndex tasksPath index'
 
-  currTime <- getSystemZonedTime
-  let builder = Render.renderSomeTask currTime ColorOff UnicodeOff 0 newTask
-      rendered = builderToTxt builder
+  rendered <- Render.renderOneNoStyle newTask
 
   putTextLn "Successfully added task:\n"
-  putTextLn rendered
+  putTextLn $ builderToTxt rendered
   where
     mkTaskGroup :: Index -> m TaskGroup
     mkTaskGroup index = do
@@ -104,16 +100,14 @@ insertTask tasksPath = do
 
       putTextLn "\nNow enter subtask(s) information"
 
-      t <- mkOneTask index
-
-      subtasks' <- whileM getMoreTasksAns (SingleTask <$> mkOneTask index)
+      subtasks <- whileM getMoreTasksAns (SingleTask <$> mkOneTask index)
 
       pure
         $ MkTaskGroup
           { taskId,
             priority,
             status,
-            subtasks = SingleTask t :<|| subtasks'
+            subtasks
           }
 
     mkOneTask :: Index -> m Task
@@ -168,20 +162,6 @@ insertTask tasksPath = do
     getMoreTasksAns :: m Bool
     getMoreTasksAns = askYesNoQ "\nAnother task (y/n)? "
 
-    askYesNoQ :: Text -> m Bool
-    askYesNoQ qsn = go
-      where
-        go = do
-          putText qsn
-          ans <- getStrippedLine
-
-          if
-            | ans == "y" -> pure True
-            | ans == "n" -> pure False
-            | otherwise -> do
-                putTextLn "Bad answer, expected 'y' or 'n'."
-                go
-
     askParseQ :: Text -> (Text -> EitherString a) -> m a
     askParseQ qsn parser = go
       where
@@ -210,15 +190,40 @@ insertTask tasksPath = do
                   go
                 EitherRight x -> pure $ Just x
 
-    getStrippedLine :: m Text
-    getStrippedLine = T.strip . pack <$> getLine
+-- | Delete a task.
+deleteTask ::
+  ( HasCallStack,
+    MonadFileReader m,
+    MonadFileWriter m,
+    MonadHandleWriter m,
+    MonadTerminal m,
+    MonadTime m,
+    MonadThrow m
+  ) =>
+  -- | Path to tasks.json.
+  OsPath ->
+  -- | Task id to delete.
+  TaskId ->
+  m ()
+deleteTask tasksPath taskId = do
+  index <- Index.readIndex tasksPath
+  case Index.delete taskId index of
+    Left err -> throwM err
+    Right (newIndex, st) -> do
+      rendered <- Render.renderOneNoStyle st
 
-    getStrippedLineEmpty :: m (Maybe Text)
-    getStrippedLineEmpty =
-      getStrippedLine <&> \txt ->
-        if T.null txt
-          then Nothing
-          else Just txt
+      noBuffering
+
+      putTextLn "Found task:\n"
+      putTextLn $ builderToTxt rendered
+
+      ans <- askYesNoQ "Are you sure you want to delete (y/n)? "
+
+      when ans $ do
+        Index.writeIndex tasksPath newIndex
+        putTextLn "Successfully deleted task"
+
+      lineBuffering
 
 -- | Lists tasks from the given file.
 listTasks ::
@@ -260,3 +265,27 @@ setBuffering :: (HasCallStack, MonadHandleWriter m) => BufferMode -> m ()
 setBuffering buffMode = setBuff IO.stdin *> setBuff IO.stdout
   where
     setBuff h = HW.hSetBuffering h buffMode
+
+askYesNoQ :: (HasCallStack, MonadTerminal m) => Text -> m Bool
+askYesNoQ qsn = go
+  where
+    go = do
+      putText qsn
+      ans <- getStrippedLine
+
+      if
+        | ans == "y" -> pure True
+        | ans == "n" -> pure False
+        | otherwise -> do
+            putTextLn "Bad answer, expected 'y' or 'n'."
+            go
+
+getStrippedLine :: (HasCallStack, MonadTerminal m) => m Text
+getStrippedLine = T.strip . pack <$> getLine
+
+getStrippedLineEmpty :: (HasCallStack, MonadTerminal m) => m (Maybe Text)
+getStrippedLineEmpty =
+  getStrippedLine <&> \txt ->
+    if T.null txt
+      then Nothing
+      else Just txt

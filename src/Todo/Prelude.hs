@@ -95,6 +95,8 @@ import Data.Sequence as X (Seq (Empty, (:<|), (:|>)))
 import Data.Sequence qualified as Seq
 import Data.Sequence.NonEmpty as X (NESeq ((:<||), (:||>)))
 import Data.Sequence.NonEmpty qualified as NESeq
+import Data.Set as X (Set)
+import Data.Set.NonEmpty as X (NESet)
 import Data.String as X (String)
 import Data.Text as X (Text, pack, unpack)
 import Data.Text.Display as X (Display (displayBuilder), display)
@@ -297,5 +299,5 @@ instance MonadFail EitherString where
   fail = EitherLeft
 
 -- | Removes nulls for aeson encoding.
-stripNulls :: [Pair] -> [Pair]
+stripNulls :: List Pair -> List Pair
 stripNulls = filter (\(_, v) -> v /= Null)

@@ -11,7 +11,7 @@ where
 
 import Data.List qualified as L
 import Data.Ord (Down (Down))
-import Data.Sequence.NonEmpty qualified as NESeq
+import Data.Sequence qualified as Seq
 import Todo.Data.Task
   ( SomeTask (MultiTask, SingleTask),
     Task,
@@ -78,7 +78,7 @@ sortSomeTaskSubtasks c (MultiTask t) =
   MultiTask $ sortTaskGroupSubtasks c t
 
 sortTaskGroupSubtasks :: (SomeTask -> SomeTask -> Ordering) -> TaskGroup -> TaskGroup
-sortTaskGroupSubtasks c t = t {subtasks = NESeq.sortBy c t.subtasks}
+sortTaskGroupSubtasks c t = t {subtasks = Seq.sortBy c t.subtasks}
 
 cSomeTask :: (Ord a) => (SomeTask -> a) -> SomeTask -> SomeTask -> Ordering
 cSomeTask f x y = f x `compare` f y

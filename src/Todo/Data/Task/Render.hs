@@ -1,11 +1,15 @@
 module Todo.Data.Task.Render
-  ( renderSorted,
+  ( -- * High level
+    renderOneNoStyle,
+
+    -- * Builders
+    renderSorted,
     renderSomeTask,
   )
 where
 
 import Data.List qualified as L
-import Effects.Time (ZonedTime)
+import Effects.Time (MonadTime (getSystemZonedTime), ZonedTime)
 import GHC.Real (fromIntegral)
 import Todo.Data.Task
   ( SomeTask (MultiTask, SingleTask),
@@ -14,7 +18,7 @@ import Todo.Data.Task
   )
 import Todo.Data.Task qualified as Task
 import Todo.Data.Task.Render.Utils
-  ( ColorSwitch,
+  ( ColorSwitch (ColorOff),
     UnicodeSwitch (UnicodeOff, UnicodeOn),
   )
 import Todo.Data.Task.Sorted (SortedTasks (unSortedTasks))
@@ -23,6 +27,18 @@ import Todo.Data.Task.TaskPriority qualified as TaskPriority
 import Todo.Data.Task.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Prelude
+
+renderOneNoStyle ::
+  ( HasCallStack,
+    MonadTime m
+  ) =>
+  SomeTask ->
+  m Builder
+renderOneNoStyle someTask = do
+  currTime <- getSystemZonedTime
+  let builder = renderSomeTask currTime ColorOff UnicodeOff 0 someTask
+
+  pure builder
 
 -- | Renders a list of sorted tasks.
 renderSorted ::

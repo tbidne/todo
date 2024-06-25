@@ -22,7 +22,7 @@ import Todo.Data.Task.Render.Utils
 import Todo.Prelude
 import Todo.Runner.Args
   ( Args (command, path),
-    Command (CmdInsert, CmdList),
+    Command (CmdDelete, CmdInsert, CmdList),
     getArgs,
   )
 
@@ -45,6 +45,7 @@ runTodo = do
   args <- getArgs
   tasksPath <- getPath args.path
   case args.command of
+    CmdDelete taskId -> Todo.deleteTask tasksPath taskId
     CmdInsert -> Todo.insertTask tasksPath
     CmdList mColor mUnicode mSortType ->
       Todo.listTasks tasksPath (defColor mColor) (defUnicode mUnicode) mSortType

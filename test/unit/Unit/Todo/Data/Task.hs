@@ -3,7 +3,8 @@ module Unit.Todo.Data.Task (tests) where
 import Data.Aeson qualified as Asn
 import Data.ByteString.Lazy qualified as BSL
 import Data.Foldable (any)
-import Data.Sequence.NonEmpty qualified as NESeq
+import Data.Sequence qualified as Seq
+import Data.Set.NonEmpty qualified as NESet
 import Data.Text qualified as T
 import Data.Time.Calendar (Day (ModifiedJulianDay))
 import Data.Time.LocalTime
@@ -56,6 +57,7 @@ taskGroupTasks =
     "TaskGroup"
     [ testTaskGroupUsesSetStatus tasks,
       testTaskGroupDerivesStatus tasks,
+      testTaskGroupEmptyDerivesCompleted,
       testTaskGroupUsesSetPriority tasks,
       testTaskGroupNoDerivesPriority tasks
     ]
@@ -84,9 +86,9 @@ taskGroupTasks =
           deadline = Nothing,
           description = Nothing
         }
-    tasks = SingleTask t1 :<|| (SingleTask t2 :<| SingleTask t3 :<| Empty)
+    tasks = SingleTask t1 :<| SingleTask t2 :<| SingleTask t3 :<| Empty
 
-testTaskGroupUsesSetStatus :: NESeq SomeTask -> TestTree
+testTaskGroupUsesSetStatus :: Seq SomeTask -> TestTree
 testTaskGroupUsesSetStatus subtasks = testCase "TaskGroup uses set status" $ do
   let result = Task.taskGroupStatus taskGroup
   Completed @=? result
@@ -99,7 +101,7 @@ testTaskGroupUsesSetStatus subtasks = testCase "TaskGroup uses set status" $ do
           subtasks
         }
 
-testTaskGroupDerivesStatus :: NESeq SomeTask -> TestTree
+testTaskGroupDerivesStatus :: Seq SomeTask -> TestTree
 testTaskGroupDerivesStatus subtasks = testCase "TaskGroup derives status" $ do
   let result = Task.taskGroupStatus taskGroup
   -- NotStarted is the greatest subtask status
@@ -113,7 +115,21 @@ testTaskGroupDerivesStatus subtasks = testCase "TaskGroup derives status" $ do
           subtasks
         }
 
-testTaskGroupUsesSetPriority :: NESeq SomeTask -> TestTree
+testTaskGroupEmptyDerivesCompleted :: TestTree
+testTaskGroupEmptyDerivesCompleted = testCase "TaskGroup empty derives completed" $ do
+  let result = Task.taskGroupStatus taskGroup
+  -- Completed is the least subtask status
+  Completed @=? result
+  where
+    taskGroup =
+      MkTaskGroup
+        { taskId = TaskId.unsafeTaskId "tg",
+          priority = Nothing,
+          status = Nothing,
+          subtasks = Empty
+        }
+
+testTaskGroupUsesSetPriority :: Seq SomeTask -> TestTree
 testTaskGroupUsesSetPriority subtasks = testCase "TaskGroup uses set priority" $ do
   let result = taskGroup.priority
   Just Low @=? result
@@ -126,7 +142,7 @@ testTaskGroupUsesSetPriority subtasks = testCase "TaskGroup uses set priority" $
           subtasks
         }
 
-testTaskGroupNoDerivesPriority :: NESeq SomeTask -> TestTree
+testTaskGroupNoDerivesPriority :: Seq SomeTask -> TestTree
 testTaskGroupNoDerivesPriority subtasks = testCase "TaskGroup does not derive priority" $ do
   let result = taskGroup.priority
   Nothing @=? result
@@ -237,7 +253,7 @@ genTaskGroup = do
         taskId
       }
   where
-    genSubtasks = NESeq.fromList <$> Gen.nonEmpty (Range.linearFrom 1 3 3) genSomeTask
+    genSubtasks = Seq.fromList <$> Gen.list (Range.linearFrom 0 3 3) genSomeTask
 
 genTask :: Gen Task
 genTask = do
@@ -290,7 +306,7 @@ genTaskStatus =
     [ pure Completed,
       pure InProgress,
       pure NotStarted,
-      Blocked . NESeq.fromList <$> genBlocked
+      Blocked . NESet.fromList <$> genBlocked
     ]
   where
     genBlocked = Gen.nonEmpty (Range.linearFrom 1 1 20) genTaskId

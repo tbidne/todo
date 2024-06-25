@@ -109,11 +109,13 @@ test-suite unit
     Unit.Prelude
     Unit.Todo.Data.Task
     Unit.Todo.Data.Task.Sorted
+    Unit.Todo.Index
 
   build-depends:
     , aeson
     , base
     , bytestring
+    , containers
     , hedgehog             >=1.0.2   && <1.5
     , nonempty-containers
     , tasty                >=1.1.0.3 && <1.6
@@ -131,6 +133,7 @@ test-suite functional
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
+    Functional.Delete
     Functional.Insert
     Functional.List
     Functional.Prelude

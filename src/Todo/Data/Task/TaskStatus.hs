@@ -10,12 +10,12 @@ module Todo.Data.Task.TaskStatus
 where
 
 import Data.Aeson qualified as Asn
-import Data.Set qualified as Set
+import Data.Set.NonEmpty qualified as NESet
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
 import Todo.Data.Task.Render.Utils (ColorSwitch (ColorOff, ColorOn))
 import Todo.Data.Task.Render.Utils qualified as Render.Utils
-import Todo.Data.Task.TaskId (TaskId (unTaskId))
+import Todo.Data.Task.TaskId (TaskId)
 import Todo.Data.Task.TaskId qualified as TaskId
 import Todo.Prelude
 
@@ -24,17 +24,12 @@ data TaskStatus
   = Completed
   | InProgress
   | NotStarted
-  | Blocked (NESeq TaskId)
+  | Blocked (NESet TaskId)
   deriving stock (Eq, Ord, Show)
 
 instance Semigroup TaskStatus where
-  Blocked xs <> Blocked ys = Blocked (combineUnique xs ys)
+  Blocked xs <> Blocked ys = Blocked (xs <> ys)
   l <> r = max l r
-
-combineUnique :: (Ord a) => NESeq a -> NESeq a -> NESeq a
-combineUnique xs ys = unsafeListToNESeq $ Set.toList s
-  where
-    s = Set.fromList (toList $ xs <> ys)
 
 instance Monoid TaskStatus where
   mempty = Completed
@@ -65,8 +60,8 @@ parseTaskStatus txt = do
               nonEmpties = filter (not . T.null) splitStrs
            in case nonEmpties of
                 (x : xs) -> do
-                  ids <- traverse TaskId.parseTaskId (x :<|| listToSeq xs)
-                  pure $ Just $ Blocked ids
+                  (y :<|| ys) <- traverse TaskId.parseTaskId (x :<|| listToSeq xs)
+                  pure $ Just $ Blocked (NESet.fromList (y :| toList ys))
                 [] -> fail $ "Received no non-empty ids for 'blocked' status: " <> quoteTxt rest
     parseBlocked _ = pure Nothing
 
@@ -81,7 +76,7 @@ parseTaskStatus txt = do
     quoteTxt t = "'" <> unpack t <> "'"
 
 instance ToJSON TaskStatus where
-  toJSON (Blocked ts) = toJSON $ "blocked: " <> TaskId.neSeqToText ts
+  toJSON (Blocked ts) = toJSON $ "blocked: " <> TaskId.taskIdsToText ts
   toJSON NotStarted = "not-started"
   toJSON InProgress = "in-progress"
   toJSON Completed = "completed"
@@ -95,12 +90,11 @@ isCompleted _ = False
 render :: ColorSwitch -> TaskStatus -> Builder
 render ColorOff Completed = "completed"
 render ColorOff InProgress = "in-progress"
-render ColorOff (Blocked tids) = displayBuilder $ "blocked: " <> taskIdsToText tids
+render ColorOff (Blocked tids) =
+  displayBuilder $ "blocked: " <> TaskId.taskIdsToTextQuote tids
 render ColorOff NotStarted = "not-started"
 render ColorOn Completed = Render.Utils.colorBuilder Pretty.Green "completed"
 render ColorOn InProgress = Render.Utils.colorBuilder Pretty.Yellow "in-progress"
-render ColorOn (Blocked tids) = Render.Utils.colorBuilder Pretty.Red $ "blocked: " <> taskIdsToText tids
+render ColorOn (Blocked tids) =
+  Render.Utils.colorBuilder Pretty.Red $ "blocked: " <> TaskId.taskIdsToTextQuote tids
 render ColorOn NotStarted = Render.Utils.colorBuilder Pretty.Cyan "not-started"
-
-taskIdsToText :: NESeq TaskId -> Text
-taskIdsToText = T.intercalate ", " . toList . fmap (\t -> showt t.unTaskId)

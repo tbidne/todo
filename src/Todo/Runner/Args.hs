@@ -36,6 +36,8 @@ import Todo.Data.Task.Render.Utils
     UnicodeSwitch (UnicodeOff, UnicodeOn),
   )
 import Todo.Data.Task.Sorted
+import Todo.Data.Task.TaskId (TaskId)
+import Todo.Data.Task.TaskId qualified as TaskId
 import Todo.Prelude
 
 -- | Retrieves CLI args.
@@ -147,7 +149,8 @@ pathParser =
         ]
 
 data Command
-  = CmdInsert
+  = CmdDelete TaskId
+  | CmdInsert
   | CmdList (Maybe ColorSwitch) (Maybe UnicodeSwitch) (Maybe SortType)
   deriving stock (Eq, Show)
 
@@ -155,20 +158,34 @@ commandParser :: Parser Command
 commandParser =
   OA.hsubparser
     ( mconcat
-        [ mkCommand "insert" insertParser insertTxt,
+        [ mkCommand "delete" deleteParser deleteTxt,
+          mkCommand "insert" insertParser insertTxt,
           mkCommand "list" listParser listTxt
         ]
     )
   where
-    insertTxt = mkCmdDesc "Inserts a new task"
+    deleteTxt = mkCmdDesc "Deletes a task."
+    insertTxt = mkCmdDesc "Inserts a new task."
     listTxt = mkCmdDesc "Lists the todo index."
 
+    deleteParser = CmdDelete <$> taskIdParser
     insertParser = pure CmdInsert
     listParser =
       CmdList
         <$> colorParser
         <*> unicodeParser
         <*> sortTypeParser
+
+taskIdParser :: Parser TaskId
+taskIdParser =
+  OA.argument
+    (OA.str >>= TaskId.parseTaskId)
+    $ mconcat
+      [ OA.metavar "TASK_ID",
+        mkHelp helpTxt
+      ]
+  where
+    helpTxt = "Task id to delete."
 
 sortTypeParser :: Parser (Maybe SortType)
 sortTypeParser =

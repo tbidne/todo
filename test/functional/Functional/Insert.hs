@@ -24,7 +24,7 @@ testInsertOne testEnv = goldenVsString desc goldenPath $ do
         ]
 
   -- copy example to test dir
-  copyFileWithMetadata exampleJson newPath
+  copyFileWithMetadata exampleJsonOsPath newPath
 
   -- run insert
   insertResult <- runTodoResponses responses insertArgs
@@ -67,7 +67,7 @@ testInsertGroup testEnv = goldenVsString desc goldenPath $ do
         ]
 
   -- copy example to test dir
-  copyFileWithMetadata exampleJson newPath
+  copyFileWithMetadata exampleJsonOsPath newPath
 
   -- run insert
   insertResult <- runTodoResponses responses insertArgs
@@ -86,7 +86,7 @@ testInsertGroup testEnv = goldenVsString desc goldenPath $ do
   pure $ toBSL $ insertResult <> "\n\n" <> listResult
   where
     name = [osp|testInsertGroup|]
-    desc = "Inserts a single task"
+    desc = "Inserts a task group"
     path = outputDir `cfp` "testInsertGroup"
     goldenPath = path <> ".golden"
 
@@ -95,6 +95,7 @@ testInsertGroup testEnv = goldenVsString desc goldenPath $ do
         "group_id",
         "",
         "",
+        "y",
         "task_a",
         "completed",
         "normal",
@@ -120,7 +121,7 @@ testFailureRetry testEnv = goldenVsString desc goldenPath $ do
         ]
 
   -- copy example to test dir
-  copyFileWithMetadata exampleJson newPath
+  copyFileWithMetadata exampleJsonOsPath newPath
 
   -- run insert
   insertResult <- runTodoResponses responses insertArgs
@@ -158,9 +159,6 @@ testFailureRetry testEnv = goldenVsString desc goldenPath $ do
 
 getTestDir' :: IO TestEnv -> OsPath -> IO OsPath
 getTestDir' testEnv name = getTestDir testEnv ([osp|insert|] </> name)
-
-exampleJson :: OsPath
-exampleJson = [osp|examples|] </> [osp|tasks.json|]
 
 outputDir :: FilePath
 outputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "Insert" `cfp` "output"

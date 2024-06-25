@@ -1,5 +1,5 @@
 ❌ id: groceries
-   status: blocked: "fix_car", "paycheck"
+   status: blocked: 'fix_car', 'paycheck'
 
   ❌ id: bananas
      status: not-started
@@ -10,24 +10,24 @@
      priority: normal
 
 ❌ id: soccer_match
-   status: blocked: "fix_car", "groceries"
+   status: blocked: 'fix_car', 'groceries'
    priority: low
 
   ❌ id: pack_bananas
-     status: blocked: "groceries"
+     status: blocked: 'groceries'
      priority: normal
 
   ❌ id: equipment
-     status: blocked: "fix_car"
+     status: blocked: 'fix_car'
      priority: normal
 
     ❌ id: cleats
-       status: blocked: "fix_car"
+       status: blocked: 'fix_car'
        priority: normal
        description: Get cleats
 
     ❌ id: ball
-       status: blocked: "fix_car"
+       status: blocked: 'fix_car'
        priority: normal
 
 ❌ id: fix_car

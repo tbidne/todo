@@ -1,3 +1,16 @@
+Found task:
+
+
+- id: cleats
+  status: blocked: 'fix_car'
+  priority: normal
+  description: Get cleats
+
+
+Are you sure you want to delete (y/n)? 
+Successfully deleted task
+
+
 ❌ id: groceries
    status: blocked: 'fix_car', 'paycheck'
 
@@ -20,11 +33,6 @@
   ❌ id: equipment
      status: blocked: 'fix_car'
      priority: normal
-
-    ❌ id: cleats
-       status: blocked: 'fix_car'
-       priority: normal
-       description: Get cleats
 
     ❌ id: ball
        status: blocked: 'fix_car'
