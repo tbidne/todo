@@ -1,4 +1,7 @@
-Create task group (y/n)? 
+
+Create a task (y/n)? 
+Task id for parent group (leave blank for no parent)? 
+Create (empty) task group (y/n)? 
 
 Task id: 
 Found duplicate tasks with id 'groceries'.
@@ -18,13 +21,15 @@ Deadline (leave blank for none):
 Bad answer: Could not parse timestamp: bad_deadline
 
 Deadline (leave blank for none): 
-Successfully added task:
+
+Create a task (y/n)? 
+Successfully added task. Modified tasks:
 
 
-✅ id: [94mtest_id[0m
-   status: [92mcompleted[0m
-   priority: [91mhigh[0m
-   deadline: [91m2020-05-09[0m
+✅ id: test_id
+   status: completed
+   priority: high
+   deadline: 2020-05-09
 
 
 

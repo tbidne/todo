@@ -38,6 +38,8 @@ module Todo.Prelude
     stripNulls,
     whileM,
     whileM_,
+    whileApplyM,
+    whileApplySetM,
     identity,
     showt,
     setUncaughtExceptionHandlerDisplay,
@@ -66,6 +68,7 @@ import Control.Monad.Fail as X (MonadFail (fail))
 import Control.Monad.IO.Class as X (MonadIO (liftIO))
 import Data.Aeson as X (FromJSON (parseJSON), ToJSON (toJSON), Value (Null))
 import Data.Aeson.Types (Pair)
+import Data.Bifunctor (Bifunctor (second))
 import Data.Bool as X (Bool (False, True), not, otherwise, (&&), (||))
 import Data.Either as X (Either (Left, Right))
 import Data.Eq as X (Eq ((==)), (/=))
@@ -96,6 +99,7 @@ import Data.Sequence qualified as Seq
 import Data.Sequence.NonEmpty as X (NESeq ((:<||), (:||>)))
 import Data.Sequence.NonEmpty qualified as NESeq
 import Data.Set as X (Set)
+import Data.Set qualified as Set
 import Data.Set.NonEmpty as X (NESet)
 import Data.String as X (String)
 import Data.Text as X (Text, pack, unpack)
@@ -258,6 +262,32 @@ whileM mb mx = go
           (x :<|) <$> go
         else pure Empty
 {-# INLINEABLE whileM #-}
+
+whileApplyM :: forall m a b. (Monad m) => a -> m Bool -> (a -> m (a, b)) -> m (a, Seq b)
+whileApplyM initVal mb mx = go initVal
+  where
+    go :: a -> m (a, Seq b)
+    go input = do
+      b <- mb
+      if b
+        then do
+          (next, acc) <- mx input
+          second (acc :<|) <$> go next
+        else pure (input, Empty)
+{-# INLINEABLE whileApplyM #-}
+
+whileApplySetM :: forall m a b. (Monad m, Ord b) => a -> m Bool -> (a -> m (a, b)) -> m (a, Set b)
+whileApplySetM initVal mb mx = go initVal
+  where
+    go :: a -> m (a, Set b)
+    go input = do
+      b <- mb
+      if b
+        then do
+          (next, acc) <- mx input
+          second (Set.insert acc) <$> go next
+        else pure (input, Set.empty)
+{-# INLINEABLE whileApplySetM #-}
 
 whileM_ :: (Monad m) => m Bool -> m a -> m ()
 whileM_ mb mx = go

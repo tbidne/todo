@@ -1,16 +1,21 @@
-Create task group (y/n)? 
+
+Create a task (y/n)? 
+Task id for parent group (leave blank for no parent)? 
+Create (empty) task group (y/n)? 
 
 Task id: 
 Task status (completed | in-progress | not-started | blocked: <ids>): 
 Task priority (low | normal | high): 
 Description (leave blank for none): 
 Deadline (leave blank for none): 
-Successfully added task:
+
+Create a task (y/n)? 
+Successfully added task. Modified tasks:
 
 
-❌ id: [94mnew_id[0m
-   status: [96mnot-started[0m
-   priority: [96mnormal[0m
+❌ id: new_id
+   status: not-started
+   priority: normal
 
 
 

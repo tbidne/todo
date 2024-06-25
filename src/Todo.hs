@@ -37,7 +37,12 @@ import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority qualified as TaskPriority
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
-import Todo.Index (DuplicateIdE (MkDuplicateIdE), Index, (∈))
+import Todo.Index
+  ( DuplicateIdE (MkDuplicateIdE),
+    Index,
+    TaskIdNotFoundE (MkTaskIdNotFoundE),
+    (∈),
+  )
 import Todo.Index qualified as Index
 import Todo.Prelude
 import Todo.Render qualified as Render
@@ -66,28 +71,44 @@ insertTask tasksPath color unicode = do
 
   noBuffering
 
-  shouldMkTaskGroup <- askYesNoQ "Create task group (y/n)? "
-
-  newTask <-
-    if shouldMkTaskGroup
-      then do
-        taskGroup <- mkTaskGroup index
-        pure $ MultiTask taskGroup
-      else do
-        task <- mkOneTask index
-        pure $ SingleTask task
-
-  let index' = Index.reallyUnsafeInsert newTask index
+  (newIndex, newTaskIds) <- whileApplySetM index getMoreTasksAns mkSomeTask
 
   lineBuffering
 
-  Index.writeIndex tasksPath index'
+  Index.writeIndex tasksPath newIndex
 
-  rendered <- Render.renderOne color unicode newTask
+  currTime <- getSystemZonedTime
 
-  putTextLn "Successfully added task:\n"
-  putTextLn $ builderToTxt rendered
+  let indexDiff = Index.filterOnIds newTaskIds newIndex
+      sorted = Sorted.sortTasks Nothing (Index.toList indexDiff)
+
+  putTextLn "Successfully added task. Modified tasks:\n"
+  putTextLn
+    $ TL.toStrict
+    $ TLB.toLazyText
+    $ Render.renderSorted currTime color unicode sorted
   where
+    mkSomeTask :: Index -> m (Index, TaskId)
+    mkSomeTask index = do
+      mParentTaskId <-
+        getExistingTaskIdEmpty
+          "Task id for parent group (leave blank for no parent)? "
+          index
+
+      shouldMkTaskGroup <- askYesNoQ "Create (empty) task group (y/n)? "
+
+      newTask <-
+        if shouldMkTaskGroup
+          then MultiTask <$> mkTaskGroup index
+          else SingleTask <$> mkOneTask index
+
+      let newIndex = case mParentTaskId of
+            Nothing -> Index.reallyUnsafeInsert newTask index
+            Just parentTaskId ->
+              Index.reallyUnsafeInsertAtTaskId parentTaskId newTask index
+
+      pure (newIndex, newTask.taskId)
+
     mkTaskGroup :: Index -> m TaskGroup
     mkTaskGroup index = do
       taskId <- getTaskId "Task group id: " index
@@ -102,16 +123,12 @@ insertTask tasksPath color unicode = do
           "Task priority (leave blank for none): "
           TaskPriority.parseTaskPriority
 
-      putTextLn "\nNow enter subtask(s) information"
-
-      subtasks <- whileM getMoreTasksAns (SingleTask <$> mkOneTask index)
-
       pure
         $ MkTaskGroup
           { taskId,
             priority,
             status,
-            subtasks
+            subtasks = Empty
           }
 
     mkOneTask :: Index -> m Task
@@ -163,8 +180,31 @@ insertTask tasksPath color unicode = do
                 else
                   pure taskId
 
+    getExistingTaskIdEmpty :: Text -> Index -> m (Maybe TaskId)
+    getExistingTaskIdEmpty qsn index = go
+      where
+        go = do
+          putText qsn
+          mIdTxt <- getStrippedLineEmpty
+          case mIdTxt of
+            Nothing -> pure Nothing
+            Just idTxt ->
+              case TaskId.parseTaskId idTxt of
+                EitherLeft err -> do
+                  putTextLn $ "Bad response: " <> pack err
+                  go
+                EitherRight taskId -> do
+                  case Index.lookup taskId index of
+                    Nothing -> do
+                      putStrLn $ displayException $ MkTaskIdNotFoundE taskId
+                      go
+                    Just (SingleTask _) -> do
+                      putTextLn "Found a single task but required a task group."
+                      go
+                    Just (MultiTask _) -> pure $ Just taskId
+
     getMoreTasksAns :: m Bool
-    getMoreTasksAns = askYesNoQ "\nAnother task (y/n)? "
+    getMoreTasksAns = askYesNoQ "\nCreate a task (y/n)? "
 
     askParseQ :: Text -> (Text -> EitherString a) -> m a
     askParseQ qsn parser = go

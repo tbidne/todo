@@ -1,6 +1,7 @@
 module Todo.Render
   ( -- * High level
     renderOne,
+    renderOne',
 
     -- * Builders
     renderSorted,
@@ -38,9 +39,18 @@ renderOne ::
   m Builder
 renderOne colorSwitch unicodeSwitch someTask = do
   currTime <- getSystemZonedTime
-  let builder = renderSomeTask currTime colorSwitch unicodeSwitch 0 someTask
+  let builder = renderOne' currTime colorSwitch unicodeSwitch someTask
 
   pure builder
+
+renderOne' ::
+  ZonedTime ->
+  ColorSwitch ->
+  UnicodeSwitch ->
+  SomeTask ->
+  Builder
+renderOne' currTime colorSwitch unicodeSwitch =
+  renderSomeTask currTime colorSwitch unicodeSwitch 0
 
 -- | Renders a list of sorted tasks.
 renderSorted ::

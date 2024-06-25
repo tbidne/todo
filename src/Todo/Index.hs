@@ -7,6 +7,9 @@ module Todo.Index
     readTaskList,
     fromList,
 
+    -- * Lookup
+    lookup,
+
     -- * Membership
     member,
     (∈),
@@ -15,6 +18,8 @@ module Todo.Index
 
     -- * Insertion
     reallyUnsafeInsert,
+    reallyUnsafeInsertAll,
+    reallyUnsafeInsertAtTaskId,
 
     -- * Deletion
     delete,
@@ -23,10 +28,15 @@ module Todo.Index
     writeIndex,
     toList,
 
+    -- * Predicates
+    filter,
+    filterOnIds,
+
     -- * Exceptions,
     BlockedIdRefE (..),
     DuplicateIdE (..),
     DeleteE (..),
+    TaskIdNotFoundE (..),
 
     -- * Misc
     getBlockingIds,
@@ -37,6 +47,8 @@ import Data.Aeson (AesonException (AesonException))
 import Data.Aeson qualified as Asn
 import Data.Aeson.Encode.Pretty qualified as AsnPretty
 import Data.ByteString.Lazy qualified as BSL
+import Data.Foldable qualified as F
+import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
 import Data.Maybe (isJust)
@@ -53,7 +65,7 @@ import Todo.Data.TaskId (TaskId (unTaskId))
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskStatus (TaskStatus (Blocked))
 import Todo.Index.Internal (Index (UnsafeIndex, unIndex))
-import Todo.Prelude hiding (toList)
+import Todo.Prelude hiding (filter, toList)
 
 -- | Reads the file to an 'Index'.
 readIndex ::
@@ -99,6 +111,23 @@ readTaskList path = do
 reallyUnsafeInsert :: SomeTask -> Index -> Index
 reallyUnsafeInsert task (UnsafeIndex idx) = UnsafeIndex $ task : idx
 
+reallyUnsafeInsertAtTaskId :: TaskId -> SomeTask -> Index -> Index
+reallyUnsafeInsertAtTaskId taskId task (UnsafeIndex idx) =
+  UnsafeIndex $ foldr go [] idx
+  where
+    go :: SomeTask -> List SomeTask -> List SomeTask
+    go st@(SingleTask _) acc = st : acc
+    go (MultiTask tg) acc =
+      if taskId == tg.taskId
+        then MultiTask (tg {subtasks = task :<| tg.subtasks}) : acc
+        else
+          let subtasks' = foldr go [] tg.subtasks
+           in MultiTask (tg {subtasks = Seq.fromList subtasks'}) : acc
+
+reallyUnsafeInsertAll :: (Foldable f) => f SomeTask -> Index -> Index
+reallyUnsafeInsertAll tasks (UnsafeIndex idx) =
+  UnsafeIndex $ F.toList tasks <> idx
+
 toList :: Index -> List SomeTask
 toList = (.unIndex)
 
@@ -112,6 +141,17 @@ instance Exception DuplicateIdE where
       [ "Found duplicate tasks with id '",
         unpack id.unTaskId,
         "'."
+      ]
+
+newtype TaskIdNotFoundE = MkTaskIdNotFoundE TaskId
+  deriving stock (Eq, Show)
+
+instance Exception TaskIdNotFoundE where
+  displayException (MkTaskIdNotFoundE taskId) =
+    mconcat
+      [ "Task id '",
+        unpack taskId.unTaskId,
+        "' not found in the index."
       ]
 
 -- | Error for a task t1 referencing task ids that do not exist.
@@ -237,6 +277,17 @@ fromList xs = do
         then pure $ Set.insert val.taskId s
         else throwM $ MkDuplicateIdE val.taskId
 
+filterOnIds :: Set TaskId -> Index -> Index
+filterOnIds taskIds = filter go
+  where
+    go :: SomeTask -> Bool
+    go (SingleTask t) = Set.member t.taskId taskIds
+    go (MultiTask tg) =
+      Set.member tg.taskId taskIds || F.any go tg.subtasks
+
+filter :: (SomeTask -> Bool) -> Index -> Index
+filter f (UnsafeIndex idx) = UnsafeIndex $ L.filter f idx
+
 -- | Looks up the TaskId in the Index.
 lookup :: TaskId -> Index -> Maybe SomeTask
 lookup taskId index = foldMapAlt go idx
@@ -277,6 +328,24 @@ type DeleteAcc =
     (List SomeTask)
     (Maybe SomeTask)
 
+-- | Errors when deleting a task.
+data DeleteE
+  = -- | Attempted to delete an id that was not found
+    DeleteTaskIdNotFound TaskIdNotFoundE
+  | -- | Attempted to delete a task that is referenced by other tasks.
+    DeleteRefId TaskId (NESet TaskId)
+  deriving stock (Eq, Show)
+
+instance Exception DeleteE where
+  displayException (DeleteTaskIdNotFound err) = displayException err
+  displayException (DeleteRefId taskId ids) =
+    mconcat
+      [ "Task id '",
+        unpack taskId.unTaskId,
+        "' is referenced by other tasks, so it cannot be deleted: ",
+        unpack (TaskId.taskIdsToTextQuote ids)
+      ]
+
 -- REVIEW: With all the different collections we are using (NESet, Seq, Map,
 -- etc.), it is lkely we are doing some unnecessary conversions in this
 -- module. Review this to see if there is anything we can eliminate.
@@ -285,12 +354,12 @@ type DeleteAcc =
 -- the index with that task removed.
 delete :: TaskId -> Index -> Either DeleteE (Tuple2 Index SomeTask)
 delete taskId index@(UnsafeIndex idx) = case foldr go ([], Nothing) idx of
-  (_, Nothing) -> Left $ TaskIdNotFound taskId
+  (_, Nothing) -> Left $ DeleteTaskIdNotFound $ MkTaskIdNotFoundE taskId
   (newIdx, Just st) ->
     let blockingIds = getBlockingIds index
      in case Map.lookup taskId blockingIds of
           Nothing -> Right (UnsafeIndex newIdx, st)
-          Just blockedIds -> Left $ IdIsReferenced taskId blockedIds
+          Just blockedIds -> Left $ DeleteRefId taskId blockedIds
   where
     go :: SomeTask -> DeleteAcc -> DeleteAcc
     go st@(SingleTask _) (tasks, mDeleted)
@@ -336,24 +405,3 @@ forWithKey = flip Map.traverseWithKey
 
 forWithKey_ :: (Applicative f) => Map k a -> (k -> a -> f b) -> f ()
 forWithKey_ mp = void . forWithKey mp
-
--- | Errors when attempting to delete a task.
-data DeleteE
-  = IdIsReferenced TaskId (NESet TaskId)
-  | TaskIdNotFound TaskId
-  deriving stock (Eq, Show)
-
-instance Exception DeleteE where
-  displayException (IdIsReferenced taskId ids) =
-    mconcat
-      [ "Task id '",
-        unpack taskId.unTaskId,
-        "' is referenced by other tasks, so it cannot be deleted: ",
-        unpack (TaskId.taskIdsToTextQuote ids)
-      ]
-  displayException (TaskIdNotFound taskId) =
-    mconcat
-      [ "Task id '",
-        unpack taskId.unTaskId,
-        "' not found in the index."
-      ]
