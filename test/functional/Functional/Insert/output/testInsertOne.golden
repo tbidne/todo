@@ -8,9 +8,9 @@ Deadline (leave blank for none):
 Successfully added task:
 
 
-- id: new_id
-  status: not-started
-  priority: normal
+❌ id: [94mnew_id[0m
+   status: [96mnot-started[0m
+   priority: [96mnormal[0m
 
 
 

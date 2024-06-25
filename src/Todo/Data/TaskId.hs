@@ -14,14 +14,14 @@ where
 
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
-import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
-import Todo.Render.Utils qualified as Render.Utils
 import Todo.Data.TaskId.Internal
   ( TaskId (unTaskId),
     mkTaskId,
     parseTaskId,
   )
 import Todo.Prelude
+import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
+import Todo.Render.Utils qualified as Render.Utils
 
 -- | Unsafe task id creation.
 unsafeTaskId :: (HasCallStack) => Text -> TaskId

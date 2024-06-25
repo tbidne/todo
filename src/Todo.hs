@@ -18,6 +18,8 @@ import Effects.FileSystem.HandleWriter
 import Effects.FileSystem.HandleWriter qualified as HW
 import Effects.Time (MonadTime (getSystemZonedTime))
 import System.IO qualified as IO
+import Todo.Data.Sorted (SortType)
+import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.Task
   ( SomeTask (MultiTask, SingleTask),
     Task
@@ -30,10 +32,6 @@ import Todo.Data.Task
       ),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
-import Todo.Render qualified as Render
-import Todo.Render.Utils (ColorSwitch, UnicodeSwitch)
-import Todo.Data.Sorted (SortType)
-import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority qualified as TaskPriority
@@ -42,6 +40,8 @@ import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Index (DuplicateIdE (MkDuplicateIdE), Index, (∈))
 import Todo.Index qualified as Index
 import Todo.Prelude
+import Todo.Render qualified as Render
+import Todo.Render.Utils (ColorSwitch, UnicodeSwitch)
 
 -- | Inserts new task(s) into the file.
 insertTask ::
@@ -56,8 +56,12 @@ insertTask ::
     MonadThrow m
   ) =>
   OsPath ->
+  -- | Is color enabled.
+  ColorSwitch ->
+  -- | Is unicode enabled.
+  UnicodeSwitch ->
   m ()
-insertTask tasksPath = do
+insertTask tasksPath color unicode = do
   index <- Index.readIndex tasksPath
 
   noBuffering
@@ -79,7 +83,7 @@ insertTask tasksPath = do
 
   Index.writeIndex tasksPath index'
 
-  rendered <- Render.renderOneNoStyle newTask
+  rendered <- Render.renderOne color unicode newTask
 
   putTextLn "Successfully added task:\n"
   putTextLn $ builderToTxt rendered
@@ -202,15 +206,19 @@ deleteTask ::
   ) =>
   -- | Path to tasks.json.
   OsPath ->
+  -- | Is color enabled.
+  ColorSwitch ->
+  -- | Is unicode enabled.
+  UnicodeSwitch ->
   -- | Task id to delete.
   TaskId ->
   m ()
-deleteTask tasksPath taskId = do
+deleteTask tasksPath color unicode taskId = do
   index <- Index.readIndex tasksPath
   case Index.delete taskId index of
     Left err -> throwM err
     Right (newIndex, st) -> do
-      rendered <- Render.renderOneNoStyle st
+      rendered <- Render.renderOne color unicode st
 
       noBuffering
 

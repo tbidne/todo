@@ -70,6 +70,8 @@ testDeleteGoldenRunner runner desc name taskId testEnv = goldenVsString desc gol
       deleteArgs =
         [ "--path",
           unsafeDecodeOsToFp newPath,
+          "--color",
+          "off",
           "delete",
           taskId
         ]
@@ -83,9 +85,9 @@ testDeleteGoldenRunner runner desc name taskId testEnv = goldenVsString desc gol
   let listArgs =
         [ "--path",
           unsafeDecodeOsToFp newPath,
-          "list",
           "--color",
-          "off"
+          "off",
+          "list"
         ]
 
   -- run list

@@ -7,9 +7,9 @@ where
 
 import Data.Aeson qualified as Asn
 import System.Console.Pretty qualified as Pretty
+import Todo.Prelude
 import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
 import Todo.Render.Utils qualified as Render.Utils
-import Todo.Prelude
 
 -- | Task priority
 data TaskPriority

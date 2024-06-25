@@ -1,8 +1,8 @@
 module Main (main) where
 
 import Unit.Prelude
-import Unit.Todo.Data.Task qualified
 import Unit.Todo.Data.Sorted qualified
+import Unit.Todo.Data.Task qualified
 import Unit.Todo.Index qualified
 
 main :: IO ()

@@ -31,14 +31,14 @@ import Options.Applicative.Help.Chunk qualified as Chunk
 import Options.Applicative.Help.Pretty qualified as Pretty
 import Options.Applicative.Types (ArgPolicy (Intersperse))
 import Paths_todo qualified as Paths
-import Todo.Render.Utils
-  ( ColorSwitch (ColorOff, ColorOn),
-    UnicodeSwitch (UnicodeOff, UnicodeOn),
-  )
 import Todo.Data.Sorted
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Prelude
+import Todo.Render.Utils
+  ( ColorSwitch (ColorOff, ColorOn),
+    UnicodeSwitch (UnicodeOff, UnicodeOn),
+  )
 
 -- | Retrieves CLI args.
 getArgs :: (HasCallStack, MonadOptparse m) => m Args
@@ -48,8 +48,12 @@ getArgs = execParser parserInfoArgs
 data Args = MkArgs
   { -- | Command.
     command :: Command,
+    -- | Optional coloring.
+    colorSwitch :: Maybe ColorSwitch,
     -- | Path to todo json file.
-    path :: Maybe OsPath
+    path :: Maybe OsPath,
+    -- | Optional unicode usage.
+    unicodeSwitch :: Maybe UnicodeSwitch
   }
   deriving stock (Eq, Show)
 
@@ -73,14 +77,18 @@ parserInfoArgs =
 
 argsParser :: Parser Args
 argsParser = do
+  colorSwitch <- colorParser
   path <- pathParser
+  unicodeSwitch <- unicodeParser
   _ <- version
   _ <- OA.helper
   command <- commandParser
   pure
     $ MkArgs
-      { command,
-        path
+      { colorSwitch,
+        command,
+        path,
+        unicodeSwitch
       }
 
 version :: Parser (a -> a)
@@ -151,7 +159,7 @@ pathParser =
 data Command
   = CmdDelete TaskId
   | CmdInsert
-  | CmdList (Maybe ColorSwitch) (Maybe UnicodeSwitch) (Maybe SortType)
+  | CmdList (Maybe SortType)
   deriving stock (Eq, Show)
 
 commandParser :: Parser Command
@@ -170,11 +178,7 @@ commandParser =
 
     deleteParser = CmdDelete <$> taskIdParser
     insertParser = pure CmdInsert
-    listParser =
-      CmdList
-        <$> colorParser
-        <*> unicodeParser
-        <*> sortTypeParser
+    listParser = CmdList <$> sortTypeParser
 
 taskIdParser :: Parser TaskId
 taskIdParser =

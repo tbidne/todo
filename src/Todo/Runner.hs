@@ -15,13 +15,13 @@ import Effects.FileSystem.PathWriter qualified as PW
 import Effects.FileSystem.Utils qualified as FsUtils
 import System.OsPath qualified as FP
 import Todo qualified
+import Todo.Prelude
 import Todo.Render.Utils
   ( ColorSwitch (ColorOn),
     UnicodeSwitch (UnicodeOn),
   )
-import Todo.Prelude
 import Todo.Runner.Args
-  ( Args (command, path),
+  ( Args (colorSwitch, command, path, unicodeSwitch),
     Command (CmdDelete, CmdInsert, CmdList),
     getArgs,
   )
@@ -44,14 +44,15 @@ runTodo ::
 runTodo = do
   args <- getArgs
   tasksPath <- getPath args.path
+
+  let colorSwitch = fromMaybe ColorOn args.colorSwitch
+      unicodeSwitch = fromMaybe UnicodeOn args.unicodeSwitch
+
   case args.command of
-    CmdDelete taskId -> Todo.deleteTask tasksPath taskId
-    CmdInsert -> Todo.insertTask tasksPath
-    CmdList mColor mUnicode mSortType ->
-      Todo.listTasks tasksPath (defColor mColor) (defUnicode mUnicode) mSortType
-  where
-    defColor = fromMaybe ColorOn
-    defUnicode = fromMaybe UnicodeOn
+    CmdDelete taskId -> Todo.deleteTask tasksPath colorSwitch unicodeSwitch taskId
+    CmdInsert -> Todo.insertTask tasksPath colorSwitch unicodeSwitch
+    CmdList mSortType ->
+      Todo.listTasks tasksPath colorSwitch unicodeSwitch mSortType
 
 getPath ::
   ( HasCallStack,

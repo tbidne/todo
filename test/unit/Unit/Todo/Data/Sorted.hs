@@ -1,11 +1,6 @@
 module Unit.Todo.Data.Sorted (tests) where
 
 import Hedgehog.Gen qualified as G
-import Todo.Data.Task
-  ( SomeTask,
-    Task (taskId),
-    TaskGroup (taskId),
-  )
 import Todo.Data.Sorted
   ( SortType
       ( SortPriority,
@@ -16,6 +11,11 @@ import Todo.Data.Sorted
     SortedTasks,
   )
 import Todo.Data.Sorted qualified as Sorted
+import Todo.Data.Task
+  ( SomeTask,
+    Task (taskId),
+    TaskGroup (taskId),
+  )
 import Todo.Data.TaskId (TaskId (unTaskId))
 import Todo.Index (Index (unIndex))
 import Todo.Index qualified as Index

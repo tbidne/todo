@@ -1,26 +1,26 @@
 Found task:
 
 
-- id: soccer_match
-  status: blocked: 'fix_car', 'groceries'
-  priority: low
+❌ id: soccer_match
+   status: blocked: 'fix_car', 'groceries'
+   priority: low
 
-  - id: pack_bananas
-    status: blocked: 'groceries'
-    priority: normal
+  ❌ id: pack_bananas
+     status: blocked: 'groceries'
+     priority: normal
 
-  - id: equipment
-    status: blocked: 'fix_car'
-    priority: normal
+  ❌ id: equipment
+     status: blocked: 'fix_car'
+     priority: normal
 
-    - id: cleats
-      status: blocked: 'fix_car'
-      priority: normal
-      description: Get cleats
+    ❌ id: cleats
+       status: blocked: 'fix_car'
+       priority: normal
+       description: Get cleats
 
-    - id: ball
-      status: blocked: 'fix_car'
-      priority: normal
+    ❌ id: ball
+       status: blocked: 'fix_car'
+       priority: normal
 
 
 Are you sure you want to delete (y/n)? 

@@ -1,10 +1,10 @@
 Found task:
 
 
-- id: cleats
-  status: blocked: 'fix_car'
-  priority: normal
-  description: Get cleats
+❌ id: cleats
+   status: blocked: 'fix_car'
+   priority: normal
+   description: Get cleats
 
 
 Are you sure you want to delete (y/n)? 

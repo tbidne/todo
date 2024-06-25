@@ -50,11 +50,9 @@ library
   autogen-modules: Paths_todo
   exposed-modules:
     Todo
-    Todo.Data.Task
-    Todo.Render
-    Todo.Render.Utils
     Todo.Data.Sorted
     Todo.Data.Sorted.Internal
+    Todo.Data.Task
     Todo.Data.TaskId
     Todo.Data.TaskId.Internal
     Todo.Data.TaskPriority
@@ -63,6 +61,8 @@ library
     Todo.Index
     Todo.Index.Internal
     Todo.Prelude
+    Todo.Render
+    Todo.Render.Utils
     Todo.Runner
     Todo.Runner.Args
 
@@ -107,8 +107,8 @@ test-suite unit
   main-is:        Main.hs
   other-modules:
     Unit.Prelude
-    Unit.Todo.Data.Task
     Unit.Todo.Data.Sorted
+    Unit.Todo.Data.Task
     Unit.Todo.Index
 
   build-depends:

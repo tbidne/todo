@@ -32,9 +32,9 @@ testInsertOne testEnv = goldenVsString desc goldenPath $ do
   let listArgs =
         [ "--path",
           unsafeDecodeOsToFp newPath,
-          "list",
           "--color",
-          "off"
+          "off",
+          "list"
         ]
 
   -- run list
@@ -75,9 +75,9 @@ testInsertGroup testEnv = goldenVsString desc goldenPath $ do
   let listArgs =
         [ "--path",
           unsafeDecodeOsToFp newPath,
-          "list",
           "--color",
-          "off"
+          "off",
+          "list"
         ]
 
   -- run list
@@ -129,9 +129,9 @@ testFailureRetry testEnv = goldenVsString desc goldenPath $ do
   let listArgs =
         [ "--path",
           unsafeDecodeOsToFp newPath,
-          "list",
           "--color",
-          "off"
+          "off",
+          "list"
         ]
 
   -- run list

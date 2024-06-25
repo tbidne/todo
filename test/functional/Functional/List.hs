@@ -222,12 +222,12 @@ testGoldenExample extraArgs desc mSortArg goldenFilenName = goldenVsString desc 
     args =
       [ "--path",
         "examples" `cfp` "tasks.json",
-        "list",
         "--color",
         "off"
       ]
-        ++ sortArgs
         ++ extraArgs
+        ++ ["list"]
+        ++ sortArgs
     sortArgs = maybe [] (\a -> ["--sort", a]) mSortArg
 
     path = outputDir `cfp` goldenFilenName <> ".golden"
@@ -240,11 +240,11 @@ testGolden runner desc fileName = goldenVsString desc path $ do
     args =
       [ "--path",
         inputDir `cfp` fileName <> ".json",
-        "list",
         "--color",
         "off",
         "--unicode",
-        "off"
+        "off",
+        "list"
       ]
 
     path = outputDir `cfp` fileName <> ".golden"

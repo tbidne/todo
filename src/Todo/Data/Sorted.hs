@@ -12,6 +12,9 @@ where
 import Data.List qualified as L
 import Data.Ord (Down (Down))
 import Data.Sequence qualified as Seq
+import Todo.Data.Sorted.Internal
+  ( SortedTasks (UnsafeSortedTasks, unSortedTasks),
+  )
 import Todo.Data.Task
   ( SomeTask (MultiTask, SingleTask),
     Task,
@@ -19,9 +22,6 @@ import Todo.Data.Task
     traverseSomeTasks,
   )
 import Todo.Data.Task qualified as Task
-import Todo.Data.Sorted.Internal
-  ( SortedTasks (UnsafeSortedTasks, unSortedTasks),
-  )
 import Todo.Prelude
 
 -- | Sort type.
