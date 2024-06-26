@@ -1,10 +1,11 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module Functional.List (tests) where
 
 import Data.Aeson (AesonException)
+import Data.Text qualified as T
 import Functional.Prelude
-import Text.Regex.TDFA ((=~))
 import Todo.Index (BlockedIdRefE, DuplicateIdE)
 
 tests :: IO TestEnv -> TestTree
@@ -182,30 +183,34 @@ testNonExtantPathSucceeds testEnv = goldenVsString desc goldenPath $ do
         ]
 
   -- run list
-  result <- runTodo args
+  result <- massagePath <$> runTodo args
 
   -- Result includes a non-deterministic dir like:
   --
-  --     tmp/nix-shell.XXoKKb/todo/functional/list/testNonExtantPathSucceeds/non-extant/tasks.json
+  --     /some/dirs/todo/functional/list/testNonExtantPathSucceeds/non-extant/tasks.json
   --
-  -- To make this test work, we replace the problem dir i.e. tmp/<dir>/todo/...
-  let regex :: Text
-      regex = "(.*)/tmp/(.*)/todo/(.*)"
-      (_, _, _, matches) = result =~ regex :: (Text, Text, Text, List Text)
-      result' = case matches of
-        (prologue : _ : epilogue) -> prologue <> "/tmp/<dir>/todo/" <> mconcat epilogue
-        other ->
+  -- To make this test work, we strip the problem dir i.e. .../todo/functional/rest...
+  let prologue = "File does not exist at path: '"
+      epilogue = "/todo/functional/list/testNonExtantPathSucceeds/non-extant/tasks.json'. Creating one."
+
+      mResultFixed = do
+        -- strip whitespace since tests will have some trailing
+        pStripped <- T.stripPrefix prologue (T.strip result)
+        _ <- T.stripSuffix epilogue pStripped
+
+        pure $ prologue <> "..." <> epilogue
+
+      resultFixed = case mResultFixed of
+        Just r -> r
+        Nothing ->
           error
             $ mconcat
-              [ "Bad format! Match result:\n\n'",
-                unpack (mconcat other),
-                "'\n\n",
-                "Original:\n\n'",
+              [ "Output did not match expected format: '",
                 unpack result,
                 "'"
               ]
 
-  pure $ toBSL result'
+  pure $ toBSL resultFixed
   where
     name = [osp|testNonExtantPathSucceeds|]
     desc = "Non-extant path succeeds"
@@ -266,3 +271,10 @@ outputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "List" `cfp` "out
 
 getTestDir' :: IO TestEnv -> OsPath -> IO OsPath
 getTestDir' testEnv name = getTestDir testEnv ([osp|list|] </> name)
+
+massagePath :: Text -> Text
+#if WINDOWS
+massagePath = T.replace "\\" "/"
+#else
+massagePath = identity
+#endif

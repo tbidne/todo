@@ -81,7 +81,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
 
       - name: Compile & Test
-        run: nix build
+        run: nix build -L
   lint:
     runs-on: "ubuntu-latest"
     steps:

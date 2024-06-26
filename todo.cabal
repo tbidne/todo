@@ -42,6 +42,9 @@ common common-lang
     TypeFamilyDependencies
     TypeOperators
 
+  if os(windows)
+    cpp-options: -DWINDOWS
+
   default-language:   GHC2021
 
 library
@@ -149,9 +152,9 @@ test-suite functional
     , effects-terminal
     , env-guard           ^>=0.2
     , mtl                 >=2.2.1    && <2.4
-    , regex-tdfa          ^>=1.3.0
     , tasty               >=1.1.0.3  && <1.6
     , tasty-golden        ^>=2.3.1.1
+    , text
     , todo
 
   hs-source-dirs: test/functional
