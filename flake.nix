@@ -28,6 +28,12 @@
       inputs.algebra-simple.follows = "algebra-simple";
       inputs.bounds.follows = "bounds";
     };
+    refined-extras = {
+      url = "github:tbidne/refined-extras";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.nix-hs-utils.follows = "nix-hs-utils";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -51,6 +57,7 @@
               // nix-hs-utils.mkLibs inputs final [
                 "algebra-simple"
                 "bounds"
+                "refined-extras"
               ]
               // nix-hs-utils.mkRelLibs "${inputs.monad-effects}/lib" final [
                 "effects-env"

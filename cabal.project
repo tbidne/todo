@@ -44,3 +44,8 @@ source-repository-package
       lib/effects-terminal
       lib/effects-time
       lib/effects-unix-compat
+
+source-repository-package
+    type: git
+    location: https://github.com/tbidne/refined-extras.git
+    tag: 0a769fcbcd0c7dd0f320034c6dea11e185baf180

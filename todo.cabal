@@ -63,6 +63,7 @@ library
     Todo.Data.Timestamp
     Todo.Index
     Todo.Index.Internal
+    Todo.Index.Safe
     Todo.Prelude
     Todo.Render
     Todo.Render.Utils
@@ -84,6 +85,8 @@ library
     , nonempty-containers   >=0.3.4.2   && <0.4
     , optparse-applicative  >=0.15      && <0.19
     , pretty-terminal       ^>=0.1
+    , refined               >=0.6       && <0.9
+    , refined-extras        ^>=0.1.0.0
     , text                  >=2.0       && <2.2
     , text-display          >=0.0.3.0   && <0.6
     , time                  >=1.9.3     && <1.15

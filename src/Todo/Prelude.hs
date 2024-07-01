@@ -114,7 +114,7 @@ import Data.Tuple.Experimental as X (Tuple2, Tuple3)
 #endif
 import Data.Word as X (Word16, Word8)
 import Effects.Exception as X
-  ( Exception (displayException, fromException),
+  ( Exception (displayException, fromException, toException),
     ExitCode (ExitSuccess),
     MonadThrow,
     throwM,

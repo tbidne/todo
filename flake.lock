@@ -146,6 +146,32 @@
         "url": "https://github.com/NixOS/nixpkgs/archive/eb9ceca17df2ea50a250b6b27f7bf6ab0186f198.tar.gz"
       }
     },
+    "refined-extras": {
+      "inputs": {
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nix-hs-utils": [
+          "nix-hs-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1719802698,
+        "narHash": "sha256-4MAZZ23yGEl8PPdfZNaLRIEoaGFNJURZu8K31nZDJYo=",
+        "owner": "tbidne",
+        "repo": "refined-extras",
+        "rev": "0a769fcbcd0c7dd0f320034c6dea11e185baf180",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tbidne",
+        "repo": "refined-extras",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "algebra-simple": "algebra-simple",
@@ -153,7 +179,8 @@
         "flake-parts": "flake-parts",
         "monad-effects": "monad-effects",
         "nix-hs-utils": "nix-hs-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "refined-extras": "refined-extras"
       }
     },
     "smart-math": {

@@ -144,6 +144,17 @@ packages:
     commit: aeecb47f4aa144e686a7d596670bade5bf47e7d4
     git: https://github.com/tbidne/monad-effects.git
     subdir: lib/effects-unix-compat
+- completed:
+    commit: 0a769fcbcd0c7dd0f320034c6dea11e185baf180
+    git: https://github.com/tbidne/refined-extras.git
+    name: refined-extras
+    pantry-tree:
+      sha256: db1523b156a133d99f3827306471d5d1e81f804bd51ed6981559d918483b6f66
+      size: 2156
+    version: 0.1.0.0
+  original:
+    commit: 0a769fcbcd0c7dd0f320034c6dea11e185baf180
+    git: https://github.com/tbidne/refined-extras.git
 snapshots:
 - completed:
     sha256: e47314df6b200e3c95f14b926d81fd193ae010e51bd162a36ce18ef68f421e4a
