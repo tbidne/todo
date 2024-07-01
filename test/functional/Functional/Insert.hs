@@ -11,6 +11,7 @@ tests testEnv =
     [ testInsertOne testEnv,
       testInsertGroup testEnv,
       testInsertNestedGroup testEnv,
+      testInsertGroupFailureRetry testEnv,
       testFailureRetry testEnv
     ]
 
@@ -162,6 +163,56 @@ testInsertNestedGroup testEnv = goldenVsString desc goldenPath $ do
 
     responses =
       [ "y",
+        "equipment",
+        "n",
+        "water",
+        "not-started",
+        "high",
+        "",
+        "",
+        "n"
+      ]
+
+testInsertGroupFailureRetry :: IO TestEnv -> TestTree
+testInsertGroupFailureRetry testEnv = goldenVsString desc goldenPath $ do
+  testDir <- getTestDir' testEnv name
+  let newPath = testDir </> [osp|tasks.json|]
+      insertArgs =
+        [ "--path",
+          unsafeDecodeOsToFp newPath,
+          "--color",
+          "off",
+          "insert"
+        ]
+
+  -- copy example to test dir
+  copyFileWithMetadata exampleJsonOsPath newPath
+
+  -- run insert
+  insertResult <- runTodoResponses responses insertArgs
+
+  let listArgs =
+        [ "--path",
+          unsafeDecodeOsToFp newPath,
+          "--color",
+          "off",
+          "list"
+        ]
+
+  -- run list
+  listResult <- runTodo listArgs
+
+  pure $ toBSL $ insertResult <> "\n\n" <> listResult
+  where
+    name = [osp|testInsertGroupFailureRetry|]
+    desc = "Inserts a single task into a group after group id errors"
+    path = outputDir `cfp` "testInsertGroupFailureRetry"
+    goldenPath = path <> ".golden"
+
+    responses =
+      [ "y",
+        "bad-group",
+        "paycheck",
         "equipment",
         "n",
         "water",
