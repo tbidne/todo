@@ -23,6 +23,7 @@ import Effects.FileSystem.HandleWriter
   )
 import Effects.FileSystem.HandleWriter qualified as HW
 import Effects.Time (MonadTime (getSystemZonedTime))
+import Refined (Refined, type (&&))
 import Refined qualified as R
 import System.IO qualified as IO
 import Todo.Data.Sorted (SortType)
@@ -48,10 +49,10 @@ import Todo.Index (Index)
 import Todo.Index qualified as Index
 import Todo.Index.Safe
   ( GroupIdMember,
+    GroupTaskId (MkGroupTaskId),
     IndexWithData (MkIndexWithData, index),
-    RIndexWithGroupId,
-    RIndexWithNewId,
-    RIndexWithNewIdAndGroupId,
+    SingleTaskId (MkSingleTaskId),
+    TaskIdNotMember,
   )
 import Todo.Index.Safe qualified as Safe
 import Todo.Prelude
@@ -105,7 +106,7 @@ insertTask tasksPath color unicode = do
           "Task id for parent group (leave blank for no parent)? "
           index
 
-      let eIndexGroupId :: Either Index RIndexWithGroupId
+      let eIndexGroupId :: Either Index (Refined GroupIdMember (IndexWithData GroupTaskId))
           eIndexGroupId = case mParentTaskId of
             Nothing -> Left index
             Just parentTaskId -> Right parentTaskId
@@ -120,18 +121,25 @@ insertTask tasksPath color unicode = do
       let (newIndex, taskId) = case eIndexWithData of
             Left rIndexNewId ->
               ( Safe.insert (Safe.addTaskToId rIndexNewId onTaskId),
-                (R.unrefine rIndexNewId).taskId
+                (R.unrefine rIndexNewId).singleTaskId.unSingleTaskId
               )
             Right rIndexNewIdAndGroupId ->
               ( Safe.insertAtGroupId (Safe.addTaskToIdAndGroupId rIndexNewIdAndGroupId onTaskId),
-                (R.unrefine rIndexNewIdAndGroupId).taskId
+                (R.unrefine rIndexNewIdAndGroupId).groupTaskId.unGroupTaskId
               )
 
       pure (newIndex, taskId)
 
     mkTaskGroup ::
-      Either Index RIndexWithGroupId ->
-      m (Tuple2 (Either RIndexWithNewId RIndexWithNewIdAndGroupId) (TaskId -> TaskGroup))
+      Either Index (Refined GroupIdMember (IndexWithData GroupTaskId)) ->
+      m
+        ( Tuple2
+            ( Either
+                (Refined TaskIdNotMember (IndexWithData SingleTaskId))
+                (Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId)))
+            )
+            (TaskId -> TaskGroup)
+        )
     mkTaskGroup eIndexGroupId = do
       eTaskId <- case eIndexGroupId of
         Left index -> Left <$> getTaskId "Task group id: " index
@@ -162,8 +170,15 @@ insertTask tasksPath color unicode = do
         )
 
     mkOneTask ::
-      Either Index RIndexWithGroupId ->
-      m (Tuple2 (Either RIndexWithNewId RIndexWithNewIdAndGroupId) (TaskId -> Task))
+      Either Index (Refined GroupIdMember (IndexWithData GroupTaskId)) ->
+      m
+        ( Tuple2
+            ( Either
+                (Refined TaskIdNotMember (IndexWithData SingleTaskId))
+                (Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId)))
+            )
+            (TaskId -> Task)
+        )
     mkOneTask eIndexGroupId = do
       eTaskId <- case eIndexGroupId of
         Left index -> Left <$> getTaskId "\nTask id: " index
@@ -202,7 +217,7 @@ insertTask tasksPath color unicode = do
               }
         )
 
-    getTaskId :: Text -> Index -> m RIndexWithNewId
+    getTaskId :: Text -> Index -> m (Refined TaskIdNotMember (IndexWithData SingleTaskId))
     getTaskId qsn index = go
       where
         go = do
@@ -213,13 +228,13 @@ insertTask tasksPath color unicode = do
               putTextLn $ "Bad response: " <> pack err
               go
             EitherRight taskId -> do
-              case R.refine (MkIndexWithData index taskId) of
+              case R.refine (MkIndexWithData index (MkSingleTaskId taskId)) of
                 Left ex -> do
                   putTextLn $ displayRefineException' ex
                   go
                 Right x -> pure x
 
-    getExtantTaskGroupIdOrEmpty :: Text -> Index -> m (Maybe RIndexWithGroupId)
+    getExtantTaskGroupIdOrEmpty :: Text -> Index -> m (Maybe (Refined GroupIdMember (IndexWithData GroupTaskId)))
     getExtantTaskGroupIdOrEmpty qsn index = go
       where
         go = do
@@ -233,7 +248,7 @@ insertTask tasksPath color unicode = do
                   putTextLn $ "Bad response: " <> pack err
                   go
                 EitherRight taskId -> do
-                  case R.refine @GroupIdMember (MkIndexWithData index taskId) of
+                  case R.refine @GroupIdMember (MkIndexWithData index (MkGroupTaskId taskId)) of
                     Right x -> pure $ Just x
                     Left ex -> do
                       putTextLn $ displayRefineException' ex

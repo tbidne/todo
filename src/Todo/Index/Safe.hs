@@ -8,21 +8,8 @@
 module Todo.Index.Safe
   ( -- * Types
     IndexWithData (..),
-
-    -- ** Aliases
-
-    -- *** Task Ids
-    IndexWithId,
-    IndexWithIdAndGroupId,
-    RIndexWithNewId,
-    RIndexWithGroupId,
-    RIndexWithNewIdAndGroupId,
-
-    -- *** SomeTask
-    IndexWithTask,
-    IndexWithTaskAndGroupId,
-    RIndexWithNewTask,
-    RIndexWithNewTaskAndGroupId,
+    SingleTaskId (..),
+    GroupTaskId (..),
 
     -- * Predicates
     TaskIdNotMember,
@@ -66,38 +53,32 @@ data IndexWithData a = MkIndexWithData
   { index :: Index,
     extraData :: a
   }
+  deriving stock (Eq, Functor, Show)
+
+-- | Newtype for a single task id.
+newtype SingleTaskId = MkSingleTaskId {unSingleTaskId :: TaskId}
+  deriving stock (Eq, Show)
+
+-- | Newtype for a group task id.
+newtype GroupTaskId = MkGroupTaskId {unGroupTaskId :: TaskId}
+  deriving stock (Eq, Show)
 
 --------------------------------------------------------------------------------
 ------------------------------------ Task ID -----------------------------------
 --------------------------------------------------------------------------------
 
--- | Index with TaskId
-type IndexWithId = IndexWithData TaskId
-
--- | Index with TaskId and group TaskId
-type IndexWithIdAndGroupId = IndexWithData (Tuple2 TaskId TaskId)
-
--- | Refined Index with disjoint TaskId.
-type RIndexWithNewId = Refined TaskIdNotMember IndexWithId
-
--- | Refined Index with extant group TaskId
-type RIndexWithGroupId = Refined GroupIdMember IndexWithId
-
--- | Refined index with disjoint TaskId and group TaskId
-type RIndexWithNewIdAndGroupId = Refined (GroupIdMember && TaskIdNotMember) IndexWithIdAndGroupId
-
-instance HasField "groupId" IndexWithId TaskId where
+instance HasField "groupTaskId" (IndexWithData GroupTaskId) GroupTaskId where
   getField x = x.extraData
 
-instance HasField "taskId" IndexWithId TaskId where
+instance HasField "singleTaskId" (IndexWithData SingleTaskId) SingleTaskId where
   getField x = x.extraData
 
-instance HasField "groupId" IndexWithIdAndGroupId TaskId where
+instance HasField "groupTaskId" (IndexWithData (Tuple2 a GroupTaskId)) GroupTaskId where
   getField x = groupId
     where
       (_, groupId) = x.extraData
 
-instance HasField "taskId" IndexWithIdAndGroupId TaskId where
+instance HasField "singleTaskId" (IndexWithData (Tuple2 SingleTaskId a)) SingleTaskId where
   getField x = taskId
     where
       (taskId, _) = x.extraData
@@ -106,38 +87,13 @@ instance HasField "taskId" IndexWithIdAndGroupId TaskId where
 ----------------------------------- SomeTask -----------------------------------
 --------------------------------------------------------------------------------
 
--- | Index with SomeTask
-type IndexWithTask = IndexWithData SomeTask
-
--- | Index with SomeTask and group TaskId
-type IndexWithTaskAndGroupId = IndexWithData (Tuple2 SomeTask TaskId)
-
--- | Refined Index with disjoint Task
-type RIndexWithNewTask = Refined TaskIdNotMember IndexWithTask
-
--- | Refined Index with disjoint Task and extant group TaskId.
-type RIndexWithNewTaskAndGroupId = Refined (GroupIdMember && TaskIdNotMember) IndexWithTaskAndGroupId
-
-instance HasField "task" IndexWithTask SomeTask where
+instance HasField "task" (IndexWithData SomeTask) SomeTask where
   getField x = x.extraData
 
-instance HasField "taskId" IndexWithTask TaskId where
-  getField x = x.extraData.taskId
-
-instance HasField "groupId" IndexWithTaskAndGroupId TaskId where
-  getField x = groupId
+instance HasField "task" (IndexWithData (Tuple2 SomeTask a)) SomeTask where
+  getField x = task
     where
-      (_, groupId) = x.extraData
-
-instance HasField "task" IndexWithTaskAndGroupId SomeTask where
-  getField x = st
-    where
-      (st, _) = x.extraData
-
-instance HasField "taskId" IndexWithTaskAndGroupId TaskId where
-  getField x = st.taskId
-    where
-      (st, _) = x.extraData
+      (task, _) = x.extraData
 
 --------------------------------------------------------------------------------
 ---------------------------------- Predicates ----------------------------------
@@ -147,32 +103,41 @@ instance HasField "taskId" IndexWithTaskAndGroupId TaskId where
 data TaskIdNotMember
 
 instance
-  (HasField "taskId" (IndexWithData a) TaskId) =>
+  (HasField "singleTaskId" (IndexWithData a) SingleTaskId) =>
   Predicate TaskIdNotMember (IndexWithData a)
   where
   validate p x =
     if isMember
-      then Just $ RefineSomeException (typeRep p) (toException $ MkDuplicateIdE x.taskId)
+      then Just $ RefineSomeException (typeRep p) (toException $ MkDuplicateIdE taskId)
       else Nothing
     where
-      isMember = Index.member x.taskId x.index
+      isMember = Index.member taskId x.index
+
+      taskId = x.singleTaskId.unSingleTaskId
 
 -- | Predicate for a TaskId corresponding to a TaskGroup in the Index.
 data GroupIdMember
 
 instance
-  (HasField "groupId" (IndexWithData a) TaskId) =>
+  (HasField "groupTaskId" (IndexWithData a) GroupTaskId) =>
   Predicate GroupIdMember (IndexWithData a)
   where
-  validate p x = case Index.lookup x.groupId x.index of
+  validate p x = case Index.lookup groupId x.index of
     Nothing ->
-      Just $ RefineSomeException (typeRep p) (toException $ MkTaskIdNotFoundE x.groupId)
+      Just $ RefineSomeException (typeRep p) (toException $ MkTaskIdNotFoundE groupId)
     Just (SingleTask _) ->
       Just
         $ RefineOtherException
           (typeRep p)
-          ("The task id '" <> x.groupId.unTaskId <> "' exists in the index but is a single task id, not a group.")
+          ( mconcat
+              [ "The task id '",
+                groupId.unTaskId,
+                "' exists in the index but is a single task id, not a group."
+              ]
+          )
     Just (MultiTask _) -> Nothing
+    where
+      groupId = x.groupTaskId.unGroupTaskId
 
 --------------------------------------------------------------------------------
 ---------------------------------- Functions -----------------------------------
@@ -180,37 +145,37 @@ instance
 
 -- | Safely maps a RIndexWithNewId to a RIndexWithNewTask.
 addTaskToId ::
-  RIndexWithNewId ->
+  Refined TaskIdNotMember (IndexWithData SingleTaskId) ->
   (TaskId -> SomeTask) ->
-  RIndexWithNewTask
-addTaskToId r onTask = RE.unsafeLiftR toTask r
+  Refined TaskIdNotMember (IndexWithData SomeTask)
+addTaskToId r onTask = RE.reallyUnsafeLiftR toTask r
   where
-    toTask :: IndexWithId -> IndexWithTask
-    toTask x = MkIndexWithData x.index (onTask x.taskId)
+    toTask :: IndexWithData SingleTaskId -> IndexWithData SomeTask
+    toTask x = MkIndexWithData x.index (onTask x.singleTaskId.unSingleTaskId)
 
 -- | Composes our proofs together. Unsafe in the sense that we assume the
 -- parameters share the same index.
 reallyUnsafeJoinIds ::
-  RIndexWithNewId ->
-  RIndexWithGroupId ->
-  RIndexWithNewIdAndGroupId
+  Refined TaskIdNotMember (IndexWithData SingleTaskId) ->
+  Refined GroupIdMember (IndexWithData GroupTaskId) ->
+  Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId))
 reallyUnsafeJoinIds (MkRefined r1) (MkRefined r2) =
   RUnsafe.reallyUnsafeRefine
     $ MkIndexWithData
       { index = r1.index,
-        extraData = (r1.taskId, r2.groupId)
+        extraData = (r1.singleTaskId, r2.groupTaskId)
       }
 
 -- | Safely maps a RIndexWithNewIdAndGroupId to a RIndexWithNewTaskAndGroupId.
 addTaskToIdAndGroupId ::
-  RIndexWithNewIdAndGroupId ->
+  Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId)) ->
   (TaskId -> SomeTask) ->
-  RIndexWithNewTaskAndGroupId
-addTaskToIdAndGroupId r onTask = RE.unsafeLiftR toTask r
+  Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SomeTask GroupTaskId))
+addTaskToIdAndGroupId r onTask = RE.reallyUnsafeLiftR toTask r
   where
-    toTask :: IndexWithIdAndGroupId -> IndexWithTaskAndGroupId
-    toTask (MkIndexWithData idx (taskId, groupId)) =
-      MkIndexWithData idx (onTask taskId, groupId)
+    toTask :: IndexWithData (Tuple2 SingleTaskId GroupTaskId) -> IndexWithData (Tuple2 SomeTask GroupTaskId)
+    toTask (MkIndexWithData idx (singleTaskId, groupId)) =
+      MkIndexWithData idx (onTask singleTaskId.unSingleTaskId, groupId)
 
 -- | Inserts a task into the index. Requires a proof that the TaskId does
 -- not exist within the index.
@@ -226,7 +191,7 @@ insert (MkRefined x) = Index.reallyUnsafeInsert x.task x.index
 -- not exist within the index, and that the group id corresponds to an
 -- extant task group.
 insertAtGroupId ::
-  ( HasField "groupId" (IndexWithData a) TaskId,
+  ( HasField "groupTaskId" (IndexWithData a) GroupTaskId,
     HasField "task" (IndexWithData a) SomeTask,
     p :=> GroupIdMember,
     p :=> TaskIdNotMember
@@ -235,6 +200,6 @@ insertAtGroupId ::
   Index
 insertAtGroupId (MkRefined x) =
   Index.reallyUnsafeInsertAtTaskId
-    x.groupId
+    x.groupTaskId.unGroupTaskId
     x.task
     x.index
