@@ -35,6 +35,8 @@ module Todo.Prelude
     -- * Misc
     EitherString (..),
     builderToTxt,
+    displayExceptiont,
+    displayRefineException',
     stripNulls,
     whileM,
     whileM_,
@@ -103,6 +105,7 @@ import Data.Set qualified as Set
 import Data.Set.NonEmpty as X (NESet)
 import Data.String as X (String)
 import Data.Text as X (Text, pack, unpack)
+import Data.Text qualified as T
 import Data.Text.Display as X (Display (displayBuilder), display)
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder as X (Builder)
@@ -146,6 +149,7 @@ import GHC.IO.Exception (ExitCode (ExitFailure))
 import GHC.Num as X (Num ((*), (+)))
 import GHC.Show as X (Show (show))
 import GHC.Stack as X (HasCallStack)
+import Refined (RefineException)
 import System.IO as X (FilePath, IO)
 import System.IO.Unsafe (unsafePerformIO)
 
@@ -331,3 +335,13 @@ instance MonadFail EitherString where
 -- | Removes nulls for aeson encoding.
 stripNulls :: List Pair -> List Pair
 stripNulls = filter (\(_, v) -> v /= Null)
+
+-- | RefineException includes whitespace formatting we really do not want;
+-- in particular, somehow the whitespace differs across GHC versions
+-- (i.e. GHC 9.8 and 9.10), leading to golden test errors. Thus we strip
+-- it here.
+displayRefineException' :: RefineException -> Text
+displayRefineException' = T.strip . pack . displayException
+
+displayExceptiont :: (Exception e) => e -> Text
+displayExceptiont = pack . displayException

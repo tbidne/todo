@@ -4,8 +4,7 @@ Task id for parent group (leave blank for no parent)?
 Create (empty) task group (y/n)? 
 
 Task id: 
-  The predicate (TaskIdNotMember) failed with the exception: Found duplicate tasks with id 'groceries'.
-
+The predicate (TaskIdNotMember) failed with the exception: Found duplicate tasks with id 'groceries'.
 
 
 Task id: 

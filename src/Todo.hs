@@ -215,7 +215,7 @@ insertTask tasksPath color unicode = do
             EitherRight taskId -> do
               case R.refine (MkIndexWithData index taskId) of
                 Left ex -> do
-                  putStrLn $ displayException ex
+                  putTextLn $ displayRefineException' ex
                   go
                 Right x -> pure x
 
@@ -236,7 +236,7 @@ insertTask tasksPath color unicode = do
                   case R.refine @GroupIdMember (MkIndexWithData index taskId) of
                     Right x -> pure $ Just x
                     Left ex -> do
-                      putStrLn $ displayException ex
+                      putTextLn $ displayRefineException' ex
                       go
 
     getMoreTasksAns :: m Bool

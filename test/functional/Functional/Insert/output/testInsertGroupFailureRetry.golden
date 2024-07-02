@@ -1,12 +1,10 @@
 
 Create a task (y/n)? 
 Task id for parent group (leave blank for no parent)? 
-  The predicate (GroupIdMember) failed with the exception: Task id 'bad-group' not found in the index.
-
+The predicate (GroupIdMember) failed with the exception: Task id 'bad-group' not found in the index.
 
 Task id for parent group (leave blank for no parent)? 
-  The predicate (GroupIdMember) failed with the message: The task id 'paycheck' exists in the index but is a single task id, not a group.
-
+The predicate (GroupIdMember) failed with the message: The task id 'paycheck' exists in the index but is a single task id, not a group.
 
 Task id for parent group (leave blank for no parent)? 
 Create (empty) task group (y/n)? 
