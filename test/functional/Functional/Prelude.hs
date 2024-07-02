@@ -18,6 +18,8 @@ module Functional.Prelude
     exampleJsonOsPath,
     getTestDir,
     toBSL,
+    toBS,
+    writeActualFile,
     cfp,
   )
 where
@@ -27,6 +29,7 @@ import Control.Monad.Reader
     ReaderT (runReaderT),
     asks,
   )
+import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BSL
 import Data.IORef (IORef, modifyIORef', newIORef, readIORef, writeIORef)
 import Data.Proxy as X (Proxy (Proxy))
@@ -35,12 +38,12 @@ import Effects.Exception (throwString, tryCS)
 import Effects.FileSystem.HandleWriter (MonadHandleWriter)
 import Effects.FileSystem.PathWriter as X (copyFileWithMetadata)
 import Effects.FileSystem.PathWriter qualified as PW
-import Effects.FileSystem.Utils as X (unsafeDecodeOsToFp)
+import Effects.FileSystem.Utils as X (unsafeDecodeOsToFp, unsafeEncodeFpToOs)
 import Effects.FileSystem.Utils qualified as FsUtils
 import Effects.System.Environment (MonadEnv (withArgs))
 import Effects.System.Terminal (MonadTerminal (putStr))
 import Test.Tasty as X (TestName, TestTree, defaultMain, testGroup)
-import Test.Tasty.Golden as X (goldenVsString)
+import Test.Tasty.Golden as X (goldenVsFile)
 import Todo.Prelude as X
 import Todo.Runner qualified as Runner
 
@@ -146,7 +149,14 @@ runTodoException args = do
     Left ex -> pure (pack $ displayException ex)
 
 toBSL :: Text -> BSL.ByteString
-toBSL = (<> "\n") . BSL.fromStrict . encodeUtf8
+toBSL = BSL.fromStrict . toBS
+
+toBS :: Text -> ByteString
+toBS = (<> "\n") . encodeUtf8
+
+writeActualFile :: (MonadFileWriter m) => FilePath -> Text -> m ()
+writeActualFile actualPath result =
+  writeBinaryFile (unsafeEncodeFpToOs actualPath) (toBS result)
 
 cfp :: FilePath -> FilePath -> FilePath
 cfp = FsUtils.combineFilePaths

@@ -10,10 +10,12 @@ import Functional.List qualified as List
 import Functional.Prelude
 import System.Environment.Guard (ExpectEnv (ExpectEnvSet), guardOrElse')
 import Test.Tasty qualified as Tasty
+import Test.Tasty.Golden (DeleteOutputFile (OnPass))
 
 main :: IO ()
 main =
   Tasty.defaultMain
+    $ Tasty.localOption OnPass
     $ Tasty.withResource setup teardown
     $ \env ->
       testGroup

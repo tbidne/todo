@@ -64,7 +64,7 @@ testDeleteGoldenRunner ::
   String ->
   IO TestEnv ->
   TestTree
-testDeleteGoldenRunner runner desc name taskId testEnv = goldenVsString desc goldenPath $ do
+testDeleteGoldenRunner runner desc name taskId testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
   let newPath = testDir </> [osp|tasks.json|]
       deleteArgs =
@@ -93,9 +93,10 @@ testDeleteGoldenRunner runner desc name taskId testEnv = goldenVsString desc gol
   -- run list
   listResult <- runTodo listArgs
 
-  pure $ toBSL $ deleteResult <> "\n\n" <> listResult
+  writeActualFile actualPath (deleteResult <> "\n\n" <> listResult)
   where
     path = outputDir `cfp` unsafeDecodeOsToFp name
+    actualPath = path <> ".actual"
     goldenPath = path <> ".golden"
 
 getTestDir' :: IO TestEnv -> OsPath -> IO OsPath

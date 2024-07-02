@@ -41,7 +41,18 @@ jobs:
         run: cabal test unit --test-options '--hedgehog-tests 10000'
 
       - name: Functional tests
+        id: functional
         run: cabal test functional
+
+      - uses: actions/upload-artifact@v3
+        name: Functional Tests Upload
+        if: ${{ failure() && steps.functional.conclusion == 'failure' }}
+        with:
+          name: functional-artifacts
+          path: |
+            test/functional/Functional/Delete/output/*
+            test/functional/Functional/Insert/output/*
+            test/functional/Functional/List/output/*
   stack:
     strategy:
       fail-fast: false

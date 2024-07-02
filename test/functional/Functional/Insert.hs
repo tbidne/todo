@@ -16,7 +16,7 @@ tests testEnv =
     ]
 
 testInsertOne :: IO TestEnv -> TestTree
-testInsertOne testEnv = goldenVsString desc goldenPath $ do
+testInsertOne testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
   let newPath = testDir </> [osp|tasks.json|]
       insertArgs =
@@ -44,12 +44,13 @@ testInsertOne testEnv = goldenVsString desc goldenPath $ do
   -- run list
   listResult <- runTodo listArgs
 
-  pure $ toBSL $ insertResult <> "\n\n" <> listResult
+  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
   where
     name = [osp|testInsertOne|]
     desc = "Inserts a single task"
     path = outputDir `cfp` "testInsertOne"
     goldenPath = path <> ".golden"
+    actualPath = path <> ".actual"
 
     responses =
       [ "y",
@@ -64,7 +65,7 @@ testInsertOne testEnv = goldenVsString desc goldenPath $ do
       ]
 
 testInsertGroup :: IO TestEnv -> TestTree
-testInsertGroup testEnv = goldenVsString desc goldenPath $ do
+testInsertGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
   let newPath = testDir </> [osp|tasks.json|]
       insertArgs =
@@ -92,12 +93,13 @@ testInsertGroup testEnv = goldenVsString desc goldenPath $ do
   -- run list
   listResult <- runTodo listArgs
 
-  pure $ toBSL $ insertResult <> "\n\n" <> listResult
+  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
   where
     name = [osp|testInsertGroup|]
     desc = "Inserts a task group"
     path = outputDir `cfp` "testInsertGroup"
     goldenPath = path <> ".golden"
+    actualPath = path <> ".actual"
 
     responses =
       [ "y",
@@ -126,7 +128,7 @@ testInsertGroup testEnv = goldenVsString desc goldenPath $ do
       ]
 
 testInsertNestedGroup :: IO TestEnv -> TestTree
-testInsertNestedGroup testEnv = goldenVsString desc goldenPath $ do
+testInsertNestedGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
   let newPath = testDir </> [osp|tasks.json|]
       insertArgs =
@@ -154,12 +156,13 @@ testInsertNestedGroup testEnv = goldenVsString desc goldenPath $ do
   -- run list
   listResult <- runTodo listArgs
 
-  pure $ toBSL $ insertResult <> "\n\n" <> listResult
+  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
   where
     name = [osp|testInsertNestedGroup|]
     desc = "Inserts a task group"
     path = outputDir `cfp` "testInsertNestedGroup"
     goldenPath = path <> ".golden"
+    actualPath = path <> ".actual"
 
     responses =
       [ "y",
@@ -174,7 +177,7 @@ testInsertNestedGroup testEnv = goldenVsString desc goldenPath $ do
       ]
 
 testInsertGroupFailureRetry :: IO TestEnv -> TestTree
-testInsertGroupFailureRetry testEnv = goldenVsString desc goldenPath $ do
+testInsertGroupFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
   let newPath = testDir </> [osp|tasks.json|]
       insertArgs =
@@ -202,12 +205,13 @@ testInsertGroupFailureRetry testEnv = goldenVsString desc goldenPath $ do
   -- run list
   listResult <- runTodo listArgs
 
-  pure $ toBSL $ insertResult <> "\n\n" <> listResult
+  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
   where
     name = [osp|testInsertGroupFailureRetry|]
     desc = "Inserts a single task into a group after group id errors"
     path = outputDir `cfp` "testInsertGroupFailureRetry"
     goldenPath = path <> ".golden"
+    actualPath = path <> ".actual"
 
     responses =
       [ "y",
@@ -224,7 +228,7 @@ testInsertGroupFailureRetry testEnv = goldenVsString desc goldenPath $ do
       ]
 
 testFailureRetry :: IO TestEnv -> TestTree
-testFailureRetry testEnv = goldenVsString desc goldenPath $ do
+testFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
   let newPath = testDir </> [osp|tasks.json|]
       insertArgs =
@@ -252,12 +256,13 @@ testFailureRetry testEnv = goldenVsString desc goldenPath $ do
   -- run list
   listResult <- runTodo listArgs
 
-  pure $ toBSL $ insertResult <> "\n\n" <> listResult
+  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
   where
     name = [osp|testFailureRetry|]
     desc = "Failures invokes retries"
     path = outputDir `cfp` "testFailureRetry"
     goldenPath = path <> ".golden"
+    actualPath = path <> ".actual"
 
     responses =
       [ "y",

@@ -173,7 +173,7 @@ miscTests testEnv =
     ]
 
 testNonExtantPathSucceeds :: IO TestEnv -> TestTree
-testNonExtantPathSucceeds testEnv = goldenVsString desc goldenPath $ do
+testNonExtantPathSucceeds testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
   let newPath = testDir </> [osp|non-extant|] </> [osp|tasks.json|]
       args =
@@ -210,12 +210,13 @@ testNonExtantPathSucceeds testEnv = goldenVsString desc goldenPath $ do
                 "'"
               ]
 
-  pure $ toBSL resultFixed
+  writeActualFile actualPath resultFixed
   where
     name = [osp|testNonExtantPathSucceeds|]
     desc = "Non-extant path succeeds"
     path = outputDir `cfp` "testNonExtantPathSucceeds"
     goldenPath = path <> ".golden"
+    actualPath = path <> ".actual"
 
 testGoldenExampleUnicodeOff :: TestName -> Maybe String -> FilePath -> TestTree
 testGoldenExampleUnicodeOff = testGoldenExample extraArgs
@@ -229,9 +230,9 @@ testGoldenExampleUnicodeOn :: TestName -> Maybe String -> FilePath -> TestTree
 testGoldenExampleUnicodeOn = testGoldenExample []
 
 testGoldenExample :: List String -> TestName -> Maybe String -> FilePath -> TestTree
-testGoldenExample extraArgs desc mSortArg goldenFilenName = goldenVsString desc path $ do
+testGoldenExample extraArgs desc mSortArg goldenFilenName = goldenVsFile desc goldenPath actualPath $ do
   result <- runTodo args
-  pure $ toBSL result
+  writeActualFile actualPath result
   where
     args =
       [ "--path",
@@ -244,12 +245,13 @@ testGoldenExample extraArgs desc mSortArg goldenFilenName = goldenVsString desc 
         ++ sortArgs
     sortArgs = maybe [] (\a -> ["--sort", a]) mSortArg
 
-    path = outputDir `cfp` goldenFilenName <> ".golden"
+    actualPath = outputDir `cfp` goldenFilenName <> ".actual"
+    goldenPath = outputDir `cfp` goldenFilenName <> ".golden"
 
 testGolden :: (List String -> IO Text) -> TestName -> FilePath -> TestTree
-testGolden runner desc fileName = goldenVsString desc path $ do
+testGolden runner desc fileName = goldenVsFile desc goldenPath actualPath $ do
   result <- runner args
-  pure $ toBSL result
+  writeActualFile actualPath result
   where
     args =
       [ "--path",
@@ -261,7 +263,8 @@ testGolden runner desc fileName = goldenVsString desc path $ do
         "list"
       ]
 
-    path = outputDir `cfp` fileName <> ".golden"
+    actualPath = outputDir `cfp` fileName <> ".actual"
+    goldenPath = outputDir `cfp` fileName <> ".golden"
 
 inputDir :: FilePath
 inputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "List" `cfp` "input"
