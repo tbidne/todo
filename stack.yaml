@@ -37,4 +37,4 @@ extra-deps:
       - lib/effects-time
       - lib/effects-unix-compat
   - git: https://github.com/tbidne/refined-extras.git
-    commit: 0a769fcbcd0c7dd0f320034c6dea11e185baf180
+    commit: 9c0e3b2f7e888427338e581449904d700d40c0de

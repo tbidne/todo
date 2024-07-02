@@ -159,11 +159,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1719802698,
-        "narHash": "sha256-4MAZZ23yGEl8PPdfZNaLRIEoaGFNJURZu8K31nZDJYo=",
+        "lastModified": 1719924513,
+        "narHash": "sha256-krZ4mU2C2opPx7qAu4DeUjfoU973YvBN0O7lLY3KAhg=",
         "owner": "tbidne",
         "repo": "refined-extras",
-        "rev": "0a769fcbcd0c7dd0f320034c6dea11e185baf180",
+        "rev": "9c0e3b2f7e888427338e581449904d700d40c0de",
         "type": "github"
       },
       "original": {
