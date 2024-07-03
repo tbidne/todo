@@ -17,9 +17,9 @@ import Hedgehog (assert)
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
 import Todo.Data.Task
-  ( SomeTask (MultiTask, SingleTask),
-    Task
-      ( MkTask,
+  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
+    SingleTask
+      ( MkSingleTask,
         deadline,
         description,
         priority,
@@ -63,7 +63,7 @@ taskGroupTasks =
     ]
   where
     t1 =
-      MkTask
+      MkSingleTask
         { taskId = TaskId.unsafeTaskId "t1",
           priority = Low,
           status = InProgress,
@@ -71,7 +71,7 @@ taskGroupTasks =
           description = Nothing
         }
     t2 =
-      MkTask
+      MkSingleTask
         { taskId = TaskId.unsafeTaskId "t2",
           priority = Normal,
           status = NotStarted,
@@ -79,14 +79,14 @@ taskGroupTasks =
           description = Nothing
         }
     t3 =
-      MkTask
+      MkSingleTask
         { taskId = TaskId.unsafeTaskId "t3",
           priority = High,
           status = Completed,
           deadline = Nothing,
           description = Nothing
         }
-    tasks = SingleTask t1 :<| SingleTask t2 :<| SingleTask t3 :<| Empty
+    tasks = SomeTaskSingle t1 :<| SomeTaskSingle t2 :<| SomeTaskSingle t3 :<| Empty
 
 testTaskGroupUsesSetStatus :: Seq SomeTask -> TestTree
 testTaskGroupUsesSetStatus subtasks = testCase "TaskGroup uses set status" $ do
@@ -235,8 +235,8 @@ genSomeTaskList = Gen.list (Range.linearFrom 0 0 20) genSomeTask
 genSomeTask :: Gen SomeTask
 genSomeTask =
   Gen.frequency
-    [ (3, SingleTask <$> genTask), -- weigh single tasks to make tests faster
-      (1, MultiTask <$> genTaskGroup)
+    [ (3, SomeTaskSingle <$> genTask), -- weigh single tasks to make tests faster
+      (1, SomeTaskGroup <$> genTaskGroup)
     ]
 
 genTaskGroup :: Gen TaskGroup
@@ -255,7 +255,7 @@ genTaskGroup = do
   where
     genSubtasks = Seq.fromList <$> Gen.list (Range.linearFrom 0 3 3) genSomeTask
 
-genTask :: Gen Task
+genTask :: Gen SingleTask
 genTask = do
   deadline <- Gen.maybe genTimestamp
   description <- Gen.maybe genDescription
@@ -263,7 +263,7 @@ genTask = do
   status <- genTaskStatus
   taskId <- genTaskId
   pure
-    $ MkTask
+    $ MkSingleTask
       { deadline,
         description,
         priority,

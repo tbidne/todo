@@ -16,8 +16,8 @@ import Todo.Data.Sorted.Internal
   ( SortedTasks (UnsafeSortedTasks, unSortedTasks),
   )
 import Todo.Data.Task
-  ( SomeTask (MultiTask, SingleTask),
-    Task,
+  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
+    SingleTask,
     TaskGroup (subtasks),
     traverseSomeTasks,
   )
@@ -73,9 +73,9 @@ sortSomeTasks c =
     . L.sortBy c
 
 sortSomeTaskSubtasks :: (SomeTask -> SomeTask -> Ordering) -> SomeTask -> SomeTask
-sortSomeTaskSubtasks _ t@(SingleTask _) = t
-sortSomeTaskSubtasks c (MultiTask t) =
-  MultiTask $ sortTaskGroupSubtasks c t
+sortSomeTaskSubtasks _ t@(SomeTaskSingle _) = t
+sortSomeTaskSubtasks c (SomeTaskGroup t) =
+  SomeTaskGroup $ sortTaskGroupSubtasks c t
 
 sortTaskGroupSubtasks :: (SomeTask -> SomeTask -> Ordering) -> TaskGroup -> TaskGroup
 sortTaskGroupSubtasks c t = t {subtasks = Seq.sortBy c t.subtasks}
@@ -83,5 +83,5 @@ sortTaskGroupSubtasks c t = t {subtasks = Seq.sortBy c t.subtasks}
 cSomeTask :: (Ord a) => (SomeTask -> a) -> SomeTask -> SomeTask -> Ordering
 cSomeTask f x y = f x `compare` f y
 
-traverseSorted :: (Task -> a) -> (TaskGroup -> a) -> SortedTasks -> List a
+traverseSorted :: (SingleTask -> a) -> (TaskGroup -> a) -> SortedTasks -> List a
 traverseSorted f g = traverseSomeTasks f g . (.unSortedTasks)

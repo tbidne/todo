@@ -20,9 +20,9 @@ import Refined.Extras qualified as RE
 import Todo.Command.Utils qualified as CUtils
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.Task
-  ( SomeTask (MultiTask, SingleTask),
-    Task
-      ( MkTask,
+  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
+    SingleTask
+      ( MkSingleTask,
         deadline,
         description,
         priority,
@@ -159,7 +159,7 @@ mkTaskGroup eIndexGroupId = do
   where
     mkTask index =
       indexToTask "Task group id: " index $ \(priority, status) tid ->
-        MultiTask
+        SomeTaskGroup
           $ MkTaskGroup
             { priority,
               status,
@@ -168,7 +168,7 @@ mkTaskGroup eIndexGroupId = do
             }
     mkTaskWithGroupId rIndexGroupId =
       indexGroupIdToTask @m rIndexGroupId $ \(priority, status) tid ->
-        MultiTask
+        SomeTaskGroup
           $ MkTaskGroup
             { priority,
               status,
@@ -230,8 +230,8 @@ mkOneTask eIndexGroupId = do
   where
     mkTask index =
       indexToTask "\nTask id: " index $ \(deadline, description, priority, status) tid ->
-        SingleTask
-          $ MkTask
+        SomeTaskSingle
+          $ MkSingleTask
             { deadline,
               description,
               priority,
@@ -240,8 +240,8 @@ mkOneTask eIndexGroupId = do
             }
     mkTaskWithGroupId rIndexGroupId =
       indexGroupIdToTask rIndexGroupId $ \(deadline, description, priority, status) tid ->
-        SingleTask
-          $ MkTask
+        SomeTaskSingle
+          $ MkSingleTask
             { deadline,
               description,
               priority,

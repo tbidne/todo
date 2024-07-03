@@ -13,7 +13,7 @@ import Todo.Data.Sorted
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.Task
   ( SomeTask,
-    Task (taskId),
+    SingleTask (taskId),
     TaskGroup (taskId),
   )
 import Todo.Data.TaskId (TaskId (unTaskId))

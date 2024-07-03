@@ -36,7 +36,7 @@ import Refined
 import Refined.Extras ((:=>))
 import Refined.Extras qualified as RE
 import Refined.Extras.Utils (pattern MkRefined)
-import Todo.Data.Task (SomeTask (MultiTask, SingleTask))
+import Todo.Data.Task (SomeTask (SomeTaskGroup, SomeTaskSingle))
 import Todo.Data.TaskId (TaskId (unTaskId))
 import Todo.Index
   ( DuplicateIdE (MkDuplicateIdE),
@@ -131,7 +131,7 @@ instance
   validate p x = case Index.lookup groupId x.index of
     Nothing ->
       Just $ RefineSomeException (typeRep p) (toException $ MkTaskIdNotFoundE groupId)
-    Just (SingleTask _) ->
+    Just (SomeTaskSingle _) ->
       Just
         $ RefineOtherException
           (typeRep p)
@@ -141,7 +141,7 @@ instance
                 "' exists in the index but is a single task id, not a group."
               ]
           )
-    Just (MultiTask _) -> Nothing
+    Just (SomeTaskGroup _) -> Nothing
     where
       groupId = x.groupTaskId.unGroupTaskId
 

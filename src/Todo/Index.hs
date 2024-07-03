@@ -56,8 +56,8 @@ import Data.Set qualified as Set
 import Data.Set.NonEmpty qualified as NESet
 import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
 import Todo.Data.Task
-  ( SomeTask (MultiTask, SingleTask),
-    Task (status, taskId),
+  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
+    SingleTask (status, taskId),
     TaskGroup (status, subtasks, taskId),
   )
 import Todo.Data.TaskId (TaskId (unTaskId))
@@ -118,13 +118,13 @@ reallyUnsafeInsertAtTaskId taskId task (UnsafeIndex idx) =
   UnsafeIndex $ foldr go [] idx
   where
     go :: SomeTask -> List SomeTask -> List SomeTask
-    go st@(SingleTask _) acc = st : acc
-    go (MultiTask tg) acc =
+    go st@(SomeTaskSingle _) acc = st : acc
+    go (SomeTaskGroup tg) acc =
       if taskId == tg.taskId
-        then MultiTask (tg {subtasks = task :<| tg.subtasks}) : acc
+        then SomeTaskGroup (tg {subtasks = task :<| tg.subtasks}) : acc
         else
           let subtasks' = foldr go [] tg.subtasks
-           in MultiTask (tg {subtasks = Seq.fromList subtasks'}) : acc
+           in SomeTaskGroup (tg {subtasks = Seq.fromList subtasks'}) : acc
 
 -- | Returns a list representation of the index.
 toList :: Index -> List SomeTask
@@ -173,20 +173,20 @@ fromList xs = do
       (foundKeys, blockedKeys) <- macc
 
       case st of
-        SingleTask t -> do
+        SomeTaskSingle t -> do
           if Set.notMember t.taskId foundKeys
             then pure ()
             else
               throwM $ MkDuplicateIdE t.taskId
 
-          foundKeys' <- updateFoundKeys (SingleTask t) foundKeys
+          foundKeys' <- updateFoundKeys (SomeTaskSingle t) foundKeys
 
           let blockedKeys' = case t.status of
                 Blocked tids -> Map.insert t.taskId tids blockedKeys
                 _ -> blockedKeys
 
           pure (foundKeys', blockedKeys')
-        MultiTask t -> do
+        SomeTaskGroup t -> do
           -- Parse each subtask with empty maps, otherwise each sub acc would
           -- include the upstream tasks, which would then fail the duplicate
           -- check in concatAccs
@@ -200,7 +200,7 @@ fromList xs = do
           (foundKeysAccs, blockedKeysAccs) <- concatAccs allAccs
 
           -- check duplicate keys
-          foundKeysAccs' <- updateFoundKeys (MultiTask t) foundKeysAccs
+          foundKeysAccs' <- updateFoundKeys (SomeTaskGroup t) foundKeysAccs
 
           pure (foundKeysAccs', blockedKeysAccs)
 
@@ -242,8 +242,8 @@ filterOnIds ::
 filterOnIds taskIds = filter go
   where
     go :: SomeTask -> Bool
-    go (SingleTask t) = Set.member t.taskId taskIds
-    go (MultiTask tg) =
+    go (SomeTaskSingle t) = Set.member t.taskId taskIds
+    go (SomeTaskGroup tg) =
       Set.member tg.taskId taskIds || F.any go tg.subtasks
 
 -- | Filters the index on some predicate.
@@ -254,13 +254,13 @@ filter p = UnsafeIndex . L.filter p . (.unIndex)
 lookup :: TaskId -> Index -> Maybe SomeTask
 lookup taskId index = foldMapAlt go idx
   where
-    go (SingleTask t) =
+    go (SomeTaskSingle t) =
       if t.taskId == taskId
-        then Just $ SingleTask t
+        then Just $ SomeTaskSingle t
         else Nothing
-    go (MultiTask tg) =
+    go (SomeTaskGroup tg) =
       if tg.taskId == taskId
-        then Just $ MultiTask tg
+        then Just $ SomeTaskGroup tg
         else foldMapAlt go tg.subtasks
 
     idx = index.unIndex
@@ -306,16 +306,16 @@ delete taskId index@(UnsafeIndex idx) = case foldr go ([], Nothing) idx of
           Just blockedIds -> Left $ DeleteRefId taskId blockedIds
   where
     go :: SomeTask -> DeleteAcc -> DeleteAcc
-    go st@(SingleTask _) (tasks, mDeleted)
+    go st@(SomeTaskSingle _) (tasks, mDeleted)
       | st.taskId == taskId = (tasks, Just st)
       | otherwise = (st : tasks, mDeleted)
-    go st@(MultiTask tg) (tasks, mDeleted)
+    go st@(SomeTaskGroup tg) (tasks, mDeleted)
       | tg.taskId == taskId = (tasks, Just st)
       | otherwise = case foldr go ([], Nothing) tg.subtasks of
           (_, Nothing) -> (st : tasks, mDeleted)
           (newSubtasks, Just deletedTask) ->
             let newTaskGroup = tg {subtasks = Seq.fromList newSubtasks}
-             in (MultiTask newTaskGroup : tasks, Just deletedTask)
+             in (SomeTaskGroup newTaskGroup : tasks, Just deletedTask)
 
 -- | Returns a map of all blocking ids to blockees. For instance, if tasks
 -- t1 and t2 are both blocked by t3, then there should be an entry:
@@ -325,12 +325,12 @@ getBlockingIds :: Index -> Map TaskId (NESet TaskId)
 getBlockingIds (UnsafeIndex idx) = foldl' go Map.empty idx
   where
     go :: Map TaskId (NESet TaskId) -> SomeTask -> Map TaskId (NESet TaskId)
-    go mp (SingleTask t) = case t.status of
+    go mp (SomeTaskSingle t) = case t.status of
       Blocked ids ->
         let maps = idsToMaps t.taskId ids
          in Map.unionsWith (<>) maps
       _ -> mp
-    go mp (MultiTask tg) =
+    go mp (SomeTaskGroup tg) =
       let subMaps = go Map.empty <$> tg.subtasks
           groupMaps = case tg.status of
             Just (Blocked ids) -> mp :<| neToSeq (idsToMaps tg.taskId ids)

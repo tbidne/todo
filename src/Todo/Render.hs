@@ -14,8 +14,8 @@ import Effects.Time (MonadTime (getSystemZonedTime), ZonedTime)
 import GHC.Real (fromIntegral)
 import Todo.Data.Sorted (SortedTasks (unSortedTasks))
 import Todo.Data.Task
-  ( SomeTask (MultiTask, SingleTask),
-    Task (deadline, description, priority, status, taskId),
+  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
+    SingleTask (deadline, description, priority, status, taskId),
     TaskGroup (subtasks, taskId),
   )
 import Todo.Data.Task qualified as Task
@@ -80,8 +80,8 @@ renderSomeTasks currTime color unicode nestLvl tasks =
 
 renderSomeTask :: ZonedTime -> ColorSwitch -> UnicodeSwitch -> Word8 -> SomeTask -> Builder
 renderSomeTask currTime color unicode !nestLvl st = case st of
-  SingleTask t -> renderTask currTime color unicode nestLvl t
-  MultiTask tg -> renderTaskGroup currTime color unicode nestLvl tg
+  SomeTaskSingle t -> renderTask currTime color unicode nestLvl t
+  SomeTaskGroup tg -> renderTaskGroup currTime color unicode nestLvl tg
 
 renderTaskGroup ::
   ZonedTime ->
@@ -107,14 +107,14 @@ renderTaskGroup currTime color unicode nestLvl tg =
 
     renderPriority p = bulletIndent <> "priority: " <> TaskPriority.render color p
 
-    (bullet, bulletIndent) = statusToBullet unicode (MultiTask tg)
+    (bullet, bulletIndent) = statusToBullet unicode (SomeTaskGroup tg)
 
 renderTask ::
   ZonedTime ->
   ColorSwitch ->
   UnicodeSwitch ->
   Word8 ->
-  Task ->
+  SingleTask ->
   Builder
 renderTask currTime color unicode nestLvl t =
   vsepLine
@@ -137,7 +137,7 @@ renderTask currTime color unicode nestLvl t =
         nestLvl
         ((\d -> bulletIndent <> "description: " <> displayBuilder d <> line) <$> t.description)
 
-    (bullet, bulletIndent) = statusToBullet unicode (SingleTask t)
+    (bullet, bulletIndent) = statusToBullet unicode (SomeTaskSingle t)
 
 vsep :: (Foldable f) => f Builder -> Builder
 vsep = concatWith (\x y -> x <> line <> y)

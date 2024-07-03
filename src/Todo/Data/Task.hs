@@ -2,7 +2,7 @@
 
 module Todo.Data.Task
   ( -- * Main type
-    Task (..),
+    SingleTask (..),
 
     -- ** Grouped tasks
     TaskGroup (..),
@@ -27,7 +27,7 @@ import Todo.Data.Timestamp (Timestamp)
 import Todo.Prelude
 
 -- | Task data.
-data Task = MkTask
+data SingleTask = MkSingleTask
   { -- | Optional deadline.
     deadline :: Maybe Timestamp,
     -- | Optional description.
@@ -41,10 +41,10 @@ data Task = MkTask
   }
   deriving stock (Eq, Show)
 
-instance FromJSON Task where
+instance FromJSON SingleTask where
   parseJSON = Asn.withObject "Task" parseTaskObj
 
-parseTaskObj :: Object -> Parser Task
+parseTaskObj :: Object -> Parser SingleTask
 parseTaskObj v = do
   deadline <- v .:? "deadline"
   description <- v .:? "description"
@@ -52,7 +52,7 @@ parseTaskObj v = do
   priority <- v .: "priority"
   status <- v .: "status"
   pure
-    $ MkTask
+    $ MkSingleTask
       { deadline,
         description,
         priority,
@@ -60,7 +60,7 @@ parseTaskObj v = do
         taskId
       }
 
-instance ToJSON Task where
+instance ToJSON SingleTask where
   toJSON t =
     Asn.object
       $ stripNulls
@@ -125,21 +125,21 @@ taskGroupStatus tg = case tg.status of
 
 -- | Wrapper for either a single 'Task' or 'TaskGroup'.
 data SomeTask
-  = SingleTask Task
-  | MultiTask TaskGroup
+  = SomeTaskSingle SingleTask
+  | SomeTaskGroup TaskGroup
   deriving stock (Eq, Show)
 
 instance HasField "priority" SomeTask (Maybe TaskPriority) where
-  getField (SingleTask t) = Just t.priority
-  getField (MultiTask tg) = tg.priority
+  getField (SomeTaskSingle t) = Just t.priority
+  getField (SomeTaskGroup tg) = tg.priority
 
 instance HasField "status" SomeTask TaskStatus where
-  getField (SingleTask t) = t.status
-  getField (MultiTask tg) = taskGroupStatus tg
+  getField (SomeTaskSingle t) = t.status
+  getField (SomeTaskGroup tg) = taskGroupStatus tg
 
 instance HasField "taskId" SomeTask TaskId where
-  getField (SingleTask t) = t.taskId
-  getField (MultiTask tg) = tg.taskId
+  getField (SomeTaskSingle t) = t.taskId
+  getField (SomeTaskGroup tg) = tg.taskId
 
 instance FromJSON SomeTask where
   parseJSON = Asn.withObject "SomeTask" $ \v -> do
@@ -148,14 +148,14 @@ instance FromJSON SomeTask where
       else parseSingle v
     where
       parseSingle :: Object -> Parser SomeTask
-      parseSingle = fmap SingleTask . parseTaskObj
+      parseSingle = fmap SomeTaskSingle . parseTaskObj
 
       parseMulti :: Object -> Parser SomeTask
-      parseMulti = fmap MultiTask . parseTaskGroupObj
+      parseMulti = fmap SomeTaskGroup . parseTaskGroupObj
 
 instance ToJSON SomeTask where
-  toJSON (SingleTask t) = toJSON t
-  toJSON (MultiTask t) = toJSON t
+  toJSON (SomeTaskSingle t) = toJSON t
+  toJSON (SomeTaskGroup t) = toJSON t
 
 -- | Returns true iff the task / all subtasks are completed.
 someTaskIsCompleted :: SomeTask -> Bool
@@ -164,12 +164,12 @@ someTaskIsCompleted st = isCompleted st.status
 -- | Traverses a list of 'SomeTask's.
 traverseSomeTasks ::
   forall a.
-  (Task -> a) ->
+  (SingleTask -> a) ->
   (TaskGroup -> a) ->
   List SomeTask ->
   List a
 traverseSomeTasks fromTask fromTaskGroup = (>>= go)
   where
     go :: SomeTask -> List a
-    go (SingleTask t) = [fromTask t]
-    go (MultiTask t) = fromTaskGroup t : (toList t.subtasks >>= go)
+    go (SomeTaskSingle t) = [fromTask t]
+    go (SomeTaskGroup t) = fromTaskGroup t : (toList t.subtasks >>= go)
