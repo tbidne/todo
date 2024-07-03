@@ -37,6 +37,7 @@ module Todo.Prelude
     builderToTxt,
     displayExceptiont,
     displayRefineException',
+    joinRefined,
     stripNulls,
     whileM,
     whileM_,
@@ -72,6 +73,7 @@ import Data.Aeson as X (FromJSON (parseJSON), ToJSON (toJSON), Value (Null))
 import Data.Aeson.Types (Pair)
 import Data.Bifunctor (Bifunctor (second))
 import Data.Bool as X (Bool (False, True), not, otherwise, (&&), (||))
+import Data.Coerce (coerce)
 import Data.Either as X (Either (Left, Right))
 import Data.Eq as X (Eq ((==)), (/=))
 import Data.Foldable as X
@@ -149,7 +151,8 @@ import GHC.IO.Exception (ExitCode (ExitFailure))
 import GHC.Num as X (Num ((*), (+)))
 import GHC.Show as X (Show (show))
 import GHC.Stack as X (HasCallStack)
-import Refined (RefineException)
+import Refined (RefineException, type (&&))
+import Refined.Unsafe.Type (Refined (Refined))
 import System.IO as X (FilePath, IO)
 import System.IO.Unsafe (unsafePerformIO)
 
@@ -345,3 +348,6 @@ displayRefineException' = T.strip . pack . displayException
 
 displayExceptiont :: (Exception e) => e -> Text
 displayExceptiont = pack . displayException
+
+joinRefined :: Refined p (Refined q x) -> Refined (q && p) x
+joinRefined = coerce

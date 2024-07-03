@@ -13,7 +13,7 @@ module Todo
   )
 where
 
-import Data.Bifunctor (Bifunctor (second))
+import Data.Bifunctor (Bifunctor (bimap))
 import Data.Text qualified as T
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder qualified as TLB
@@ -25,6 +25,7 @@ import Effects.FileSystem.HandleWriter qualified as HW
 import Effects.Time (MonadTime (getSystemZonedTime))
 import Refined (Refined, type (&&))
 import Refined qualified as R
+import Refined.Extras qualified as RE
 import System.IO qualified as IO
 import Todo.Data.Sorted (SortType)
 import Todo.Data.Sorted qualified as Sorted
@@ -50,7 +51,7 @@ import Todo.Index qualified as Index
 import Todo.Index.Safe
   ( GroupIdMember,
     GroupTaskId (MkGroupTaskId),
-    IndexWithData (MkIndexWithData, index),
+    IndexWithData (MkIndexWithData),
     SingleTaskId (MkSingleTaskId),
     TaskIdNotMember,
   )
@@ -113,19 +114,19 @@ insertTask tasksPath color unicode = do
 
       shouldMkTaskGroup <- askYesNoQ "Create (empty) task group (y/n)? "
 
-      (eIndexWithData, onTaskId) <-
+      eIndexWithData <-
         if shouldMkTaskGroup
-          then second (MultiTask .) <$> mkTaskGroup eIndexGroupId
-          else second (SingleTask .) <$> mkOneTask eIndexGroupId
+          then mkTaskGroup eIndexGroupId
+          else mkOneTask eIndexGroupId
 
       let (newIndex, taskId) = case eIndexWithData of
-            Left rIndexNewId ->
-              ( Safe.insert (Safe.addTaskToId rIndexNewId onTaskId),
-                (R.unrefine rIndexNewId).singleTaskId.unSingleTaskId
+            Left rIndexNewTask ->
+              ( Safe.insert rIndexNewTask,
+                (R.unrefine rIndexNewTask).taskId
               )
-            Right rIndexNewIdAndGroupId ->
-              ( Safe.insertAtGroupId (Safe.addTaskToIdAndGroupId rIndexNewIdAndGroupId onTaskId),
-                (R.unrefine rIndexNewIdAndGroupId).groupTaskId.unGroupTaskId
+            Right rIndexNewTaskAndGroupId ->
+              ( Safe.insertAtGroupId rIndexNewTaskAndGroupId,
+                (R.unrefine rIndexNewTaskAndGroupId).taskId
               )
 
       pure (newIndex, taskId)
@@ -133,20 +134,40 @@ insertTask tasksPath color unicode = do
     mkTaskGroup ::
       Either Index (Refined GroupIdMember (IndexWithData GroupTaskId)) ->
       m
-        ( Tuple2
-            ( Either
-                (Refined TaskIdNotMember (IndexWithData SingleTaskId))
-                (Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId)))
+        ( Either
+            (Refined TaskIdNotMember (IndexWithData SomeTask))
+            ( Refined
+                (GroupIdMember && TaskIdNotMember)
+                (IndexWithData (Tuple2 SomeTask GroupTaskId))
             )
-            (TaskId -> TaskGroup)
         )
     mkTaskGroup eIndexGroupId = do
-      eTaskId <- case eIndexGroupId of
-        Left index -> Left <$> getTaskId "Task group id: " index
+      mkTask <- case eIndexGroupId of
+        Left index -> do
+          rTaskId <- getTaskId "Task group id: " index
+          let fn priority status =
+                Safe.addTaskToId rTaskId $ \tid ->
+                  MultiTask
+                    $ MkTaskGroup
+                      { priority,
+                        status,
+                        taskId = tid,
+                        subtasks = Empty
+                      }
+          pure $ Left fn
         Right rIndexGroupId -> do
-          rIndexNewId <- getTaskId "\nTask id: " (R.unrefine rIndexGroupId).index
-          -- NOTE: Safe because these two share the same index.
-          pure $ Right $ Safe.reallyUnsafeJoinIds rIndexNewId rIndexGroupId
+          rIndexNewIdGroupId <- getTaskIdWithGroupId "\nTask id: " rIndexGroupId
+          let fn priority status =
+                Safe.addTaskToIdAndGroupId rIndexNewIdGroupId $ \tid ->
+                  MultiTask
+                    $ MkTaskGroup
+                      { priority,
+                        status,
+                        taskId = tid,
+                        subtasks = Empty
+                      }
+
+          pure $ Right fn
 
       status <-
         askParseEmptyQ
@@ -158,34 +179,51 @@ insertTask tasksPath color unicode = do
           "Task priority (leave blank for none): "
           TaskPriority.parseTaskPriority
 
-      pure
-        ( eTaskId,
-          \tid ->
-            MkTaskGroup
-              { taskId = tid,
-                priority,
-                status,
-                subtasks = Empty
-              }
-        )
-
+      let mkTask' =
+            bimap
+              (\f -> f priority status)
+              (\f -> f priority status)
+              mkTask
+      pure mkTask'
     mkOneTask ::
       Either Index (Refined GroupIdMember (IndexWithData GroupTaskId)) ->
       m
-        ( Tuple2
-            ( Either
-                (Refined TaskIdNotMember (IndexWithData SingleTaskId))
-                (Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId)))
+        ( Either
+            (Refined TaskIdNotMember (IndexWithData SomeTask))
+            ( Refined
+                (GroupIdMember && TaskIdNotMember)
+                (IndexWithData (Tuple2 SomeTask GroupTaskId))
             )
-            (TaskId -> Task)
         )
     mkOneTask eIndexGroupId = do
-      eTaskId <- case eIndexGroupId of
-        Left index -> Left <$> getTaskId "\nTask id: " index
+      mkTask <- case eIndexGroupId of
+        Left index -> do
+          rTaskId <- getTaskId "\nTask id: " index
+          let fn deadline description priority status =
+                Safe.addTaskToId rTaskId $ \tid ->
+                  SingleTask
+                    $ MkTask
+                      { deadline,
+                        description,
+                        priority,
+                        status,
+                        taskId = tid
+                      }
+          pure $ Left fn
         Right rIndexGroupId -> do
-          rIndexNewId <- getTaskId "\nTask id: " (R.unrefine rIndexGroupId).index
-          -- NOTE: Safe because these two share the same index.
-          pure $ Right $ Safe.reallyUnsafeJoinIds rIndexNewId rIndexGroupId
+          rIndexNewIdGroupId <- getTaskIdWithGroupId "\nTask id: " rIndexGroupId
+          let fn deadline description priority status =
+                Safe.addTaskToIdAndGroupId rIndexNewIdGroupId $ \tid ->
+                  SingleTask
+                    $ MkTask
+                      { deadline,
+                        description,
+                        priority,
+                        status,
+                        taskId = tid
+                      }
+
+          pure $ Right fn
 
       status <-
         askParseQ
@@ -205,17 +243,12 @@ insertTask tasksPath color unicode = do
           "Deadline (leave blank for none): "
           (Timestamp.parseTimestamp . unpack)
 
-      pure
-        ( eTaskId,
-          \tid ->
-            MkTask
-              { deadline,
-                description,
-                priority,
-                status,
-                taskId = tid
-              }
-        )
+      let mkTask' =
+            bimap
+              (\f -> f deadline description priority status)
+              (\f -> f deadline description priority status)
+              mkTask
+      pure mkTask'
 
     getTaskId :: Text -> Index -> m (Refined TaskIdNotMember (IndexWithData SingleTaskId))
     getTaskId qsn index = go
@@ -233,6 +266,28 @@ insertTask tasksPath color unicode = do
                   putTextLn $ displayRefineException' ex
                   go
                 Right x -> pure x
+
+    getTaskIdWithGroupId ::
+      Text ->
+      Refined GroupIdMember (IndexWithData GroupTaskId) ->
+      m (Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId)))
+    getTaskIdWithGroupId qsn rIndexGroupId = go
+      where
+        go = do
+          putText qsn
+          idTxt <- getStrippedLine
+          case TaskId.parseTaskId idTxt of
+            EitherLeft err -> do
+              putTextLn $ "Bad response: " <> pack err
+              go
+            EitherRight taskId -> do
+              let withTaskId :: Refined GroupIdMember (IndexWithData (SingleTaskId, GroupTaskId))
+                  withTaskId = RE.reallyUnsafeLiftR (fmap (MkSingleTaskId taskId,)) rIndexGroupId
+              case R.refine @TaskIdNotMember withTaskId of
+                Left ex -> do
+                  putTextLn $ displayRefineException' ex
+                  go
+                Right x -> pure $ joinRefined x
 
     getExtantTaskGroupIdOrEmpty :: Text -> Index -> m (Maybe (Refined GroupIdMember (IndexWithData GroupTaskId)))
     getExtantTaskGroupIdOrEmpty qsn index = go

@@ -18,7 +18,6 @@ module Todo.Index.Safe
     -- * Functions
     insert,
     insertAtGroupId,
-    reallyUnsafeJoinIds,
 
     -- * Misc
     addTaskToId,
@@ -37,7 +36,6 @@ import Refined
 import Refined.Extras ((:=>))
 import Refined.Extras qualified as RE
 import Refined.Extras.Utils (pattern MkRefined)
-import Refined.Unsafe qualified as RUnsafe
 import Todo.Data.Task (SomeTask (MultiTask, SingleTask))
 import Todo.Data.TaskId (TaskId (unTaskId))
 import Todo.Index
@@ -90,8 +88,16 @@ instance HasField "singleTaskId" (IndexWithData (Tuple2 SingleTaskId a)) SingleT
 instance HasField "task" (IndexWithData SomeTask) SomeTask where
   getField x = x.extraData
 
+instance HasField "taskId" (IndexWithData SomeTask) TaskId where
+  getField x = x.extraData.taskId
+
 instance HasField "task" (IndexWithData (Tuple2 SomeTask a)) SomeTask where
   getField x = task
+    where
+      (task, _) = x.extraData
+
+instance HasField "taskId" (IndexWithData (Tuple2 SomeTask a)) TaskId where
+  getField x = task.taskId
     where
       (task, _) = x.extraData
 
@@ -139,6 +145,13 @@ instance
     where
       groupId = x.groupTaskId.unGroupTaskId
 
+instance
+  Predicate
+    TaskIdNotMember
+    (Refined GroupIdMember (IndexWithData (SingleTaskId, GroupTaskId)))
+  where
+  validate p (MkRefined x) = validate p x
+
 --------------------------------------------------------------------------------
 ---------------------------------- Functions -----------------------------------
 --------------------------------------------------------------------------------
@@ -152,19 +165,6 @@ addTaskToId r onTask = RE.reallyUnsafeLiftR toTask r
   where
     toTask :: IndexWithData SingleTaskId -> IndexWithData SomeTask
     toTask x = MkIndexWithData x.index (onTask x.singleTaskId.unSingleTaskId)
-
--- | Composes our proofs together. Unsafe in the sense that we assume the
--- parameters share the same index.
-reallyUnsafeJoinIds ::
-  Refined TaskIdNotMember (IndexWithData SingleTaskId) ->
-  Refined GroupIdMember (IndexWithData GroupTaskId) ->
-  Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId))
-reallyUnsafeJoinIds (MkRefined r1) (MkRefined r2) =
-  RUnsafe.reallyUnsafeRefine
-    $ MkIndexWithData
-      { index = r1.index,
-        extraData = (r1.singleTaskId, r2.groupTaskId)
-      }
 
 -- | Safely maps a RIndexWithNewIdAndGroupId to a RIndexWithNewTaskAndGroupId.
 addTaskToIdAndGroupId ::
