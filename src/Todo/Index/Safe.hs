@@ -15,6 +15,20 @@ module Todo.Index.Safe
     TaskIdNotMember,
     GroupIdMember,
 
+    -- * Aliases
+    IndexParentId,
+    IndexTaskId,
+    IndexTaskIdParentId,
+    IndexTask,
+    IndexTaskParentId,
+
+    -- ** Refined
+    RIndexParentId,
+    RIndexTaskId,
+    RIndexTaskIdParentId,
+    RIndexTask,
+    RIndexTaskParentId,
+
     -- * Functions
     insert,
     insertAtGroupId,
@@ -145,12 +159,54 @@ instance
     where
       groupId = x.groupTaskId.unGroupTaskId
 
+-- This instance is for adding a 'TaskIdNotMember SingleTaskId' refinement to the
+-- already refined 'GroupIdMember GroupTaskId' i.e. transforming:
+--
+--     Refined GroupIdMember (IndexWithData (Tuple2 SingleTaskId GroupTaskId))
+--
+-- to
+--
+--     Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId))
 instance
   Predicate
     TaskIdNotMember
-    (Refined GroupIdMember (IndexWithData (SingleTaskId, GroupTaskId)))
+    (Refined GroupIdMember (IndexWithData (Tuple2 SingleTaskId GroupTaskId)))
   where
   validate p (MkRefined x) = validate p x
+
+--------------------------------------------------------------------------------
+----------------------------------- Aliases ------------------------------------
+--------------------------------------------------------------------------------
+
+-- | Index + parent id
+type IndexParentId = IndexWithData GroupTaskId
+
+-- | Index + task id
+type IndexTaskId = IndexWithData SingleTaskId
+
+-- | Index + task id + parent id
+type IndexTaskIdParentId = IndexWithData (Tuple2 SingleTaskId GroupTaskId)
+
+-- | Index + task
+type IndexTask = IndexWithData SomeTask
+
+-- | Index + task + parent id
+type IndexTaskParentId = IndexWithData (Tuple2 SomeTask GroupTaskId)
+
+-- | Refined index + parent id
+type RIndexParentId = Refined GroupIdMember IndexParentId
+
+-- | Refined index + task id
+type RIndexTaskId = Refined TaskIdNotMember IndexTaskId
+
+-- | Refined index + task id + parent id
+type RIndexTaskIdParentId = Refined (GroupIdMember && TaskIdNotMember) IndexTaskIdParentId
+
+-- | Refined index + task
+type RIndexTask = Refined TaskIdNotMember IndexTask
+
+-- | Refined index + task + parent id
+type RIndexTaskParentId = Refined (GroupIdMember && TaskIdNotMember) IndexTaskParentId
 
 --------------------------------------------------------------------------------
 ---------------------------------- Functions -----------------------------------
@@ -158,9 +214,9 @@ instance
 
 -- | Safely maps a RIndexWithNewId to a RIndexWithNewTask.
 addTaskToId ::
-  Refined TaskIdNotMember (IndexWithData SingleTaskId) ->
+  RIndexTaskId ->
   (TaskId -> SomeTask) ->
-  Refined TaskIdNotMember (IndexWithData SomeTask)
+  RIndexTask
 addTaskToId r onTask = RE.reallyUnsafeLiftR toTask r
   where
     toTask :: IndexWithData SingleTaskId -> IndexWithData SomeTask
@@ -168,12 +224,12 @@ addTaskToId r onTask = RE.reallyUnsafeLiftR toTask r
 
 -- | Safely maps a RIndexWithNewIdAndGroupId to a RIndexWithNewTaskAndGroupId.
 addTaskToIdAndGroupId ::
-  Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId)) ->
+  RIndexTaskIdParentId ->
   (TaskId -> SomeTask) ->
-  Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SomeTask GroupTaskId))
+  RIndexTaskParentId
 addTaskToIdAndGroupId r onTask = RE.reallyUnsafeLiftR toTask r
   where
-    toTask :: IndexWithData (Tuple2 SingleTaskId GroupTaskId) -> IndexWithData (Tuple2 SomeTask GroupTaskId)
+    toTask :: IndexTaskIdParentId -> IndexTaskParentId
     toTask (MkIndexWithData idx (singleTaskId, groupId)) =
       MkIndexWithData idx (onTask singleTaskId.unSingleTaskId, groupId)
 

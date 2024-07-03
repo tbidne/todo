@@ -17,8 +17,7 @@ import Hedgehog (assert)
 import Hedgehog.Gen qualified as Gen
 import Hedgehog.Range qualified as Range
 import Todo.Data.Task
-  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
-    SingleTask
+  ( SingleTask
       ( MkSingleTask,
         deadline,
         description,
@@ -26,6 +25,7 @@ import Todo.Data.Task
         status,
         taskId
       ),
+    SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
 import Todo.Data.Task qualified as Task

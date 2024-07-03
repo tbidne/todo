@@ -14,14 +14,13 @@ import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder qualified as TLB
 import Effects.FileSystem.HandleWriter (MonadHandleWriter)
 import Effects.Time (MonadTime (getSystemZonedTime))
-import Refined (Refined, type (&&))
+import Refined (Refined)
 import Refined qualified as R
 import Refined.Extras qualified as RE
 import Todo.Command.Utils qualified as CUtils
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.Task
-  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
-    SingleTask
+  ( SingleTask
       ( MkSingleTask,
         deadline,
         description,
@@ -29,6 +28,7 @@ import Todo.Data.Task
         status,
         taskId
       ),
+    SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
 import Todo.Data.TaskId (TaskId)
@@ -42,8 +42,12 @@ import Todo.Index.Safe
   ( GroupIdMember,
     GroupTaskId (MkGroupTaskId),
     IndexWithData (MkIndexWithData),
+    RIndexParentId,
+    RIndexTask,
+    RIndexTaskId,
+    RIndexTaskIdParentId,
+    RIndexTaskParentId,
     SingleTaskId (MkSingleTaskId),
-    TaskIdNotMember,
   )
 import Todo.Index.Safe qualified as Safe
 import Todo.Prelude
@@ -94,24 +98,24 @@ mkSomeTask ::
   Index ->
   m (Index, TaskId)
 mkSomeTask index = do
-  mParentTaskId <-
+  mIndexParentId <-
     getExtantTaskGroupIdOrEmpty
       "Task id for parent group (leave blank for no parent)? "
       index
 
-  let eIndexGroupId :: Either Index (Refined GroupIdMember (IndexWithData GroupTaskId))
-      eIndexGroupId = case mParentTaskId of
+  let eIndexMaybeParentId :: Either Index RIndexParentId
+      eIndexMaybeParentId = case mIndexParentId of
         Nothing -> Left index
         Just parentTaskId -> Right parentTaskId
 
   shouldMkTaskGroup <- CUtils.askYesNoQ "Create (empty) task group (y/n)? "
 
-  eIndexWithData <-
+  eIndexTaskMaybeParentId <-
     if shouldMkTaskGroup
-      then mkTaskGroup eIndexGroupId
-      else mkOneTask eIndexGroupId
+      then mkTaskGroup eIndexMaybeParentId
+      else mkOneTask eIndexMaybeParentId
 
-  let (newIndex, taskId) = case eIndexWithData of
+  let (newIndex, taskId) = case eIndexTaskMaybeParentId of
         Left rIndexNewTask ->
           ( Safe.insert rIndexNewTask,
             (R.unrefine rIndexNewTask).taskId
@@ -129,17 +133,10 @@ mkTaskGroup ::
   ( HasCallStack,
     MonadTerminal m
   ) =>
-  Either Index (Refined GroupIdMember (IndexWithData GroupTaskId)) ->
-  m
-    ( Either
-        (Refined TaskIdNotMember (IndexWithData SomeTask))
-        ( Refined
-            (GroupIdMember && TaskIdNotMember)
-            (IndexWithData (Tuple2 SomeTask GroupTaskId))
-        )
-    )
-mkTaskGroup eIndexGroupId = do
-  eMkTask <- bitraverse mkTask mkTaskWithGroupId eIndexGroupId
+  Either Index RIndexParentId ->
+  m (Either RIndexTask RIndexTaskParentId)
+mkTaskGroup eIndexMaybeParentId = do
+  eMkTask <- bitraverse mkTask mkTaskWithParentId eIndexMaybeParentId
 
   status <-
     askParseEmptyQ
@@ -151,6 +148,7 @@ mkTaskGroup eIndexGroupId = do
       "Task priority (leave blank for none): "
       TaskPriority.parseTaskPriority
 
+  -- see NOTE: [Redundant bimap]
   pure
     $ bimap
       (\f -> f (priority, status))
@@ -166,7 +164,7 @@ mkTaskGroup eIndexGroupId = do
               taskId = tid,
               subtasks = Empty
             }
-    mkTaskWithGroupId rIndexGroupId =
+    mkTaskWithParentId rIndexGroupId =
       indexGroupIdToTask @m rIndexGroupId $ \(priority, status) tid ->
         SomeTaskGroup
           $ MkTaskGroup
@@ -185,17 +183,10 @@ mkOneTask ::
   ( HasCallStack,
     MonadTerminal m
   ) =>
-  Either Index (Refined GroupIdMember (IndexWithData GroupTaskId)) ->
-  m
-    ( Either
-        (Refined TaskIdNotMember (IndexWithData SomeTask))
-        ( Refined
-            (GroupIdMember && TaskIdNotMember)
-            (IndexWithData (Tuple2 SomeTask GroupTaskId))
-        )
-    )
-mkOneTask eIndexGroupId = do
-  eMkTask <- bitraverse mkTask mkTaskWithGroupId eIndexGroupId
+  Either Index RIndexParentId ->
+  m (Either RIndexTask RIndexTaskParentId)
+mkOneTask eIndexMaybeParentId = do
+  eMkTask <- bitraverse mkTask mkTaskWithParentId eIndexMaybeParentId
 
   status <-
     askParseQ
@@ -238,7 +229,7 @@ mkOneTask eIndexGroupId = do
               status,
               taskId = tid
             }
-    mkTaskWithGroupId rIndexGroupId =
+    mkTaskWithParentId rIndexGroupId =
       indexGroupIdToTask rIndexGroupId $ \(deadline, description, priority, status) tid ->
         SomeTaskSingle
           $ MkSingleTask
@@ -259,11 +250,10 @@ indexToTask ::
   Text ->
   Index ->
   (a -> TaskId -> SomeTask) ->
-  m (a -> Refined TaskIdNotMember (IndexWithData SomeTask))
+  m (a -> RIndexTask)
 indexToTask prompt index onTaskId = do
-  rTaskId <- getTaskId prompt index
-  -- pure $ Safe.addTaskToId rTaskId (onTaskId extraParams)
-  pure $ \extraParams -> Safe.addTaskToId rTaskId (onTaskId extraParams)
+  indexTaskId <- getTaskId prompt index
+  pure $ \extraParams -> Safe.addTaskToId indexTaskId (onTaskId extraParams)
 
 -- | Like 'indexToTask', except we compose the refined SomeTask with the
 -- given refined GroupTaskId.
@@ -271,18 +261,12 @@ indexGroupIdToTask ::
   ( HasCallStack,
     MonadTerminal m
   ) =>
-  Refined GroupIdMember (IndexWithData GroupTaskId) ->
+  RIndexParentId ->
   (a -> TaskId -> SomeTask) ->
-  m
-    ( a ->
-      Refined
-        (GroupIdMember && TaskIdNotMember)
-        (IndexWithData (Tuple2 SomeTask GroupTaskId))
-    )
-indexGroupIdToTask rIndexGroupId onTaskId = do
-  rIndexNewIdGroupId <- getTaskIdWithGroupId "\nTask id: " rIndexGroupId
-  -- pure $ Safe.addTaskToIdAndGroupId rIndexNewIdGroupId onTaskId
-  pure $ \extraParams -> Safe.addTaskToIdAndGroupId rIndexNewIdGroupId (onTaskId extraParams)
+  m (a -> RIndexTaskParentId)
+indexGroupIdToTask indexParentId onTaskId = do
+  indexTaskIdParentId <- getTaskIdWithGroupId "\nTask id: " indexParentId
+  pure $ \extraParams -> Safe.addTaskToIdAndGroupId indexTaskIdParentId (onTaskId extraParams)
 
 -- | Retrieves a TaskId guaranteed to be in the Index.
 getTaskId ::
@@ -294,7 +278,7 @@ getTaskId ::
   -- | Index.
   Index ->
   -- | TaskId guaranteed to be in the index.
-  m (Refined TaskIdNotMember (IndexWithData SingleTaskId))
+  m RIndexTaskId
 getTaskId qsn index = go
   where
     go = do
@@ -309,7 +293,7 @@ getTaskId qsn index = go
             Left ex -> do
               putTextLn $ displayRefineException' ex
               go
-            Right x -> pure x
+            Right indexTaskId -> pure indexTaskId
 
 -- | Like 'getTaskId', except it composed the refined TaskId with the refined
 -- group TaskId.
@@ -320,10 +304,10 @@ getTaskIdWithGroupId ::
   -- | Text prompt.
   Text ->
   -- | Refined GroupTaskId.
-  Refined GroupIdMember (IndexWithData GroupTaskId) ->
+  RIndexParentId ->
   -- | GroupTaskId g and TaskId t s.t. g is in the index and t is __not__ in the index.
-  m (Refined (GroupIdMember && TaskIdNotMember) (IndexWithData (Tuple2 SingleTaskId GroupTaskId)))
-getTaskIdWithGroupId qsn rIndexGroupId = go
+  m RIndexTaskIdParentId
+getTaskIdWithGroupId qsn indexParentId = go
   where
     go = do
       putText qsn
@@ -333,13 +317,15 @@ getTaskIdWithGroupId qsn rIndexGroupId = go
           putTextLn $ "Bad response: " <> pack err
           go
         EitherRight taskId -> do
+          -- withTaskId is the result of adding taskId to our RIndexParentId,
+          -- but before we refine it to an RIndexTaskIdParentId
           let withTaskId :: Refined GroupIdMember (IndexWithData (SingleTaskId, GroupTaskId))
-              withTaskId = RE.reallyUnsafeLiftR (fmap (MkSingleTaskId taskId,)) rIndexGroupId
-          case R.refine @TaskIdNotMember withTaskId of
+              withTaskId = RE.reallyUnsafeLiftR (fmap (MkSingleTaskId taskId,)) indexParentId
+          case R.refine withTaskId of
             Left ex -> do
               putTextLn $ displayRefineException' ex
               go
-            Right x -> pure $ joinRefined x
+            Right indexTaskIdParentId -> pure $ joinRefined indexTaskIdParentId
 
 -- | Retrieves a group TaskId guaranteed to be in the Index, or Nothing.
 getExtantTaskGroupIdOrEmpty ::
@@ -351,7 +337,7 @@ getExtantTaskGroupIdOrEmpty ::
   -- | Index
   Index ->
   -- | Index and group TaskId in the Index, or Nothing.
-  m (Maybe (Refined GroupIdMember (IndexWithData GroupTaskId)))
+  m (Maybe RIndexParentId)
 getExtantTaskGroupIdOrEmpty qsn index = go
   where
     go = do
@@ -366,7 +352,7 @@ getExtantTaskGroupIdOrEmpty qsn index = go
               go
             EitherRight taskId -> do
               case R.refine @GroupIdMember (MkIndexWithData index (MkGroupTaskId taskId)) of
-                Right x -> pure $ Just x
+                Right indexParentId -> pure $ Just indexParentId
                 Left ex -> do
                   putTextLn $ displayRefineException' ex
                   go

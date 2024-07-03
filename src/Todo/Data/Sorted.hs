@@ -16,8 +16,8 @@ import Todo.Data.Sorted.Internal
   ( SortedTasks (UnsafeSortedTasks, unSortedTasks),
   )
 import Todo.Data.Task
-  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
-    SingleTask,
+  ( SingleTask,
+    SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (subtasks),
     traverseSomeTasks,
   )

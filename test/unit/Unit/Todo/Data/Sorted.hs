@@ -12,8 +12,8 @@ import Todo.Data.Sorted
   )
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.Task
-  ( SomeTask,
-    SingleTask (taskId),
+  ( SingleTask (taskId),
+    SomeTask,
     TaskGroup (taskId),
   )
 import Todo.Data.TaskId (TaskId (unTaskId))

@@ -56,8 +56,8 @@ import Data.Set qualified as Set
 import Data.Set.NonEmpty qualified as NESet
 import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
 import Todo.Data.Task
-  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
-    SingleTask (status, taskId),
+  ( SingleTask (status, taskId),
+    SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (status, subtasks, taskId),
   )
 import Todo.Data.TaskId (TaskId (unTaskId))

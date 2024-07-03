@@ -14,8 +14,8 @@ import Effects.Time (MonadTime (getSystemZonedTime), ZonedTime)
 import GHC.Real (fromIntegral)
 import Todo.Data.Sorted (SortedTasks (unSortedTasks))
 import Todo.Data.Task
-  ( SomeTask (SomeTaskGroup, SomeTaskSingle),
-    SingleTask (deadline, description, priority, status, taskId),
+  ( SingleTask (deadline, description, priority, status, taskId),
+    SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (subtasks, taskId),
   )
 import Todo.Data.Task qualified as Task
