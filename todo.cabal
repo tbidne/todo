@@ -53,6 +53,8 @@ library
   autogen-modules: Paths_todo
   exposed-modules:
     Todo
+    Todo.Command.Insert
+    Todo.Command.Utils
     Todo.Data.Sorted
     Todo.Data.Sorted.Internal
     Todo.Data.Task
