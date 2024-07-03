@@ -237,7 +237,7 @@ addTaskToIdAndGroupId r onTask = RE.reallyUnsafeLiftR toTask r
 -- not exist within the index.
 insert ::
   ( HasField "task" (IndexWithData a) SomeTask,
-    TaskIdNotMember :=> p
+    p :=> TaskIdNotMember
   ) =>
   Refined p (IndexWithData a) ->
   Index
