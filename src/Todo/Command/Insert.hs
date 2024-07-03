@@ -1,3 +1,8 @@
+{- HLINT ignore "Redundant bracket" -}
+
+-- NOTE: HLINT ignore due to OverloadedRecordDot false positives e.g.
+-- (some thing).field.
+
 module Todo.Command.Insert
   ( insertTask,
   )
