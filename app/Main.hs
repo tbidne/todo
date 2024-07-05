@@ -3,7 +3,9 @@
 -- @since 0.1
 module Main (main) where
 
+import System.Console.Haskeline qualified as H
 import System.IO (IO)
+import Todo.AppT (runAppIO)
 import Todo.Prelude hiding (IO)
 import Todo.Runner qualified as Runner
 
@@ -13,4 +15,4 @@ import Todo.Runner qualified as Runner
 main :: IO ()
 main = do
   setUncaughtExceptionHandlerDisplay
-  Runner.runTodo
+  H.runInputT H.defaultSettings $ runAppIO Runner.runTodo

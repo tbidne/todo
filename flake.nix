@@ -63,6 +63,7 @@
                 "effects-env"
                 "effects-exceptions"
                 "effects-fs"
+                "effects-haskeline"
                 "effects-ioref"
                 "effects-optparse"
                 "effects-terminal"

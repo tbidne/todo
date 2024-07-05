@@ -134,6 +134,7 @@ import Effects.FileSystem.PathReader as X (MonadPathReader)
 import Effects.FileSystem.PathWriter as X (MonadPathWriter)
 import Effects.FileSystem.Utils as X (OsPath, encodeUtf8, osp, (</>))
 import Effects.FileSystem.Utils qualified as FsUtils
+import Effects.Haskeline as X (MonadHaskeline)
 import Effects.Optparse as X (MonadOptparse)
 import Effects.System.Terminal as X
   ( MonadTerminal (putStrLn),

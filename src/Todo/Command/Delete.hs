@@ -3,7 +3,6 @@ module Todo.Command.Delete
   )
 where
 
-import Effects.FileSystem.HandleWriter (MonadHandleWriter)
 import Todo.Command.Utils qualified as CUtils
 import Todo.Data.TaskId (TaskId)
 import Todo.Index qualified as Index
@@ -16,7 +15,7 @@ deleteTask ::
   ( HasCallStack,
     MonadFileReader m,
     MonadFileWriter m,
-    MonadHandleWriter m,
+    MonadHaskeline m,
     MonadTerminal m,
     MonadTime m,
     MonadThrow m
@@ -37,12 +36,11 @@ deleteTask tasksPath color unicode taskId = do
     Right (newIndex, st) -> do
       rendered <- Render.renderOne color unicode st
 
-      CUtils.withNoBuffering $ do
-        putTextLn "Found task:\n"
-        putTextLn $ builderToTxt rendered
+      putTextLn "Found task:\n"
+      putTextLn $ builderToTxt rendered
 
-        ans <- CUtils.askYesNoQ "Are you sure you want to delete (y/n)? "
+      ans <- CUtils.askYesNoQ "Are you sure you want to delete (y/n)? "
 
-        when ans $ do
-          Index.writeIndex tasksPath newIndex
-          putTextLn "Successfully deleted task"
+      when ans $ do
+        Index.writeIndex tasksPath newIndex
+        putTextLn "Successfully deleted task"

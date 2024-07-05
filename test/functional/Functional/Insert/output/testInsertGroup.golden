@@ -1,32 +1,55 @@
 
 Create a task (y/n)? 
+
 Task id for parent group (leave blank for no parent)? 
+
 Create (empty) task group (y/n)? 
+
 Task group id: 
+
 Task status (leave blank for none): 
+
 Task priority (leave blank for none): 
 
+
 Create a task (y/n)? 
+
 Task id for parent group (leave blank for no parent)? 
+
 Create (empty) task group (y/n)? 
 
+
 Task id: 
+
 Task status (completed | in-progress | not-started | blocked: <ids>): 
+
 Task priority (low | normal | high): 
+
 Description (leave blank for none): 
+
 Deadline (leave blank for none): 
 
+
 Create a task (y/n)? 
+
 Task id for parent group (leave blank for no parent)? 
+
 Create (empty) task group (y/n)? 
 
+
 Task id: 
+
 Task status (completed | in-progress | not-started | blocked: <ids>): 
+
 Task priority (low | normal | high): 
+
 Description (leave blank for none): 
+
 Deadline (leave blank for none): 
 
+
 Create a task (y/n)? 
+
 Successfully added task. Modified tasks:
 
 

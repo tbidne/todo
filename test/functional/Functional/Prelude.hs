@@ -40,6 +40,7 @@ import Effects.FileSystem.PathWriter as X (copyFileWithMetadata)
 import Effects.FileSystem.PathWriter qualified as PW
 import Effects.FileSystem.Utils as X (unsafeDecodeOsToFp, unsafeEncodeFpToOs)
 import Effects.FileSystem.Utils qualified as FsUtils
+import Effects.Haskeline (MonadHaskeline (getInputLine))
 import Effects.System.Environment (MonadEnv (withArgs))
 import Effects.System.Terminal (MonadTerminal (putStr))
 import Test.Tasty as X (TestName, TestTree, defaultMain, testGroup)
@@ -85,14 +86,16 @@ instance MonadTerminal FuncIO where
     terminalRef <- asks (.terminalRef)
     liftIO $ modifyIORef' terminalRef (:|> pack s)
 
-  getLine = do
+instance MonadHaskeline FuncIO where
+  getInputLine s = do
+    putStrLn s
     responsesRef <- asks (.terminalResponsesRef)
     responses <- liftIO . readIORef $ responsesRef
     case responses of
-      [] -> error "getLine: Expected response but received empty"
+      [] -> error "getInputLine: Expected response but received empty"
       (r : rs) -> do
         liftIO $ writeIORef responsesRef rs
-        pure $ unpack r
+        pure $ Just $ unpack r
 
 runFuncIO :: FuncEnv -> FuncIO a -> IO a
 runFuncIO funcEnv (MkFuncIO rdr) = runReaderT rdr funcEnv

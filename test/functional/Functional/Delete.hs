@@ -21,7 +21,7 @@ testDeleteNone :: IO TestEnv -> TestTree
 testDeleteNone =
   testDeleteGoldenRunner
     (runTodoResponses ["n"])
-    "Deletes a single task"
+    "Does not delete a task"
     [osp|testDeleteNone|]
     "walk_dog"
 

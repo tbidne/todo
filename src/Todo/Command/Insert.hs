@@ -12,7 +12,6 @@ import Data.Bifunctor (Bifunctor (bimap))
 import Data.Bitraversable (bitraverse)
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder qualified as TLB
-import Effects.FileSystem.HandleWriter (MonadHandleWriter)
 import Effects.Time (MonadTime (getSystemZonedTime))
 import Refined (Refined)
 import Refined qualified as R
@@ -61,7 +60,7 @@ insertTask ::
     MonadFail m,
     MonadFileReader m,
     MonadFileWriter m,
-    MonadHandleWriter m,
+    MonadHaskeline m,
     MonadTerminal m,
     MonadTime m,
     MonadThrow m
@@ -75,8 +74,7 @@ insertTask ::
 insertTask tasksPath color unicode = do
   index <- Index.readIndex tasksPath
 
-  (newIndex, newTaskIds) <-
-    CUtils.withNoBuffering $ whileApplySetM index getMoreTasksAns mkSomeTask
+  (newIndex, newTaskIds) <- whileApplySetM index getMoreTasksAns mkSomeTask
 
   Index.writeIndex tasksPath newIndex
 
@@ -93,7 +91,9 @@ insertTask tasksPath color unicode = do
 
 mkSomeTask ::
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   Index ->
   m (Index, TaskId)
@@ -131,7 +131,9 @@ mkSomeTask index = do
 mkTaskGroup ::
   forall m.
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   Either Index RIndexParentId ->
   m (Either RIndexTask RIndexTaskParentId)
@@ -181,7 +183,9 @@ mkTaskGroup eIndexMaybeParentId = do
 mkOneTask ::
   forall m.
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   Either Index RIndexParentId ->
   m (Either RIndexTask RIndexTaskParentId)
@@ -198,8 +202,7 @@ mkOneTask eIndexMaybeParentId = do
       "Task priority (low | normal | high): "
       TaskPriority.parseTaskPriority
 
-  putText "Description (leave blank for none): "
-  description <- CUtils.getStrippedLineEmpty
+  description <- CUtils.getStrippedLineEmpty "Description (leave blank for none): "
 
   deadline <-
     askParseEmptyQ
@@ -245,7 +248,9 @@ mkOneTask eIndexMaybeParentId = do
 indexToTask ::
   forall m a.
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   Text ->
   Index ->
@@ -259,7 +264,9 @@ indexToTask prompt index onTaskId = do
 -- given refined GroupTaskId.
 indexGroupIdToTask ::
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   RIndexParentId ->
   (a -> TaskId -> SomeTask) ->
@@ -271,7 +278,9 @@ indexGroupIdToTask indexParentId onTaskId = do
 -- | Retrieves a TaskId guaranteed to be in the Index.
 getTaskId ::
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   -- | Text prompt.
   Text ->
@@ -282,11 +291,10 @@ getTaskId ::
 getTaskId qsn index = go
   where
     go = do
-      putText qsn
-      idTxt <- CUtils.getStrippedLine
+      idTxt <- CUtils.getStrippedLine qsn
       case TaskId.parseTaskId idTxt of
         EitherLeft err -> do
-          putTextLn $ "Bad response: " <> pack err
+          putTextLn $ formatBadResponse err
           go
         EitherRight taskId -> do
           case R.refine (MkIndexWithData index (MkSingleTaskId taskId)) of
@@ -299,7 +307,9 @@ getTaskId qsn index = go
 -- group TaskId.
 getTaskIdWithGroupId ::
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   -- | Text prompt.
   Text ->
@@ -310,11 +320,10 @@ getTaskIdWithGroupId ::
 getTaskIdWithGroupId qsn indexParentId = go
   where
     go = do
-      putText qsn
-      idTxt <- CUtils.getStrippedLine
+      idTxt <- CUtils.getStrippedLine qsn
       case TaskId.parseTaskId idTxt of
         EitherLeft err -> do
-          putTextLn $ "Bad response: " <> pack err
+          putTextLn $ formatBadResponse err
           go
         EitherRight taskId -> do
           -- withTaskId is the result of adding taskId to our RIndexParentId,
@@ -330,7 +339,9 @@ getTaskIdWithGroupId qsn indexParentId = go
 -- | Retrieves a group TaskId guaranteed to be in the Index, or Nothing.
 getExtantTaskGroupIdOrEmpty ::
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   -- | Text prompt
   Text ->
@@ -341,14 +352,13 @@ getExtantTaskGroupIdOrEmpty ::
 getExtantTaskGroupIdOrEmpty qsn index = go
   where
     go = do
-      putText qsn
-      mIdTxt <- CUtils.getStrippedLineEmpty
+      mIdTxt <- CUtils.getStrippedLineEmpty qsn
       case mIdTxt of
         Nothing -> pure Nothing
         Just idTxt ->
           case TaskId.parseTaskId idTxt of
             EitherLeft err -> do
-              putTextLn $ "Bad response: " <> pack err
+              putTextLn $ formatBadResponse err
               go
             EitherRight taskId -> do
               case R.refine @GroupIdMember (MkIndexWithData index (MkGroupTaskId taskId)) of
@@ -357,12 +367,20 @@ getExtantTaskGroupIdOrEmpty qsn index = go
                   putTextLn $ displayRefineException' ex
                   go
 
-getMoreTasksAns :: (HasCallStack, MonadTerminal m) => m Bool
+getMoreTasksAns ::
+  ( HasCallStack,
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
+  ) =>
+  m Bool
 getMoreTasksAns = CUtils.askYesNoQ "\nCreate a task (y/n)? "
 
 askParseQ ::
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   Text ->
   (Text -> EitherString a) ->
@@ -370,18 +388,18 @@ askParseQ ::
 askParseQ qsn parser = go
   where
     go = do
-      putText qsn
-
-      txt <- CUtils.getStrippedLine
+      txt <- CUtils.getStrippedLine qsn
       case parser txt of
         EitherLeft err -> do
-          putTextLn $ "Bad response: " <> pack err
+          putTextLn $ formatBadResponse err
           go
         EitherRight x -> pure x
 
 askParseEmptyQ ::
   ( HasCallStack,
-    MonadTerminal m
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
   ) =>
   Text ->
   (Text -> EitherString a) ->
@@ -389,13 +407,14 @@ askParseEmptyQ ::
 askParseEmptyQ qsn parser = go
   where
     go = do
-      putText qsn
-
-      CUtils.getStrippedLineEmpty >>= \case
+      CUtils.getStrippedLineEmpty qsn >>= \case
         Nothing -> pure Nothing
         Just txt ->
           case parser txt of
             EitherLeft err -> do
-              putTextLn $ "Bad answer: " <> pack err
+              putTextLn $ formatBadResponse err
               go
             EitherRight x -> pure $ Just x
+
+formatBadResponse :: String -> Text
+formatBadResponse = ("Bad Response: " <>) . pack

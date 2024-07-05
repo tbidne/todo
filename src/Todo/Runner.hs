@@ -6,9 +6,6 @@ module Todo.Runner
 where
 
 import Effects.FileSystem.FileWriter qualified as FW
-import Effects.FileSystem.HandleWriter
-  ( MonadHandleWriter,
-  )
 import Effects.FileSystem.PathReader (getXdgConfig)
 import Effects.FileSystem.PathReader qualified as PR
 import Effects.FileSystem.PathWriter qualified as PW
@@ -32,7 +29,7 @@ runTodo ::
     MonadFail m,
     MonadFileReader m,
     MonadFileWriter m,
-    MonadHandleWriter m,
+    MonadHaskeline m,
     MonadOptparse m,
     MonadPathReader m,
     MonadPathWriter m,

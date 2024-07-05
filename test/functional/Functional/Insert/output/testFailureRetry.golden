@@ -1,28 +1,41 @@
 
 Create a task (y/n)? 
+
 Task id for parent group (leave blank for no parent)? 
+
 Create (empty) task group (y/n)? 
 
+
 Task id: 
+
 The predicate (TaskIdNotMember) failed with the exception: Found duplicate tasks with id 'groceries'.
 
 
 Task id: 
-Task status (completed | in-progress | not-started | blocked: <ids>): 
-Bad response: Unexpected status value: 'bad_status'
 
 Task status (completed | in-progress | not-started | blocked: <ids>): 
-Task priority (low | normal | high): 
-Bad response: Unexpected priority value: bad_priority
+
+Bad Response: Unexpected status value: 'bad_status'
+
+Task status (completed | in-progress | not-started | blocked: <ids>): 
 
 Task priority (low | normal | high): 
+
+Bad Response: Unexpected priority value: bad_priority
+
+Task priority (low | normal | high): 
+
 Description (leave blank for none): 
-Deadline (leave blank for none): 
-Bad answer: Could not parse timestamp: bad_deadline
 
 Deadline (leave blank for none): 
+
+Bad Response: Could not parse timestamp: bad_deadline
+
+Deadline (leave blank for none): 
+
 
 Create a task (y/n)? 
+
 Successfully added task. Modified tasks:
 
 

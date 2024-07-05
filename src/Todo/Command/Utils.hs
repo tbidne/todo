@@ -3,57 +3,61 @@ module Todo.Command.Utils
     askYesNoQ,
     getStrippedLine,
     getStrippedLineEmpty,
-
-    -- * Buffering
-    withNoBuffering,
-    noBuffering,
-    lineBuffering,
   )
 where
 
 import Data.Text qualified as T
-import Effects.FileSystem.HandleWriter
-  ( BufferMode (LineBuffering, NoBuffering),
-    MonadHandleWriter,
-  )
-import Effects.FileSystem.HandleWriter qualified as HW
-import System.IO qualified as IO
+import Effects.Exception (throwString)
+import Effects.Haskeline qualified as Haskeline
 import Todo.Prelude
 
-withNoBuffering :: (HasCallStack, MonadHandleWriter m) => m a -> m a
-withNoBuffering m = noBuffering *> m <* lineBuffering
-
-noBuffering :: (HasCallStack, MonadHandleWriter m) => m ()
-noBuffering = setBuffering NoBuffering
-
-lineBuffering :: (HasCallStack, MonadHandleWriter m) => m ()
-lineBuffering = setBuffering LineBuffering
-
-setBuffering :: (HasCallStack, MonadHandleWriter m) => BufferMode -> m ()
-setBuffering buffMode = setBuff IO.stdin *> setBuff IO.stdout
-  where
-    setBuff h = HW.hSetBuffering h buffMode
-
-askYesNoQ :: (HasCallStack, MonadTerminal m) => Text -> m Bool
+askYesNoQ ::
+  ( HasCallStack,
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
+  ) =>
+  Text ->
+  m Bool
 askYesNoQ qsn = go
   where
     go = do
-      putText qsn
-      ans <- getStrippedLine
+      ans <- getStrippedLine qsn
 
       if
         | ans == "y" -> pure True
         | ans == "n" -> pure False
         | otherwise -> do
-            putTextLn "Bad answer, expected 'y' or 'n'."
+            let err =
+                  mconcat
+                    [ "Bad answer, expected 'y' or 'n', received: '",
+                      ans,
+                      "'"
+                    ]
+            putTextLn err
             go
 
-getStrippedLine :: (HasCallStack, MonadTerminal m) => m Text
-getStrippedLine = T.strip . pack <$> getLine
+getStrippedLine ::
+  ( HasCallStack,
+    MonadHaskeline m,
+    MonadThrow m
+  ) =>
+  Text ->
+  m Text
+getStrippedLine prompt = do
+  Haskeline.getInputLine (unpack prompt) >>= \case
+    Nothing -> throwString "Input empty"
+    Just t -> pure $ T.strip $ pack t
 
-getStrippedLineEmpty :: (HasCallStack, MonadTerminal m) => m (Maybe Text)
-getStrippedLineEmpty =
-  getStrippedLine <&> \txt ->
+getStrippedLineEmpty ::
+  ( HasCallStack,
+    MonadHaskeline m,
+    MonadThrow m
+  ) =>
+  Text ->
+  m (Maybe Text)
+getStrippedLineEmpty prompt =
+  getStrippedLine prompt <&> \txt ->
     if T.null txt
       then Nothing
       else Just txt

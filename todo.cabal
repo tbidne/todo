@@ -53,6 +53,7 @@ library
   autogen-modules: Paths_todo
   exposed-modules:
     Todo
+    Todo.AppT
     Todo.Command.Delete
     Todo.Command.Insert
     Todo.Command.List
@@ -82,10 +83,13 @@ library
     , containers            >=0.6.2.1   && <0.8
     , effects-exceptions    ^>=0.1
     , effects-fs            ^>=0.1
+    , effects-haskeline     ^>=0.1
     , effects-optparse      ^>=0.1
     , effects-terminal      ^>=0.1
     , effects-time          ^>=0.1
     , filepath              >=1.4.2.1   && <1.6
+    , haskeline             ^>=0.8.1.1
+    , mtl                   >=2.2.1     && <2.4
     , nonempty-containers   >=0.3.4.2   && <0.4
     , optparse-applicative  >=0.15      && <0.19
     , pretty-terminal       ^>=0.1
@@ -106,6 +110,7 @@ executable todo
   main-is:        Main.hs
   build-depends:
     , base
+    , haskeline
     , todo
 
   hs-source-dirs: app
@@ -156,6 +161,7 @@ test-suite functional
     , effects-env
     , effects-exceptions
     , effects-fs
+    , effects-haskeline
     , effects-terminal
     , env-guard           ^>=0.2
     , mtl                 >=2.2.1    && <2.4
