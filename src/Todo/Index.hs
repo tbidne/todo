@@ -1,6 +1,6 @@
 module Todo.Index
   ( -- * Types
-    Index (unIndex),
+    Index (taskList, path),
 
     -- * Creation
     readIndex,
@@ -54,6 +54,7 @@ import Data.Maybe (isJust)
 import Data.Sequence qualified as Seq
 import Data.Set qualified as Set
 import Data.Set.NonEmpty qualified as NESet
+import Data.Tuple (uncurry)
 import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
 import Todo.Data.Task
   ( SingleTask (status, taskId),
@@ -63,7 +64,7 @@ import Todo.Data.Task
 import Todo.Data.TaskId (TaskId (unTaskId))
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskStatus (TaskStatus (Blocked))
-import Todo.Index.Internal (Index (UnsafeIndex, unIndex))
+import Todo.Index.Internal (Index (UnsafeIndex, path, taskList))
 import Todo.Prelude hiding (filter, toList)
 
 -- | Reads the file to an 'Index'.
@@ -74,21 +75,20 @@ readIndex ::
   ) =>
   OsPath ->
   m Index
-readIndex = readTaskList >=> fromList
+readIndex = readTaskList >=> uncurry fromList
 
 -- | Writes the index to the path.
 writeIndex ::
   ( HasCallStack,
     MonadFileWriter m
   ) =>
-  OsPath ->
   Index ->
   m ()
-writeIndex path index = writeBinaryFile path encoded
+writeIndex (UnsafeIndex taskList path) = writeBinaryFile path encoded
   where
     encoded =
       BSL.toStrict
-        $ AsnPretty.encodePretty' AsnPretty.defConfig index.unIndex
+        $ AsnPretty.encodePretty' AsnPretty.defConfig taskList
 
 -- | Reads the file to a task list.
 readTaskList ::
@@ -97,25 +97,25 @@ readTaskList ::
     MonadThrow m
   ) =>
   OsPath ->
-  m (List SomeTask)
+  m (Tuple2 OsPath (List SomeTask))
 readTaskList path = do
   contents <- readBinaryFile path
   case Asn.eitherDecodeStrict contents of
-    Right xs -> pure xs
+    Right xs -> pure (path, xs)
     Left err -> throwM $ AesonException err
 
 -- | Inserts a task into the index. Note that this does __not__ check that
 -- the id is not a duplicate i.e. this should only be used when the check has
 -- already been performed.
 reallyUnsafeInsert :: SomeTask -> Index -> Index
-reallyUnsafeInsert task (UnsafeIndex idx) = UnsafeIndex $ task : idx
+reallyUnsafeInsert task (UnsafeIndex idx path) = UnsafeIndex (task : idx) path
 
 -- | Inserts a new task t1 at the task id. Like 'reallyUnsafeInsert', this is
 -- unsafe in that t1's id is not verified for uniqueness, and the given
 -- task id may not exist in the index (in which case t1 will not be added).
 reallyUnsafeInsertAtTaskId :: TaskId -> SomeTask -> Index -> Index
-reallyUnsafeInsertAtTaskId taskId task (UnsafeIndex idx) =
-  UnsafeIndex $ foldr go [] idx
+reallyUnsafeInsertAtTaskId taskId task (UnsafeIndex idx path) =
+  UnsafeIndex (foldr go [] idx) path
   where
     go :: SomeTask -> List SomeTask -> List SomeTask
     go st@(SomeTaskSingle _) acc = st : acc
@@ -127,8 +127,8 @@ reallyUnsafeInsertAtTaskId taskId task (UnsafeIndex idx) =
            in SomeTaskGroup (tg {subtasks = Seq.fromList subtasks'}) : acc
 
 -- | Returns a list representation of the index.
-toList :: Index -> List SomeTask
-toList = (.unIndex)
+toList :: Index -> (OsPath, List SomeTask)
+toList (UnsafeIndex taskList path) = (path, taskList)
 
 type IdSet = Set TaskId
 
@@ -154,8 +154,8 @@ type FromListAcc = Tuple2 IdSet IdRefMap
 
 -- | Parses a list into an Index. Throws errors for duplicate ids or id
 -- references that do not exist (i.e. Blocked status).
-fromList :: forall m. (HasCallStack, MonadThrow m) => List SomeTask -> m Index
-fromList xs = do
+fromList :: forall m. (HasCallStack, MonadThrow m) => OsPath -> List SomeTask -> m Index
+fromList path xs = do
   (foundKeys, blockedKeys) <- mkMaps
 
   forWithKey_ blockedKeys $ \taskId refIds -> do
@@ -164,7 +164,7 @@ fromList xs = do
       [] -> pure ()
       (r : rs) -> throwM $ MkBlockedIdRefE taskId (NESet.fromList (r :| rs))
 
-  pure $ UnsafeIndex xs
+  pure $ UnsafeIndex xs path
   where
     mkMaps = foldr go (pure (Set.empty, Map.empty)) xs
 
@@ -248,11 +248,11 @@ filterOnIds taskIds = filter go
 
 -- | Filters the index on some predicate.
 filter :: (SomeTask -> Bool) -> Index -> Index
-filter p = UnsafeIndex . L.filter p . (.unIndex)
+filter p (UnsafeIndex taskList path) = UnsafeIndex (L.filter p taskList) path
 
 -- | Looks up the TaskId in the Index.
 lookup :: TaskId -> Index -> Maybe SomeTask
-lookup taskId index = foldMapAlt go idx
+lookup taskId (UnsafeIndex taskList _) = foldMapAlt go taskList
   where
     go (SomeTaskSingle t) =
       if t.taskId == taskId
@@ -262,8 +262,6 @@ lookup taskId index = foldMapAlt go idx
       if tg.taskId == taskId
         then Just $ SomeTaskGroup tg
         else foldMapAlt go tg.subtasks
-
-    idx = index.unIndex
 
 -- | Returns 'True' iff the TaskId exists in the index.
 member :: TaskId -> Index -> Bool
@@ -297,12 +295,12 @@ type DeleteAcc =
 -- | If the task id exists in the index, returns the corresponding task and
 -- the index with that task removed.
 delete :: TaskId -> Index -> Either DeleteE (Tuple2 Index SomeTask)
-delete taskId index@(UnsafeIndex idx) = case foldr go ([], Nothing) idx of
+delete taskId index@(UnsafeIndex idx path) = case foldr go ([], Nothing) idx of
   (_, Nothing) -> Left $ DeleteTaskIdNotFound $ MkTaskIdNotFoundE taskId
   (newIdx, Just st) ->
     let blockingIds = getBlockingIds index
      in case Map.lookup taskId blockingIds of
-          Nothing -> Right (UnsafeIndex newIdx, st)
+          Nothing -> Right (UnsafeIndex newIdx path, st)
           Just blockedIds -> Left $ DeleteRefId taskId blockedIds
   where
     go :: SomeTask -> DeleteAcc -> DeleteAcc
@@ -322,7 +320,7 @@ delete taskId index@(UnsafeIndex idx) = case foldr go ([], Nothing) idx of
 --
 -- t3 -> [t1, t2]
 getBlockingIds :: Index -> Map TaskId (NESet TaskId)
-getBlockingIds (UnsafeIndex idx) = foldl' go Map.empty idx
+getBlockingIds (UnsafeIndex idx _path) = foldl' go Map.empty idx
   where
     go :: Map TaskId (NESet TaskId) -> SomeTask -> Map TaskId (NESet TaskId)
     go mp (SomeTaskSingle t) = case t.status of

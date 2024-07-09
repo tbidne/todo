@@ -23,4 +23,4 @@ import Todo.Prelude as X hiding (IO)
 import Prelude as X (IO)
 
 examplePath :: OsPath
-examplePath = [osp|examples|] </> [osp|tasks.json|]
+examplePath = [osp|examples|] </> [osp|index.json|]

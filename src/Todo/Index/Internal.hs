@@ -7,5 +7,10 @@ import Todo.Data.Task (SomeTask)
 import Todo.Prelude
 
 -- | Todo index.
-newtype Index = UnsafeIndex {unIndex :: List SomeTask}
+data Index = UnsafeIndex
+  { -- | Task list.
+    taskList :: List SomeTask,
+    -- | Path.
+    path :: OsPath
+  }
   deriving stock (Eq, Show)

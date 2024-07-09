@@ -18,9 +18,9 @@ tests testEnv =
 testInsertOne :: IO TestEnv -> TestTree
 testInsertOne testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|tasks.json|]
+  let newPath = testDir </> [osp|index.json|]
       insertArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -34,7 +34,7 @@ testInsertOne testEnv = goldenVsFile desc goldenPath actualPath $ do
   insertResult <- runTodoResponses responses insertArgs
 
   let listArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -67,9 +67,9 @@ testInsertOne testEnv = goldenVsFile desc goldenPath actualPath $ do
 testInsertGroup :: IO TestEnv -> TestTree
 testInsertGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|tasks.json|]
+  let newPath = testDir </> [osp|index.json|]
       insertArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -83,7 +83,7 @@ testInsertGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
   insertResult <- runTodoResponses responses insertArgs
 
   let listArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -130,9 +130,9 @@ testInsertGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
 testInsertNestedGroup :: IO TestEnv -> TestTree
 testInsertNestedGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|tasks.json|]
+  let newPath = testDir </> [osp|index.json|]
       insertArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -146,7 +146,7 @@ testInsertNestedGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
   insertResult <- runTodoResponses responses insertArgs
 
   let listArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -179,9 +179,9 @@ testInsertNestedGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
 testInsertGroupFailureRetry :: IO TestEnv -> TestTree
 testInsertGroupFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|tasks.json|]
+  let newPath = testDir </> [osp|index.json|]
       insertArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -195,7 +195,7 @@ testInsertGroupFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ 
   insertResult <- runTodoResponses responses insertArgs
 
   let listArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -230,9 +230,9 @@ testInsertGroupFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ 
 testFailureRetry :: IO TestEnv -> TestTree
 testFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|tasks.json|]
+  let newPath = testDir </> [osp|index.json|]
       insertArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -246,7 +246,7 @@ testFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ do
   insertResult <- runTodoResponses responses insertArgs
 
   let listArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",

@@ -66,9 +66,9 @@ testDeleteGoldenRunner ::
   TestTree
 testDeleteGoldenRunner runner desc name taskId testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|tasks.json|]
+  let newPath = testDir </> [osp|index.json|]
       deleteArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -83,7 +83,7 @@ testDeleteGoldenRunner runner desc name taskId testEnv = goldenVsFile desc golde
   deleteResult <- runner deleteArgs
 
   let listArgs =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "--color",
           "off",
@@ -103,7 +103,7 @@ getTestDir' :: IO TestEnv -> OsPath -> IO OsPath
 getTestDir' testEnv name = getTestDir testEnv ([osp|delete|] </> name)
 
 exampleJson :: OsPath
-exampleJson = [osp|examples|] </> [osp|tasks.json|]
+exampleJson = [osp|examples|] </> [osp|index.json|]
 
 outputDir :: FilePath
 outputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "Delete" `cfp` "output"

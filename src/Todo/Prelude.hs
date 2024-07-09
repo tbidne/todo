@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MagicHash #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# OPTIONS_GHC -Wno-deprecations #-}
 
 {- ORMOLU_DISABLE -}
@@ -29,6 +30,7 @@ module Todo.Prelude
 
     -- * Develop
     todo,
+    unimpl,
     traceFile,
     traceFileLine,
 
@@ -39,6 +41,8 @@ module Todo.Prelude
     displayRefineException',
     joinRefined,
     stripNulls,
+    getTodoXdgConfig,
+    throwLeft,
     whileM,
     whileM_,
     whileApplyM,
@@ -131,6 +135,7 @@ import Effects.FileSystem.FileWriter as X
     appendFileUtf8,
   )
 import Effects.FileSystem.PathReader as X (MonadPathReader)
+import Effects.FileSystem.PathReader qualified as PR
 import Effects.FileSystem.PathWriter as X (MonadPathWriter)
 import Effects.FileSystem.Utils as X (OsPath, encodeUtf8, osp, (</>))
 import Effects.FileSystem.Utils qualified as FsUtils
@@ -226,6 +231,10 @@ showt = pack . show
 todo :: forall {r :: RuntimeRep} (a :: TYPE r). (HasCallStack) => a
 todo = raise# (errorCallWithCallStackException "Prelude.todo: not yet implemented" ?callStack)
 {-# WARNING in "x-todo" todo "todo remains in code" #-}
+
+unimpl :: forall {r :: RuntimeRep} (a :: TYPE r). (HasCallStack) => a
+unimpl = raise# (errorCallWithCallStackException "Prelude.unimpl: intentionally implemented" ?callStack)
+{-# WARNING in "x-unimpl" unimpl "unimpl remains in code" #-}
 
 traceFile :: FilePath -> Text -> a -> a
 traceFile path txt x = writeFn `seq` x
@@ -352,3 +361,16 @@ displayExceptiont = pack . displayException
 
 joinRefined :: Refined p (Refined q x) -> Refined (q && p) x
 joinRefined = coerce
+
+getTodoXdgConfig :: (HasCallStack, MonadPathReader m) => m OsPath
+getTodoXdgConfig = PR.getXdgConfig [osp|todo|]
+
+throwLeft ::
+  ( Exception e,
+    HasCallStack,
+    MonadThrow m
+  ) =>
+  Either e a ->
+  m a
+throwLeft (Right x) = pure x
+throwLeft (Left err) = throwM err

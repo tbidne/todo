@@ -9,5 +9,8 @@ cradle:
     - path: "./test/unit"
       component: "todo:test:unit"
 
+    - path: "./test/integration"
+      component: "todo:test:integration"
+
     - path: "./test/functional"
       component: "todo:test:functional"

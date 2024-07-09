@@ -5,6 +5,7 @@ where
 
 import Todo.Command.Utils qualified as CUtils
 import Todo.Data.TaskId (TaskId)
+import Todo.Index (Index)
 import Todo.Index qualified as Index
 import Todo.Prelude
 import Todo.Render qualified as Render
@@ -20,8 +21,8 @@ deleteTask ::
     MonadTime m,
     MonadThrow m
   ) =>
-  -- | Path to tasks.json.
-  OsPath ->
+  -- | Index.
+  Index ->
   -- | Is color enabled.
   ColorSwitch ->
   -- | Is unicode enabled.
@@ -29,8 +30,7 @@ deleteTask ::
   -- | Task id to delete.
   TaskId ->
   m ()
-deleteTask tasksPath color unicode taskId = do
-  index <- Index.readIndex tasksPath
+deleteTask index color unicode taskId = do
   case Index.delete taskId index of
     Left err -> throwM err
     Right (newIndex, st) -> do
@@ -42,5 +42,5 @@ deleteTask tasksPath color unicode taskId = do
       ans <- CUtils.askYesNoQ "Are you sure you want to delete (y/n)? "
 
       when ans $ do
-        Index.writeIndex tasksPath newIndex
+        Index.writeIndex newIndex
         putTextLn "Successfully deleted task"

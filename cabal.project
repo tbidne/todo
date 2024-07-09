@@ -17,6 +17,7 @@ package todo
     -Wunused-packages
     -Wunused-type-patterns
     -Wno-unticked-promoted-constructors
+    -Wno-x-experimental
 
 optimization: 2
 test-show-details: direct
@@ -34,7 +35,7 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/tbidne/monad-effects.git
-    tag: 9a18d6777dbf7641b15fa4de43a2eba7755e45e0
+    tag: 29d9463487308e1f137451cf78c75c9a2eca6301
     subdir:
       lib/effects-env
       lib/effects-exceptions

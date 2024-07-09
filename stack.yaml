@@ -18,6 +18,7 @@ ghc-options:
     -Wunused-packages
     -Wunused-type-patterns
     -Wno-unticked-promoted-constructors
+    -Wno-x-experimental
 extra-deps:
   - env-guard-0.2@sha256:99b89cde1ed6d599880dfbc72b2c9a75ced57b7800a70dcb57d3e3e89e42184c,1312
   - text-display-0.0.5.2@sha256:6e6a5bf1c83dfa6c34692ed5d8ea87f1bd385984309b42c302f2156f4d82477b,2670
@@ -26,7 +27,7 @@ extra-deps:
   - git: https://github.com/tbidne/bounds.git
     commit: f93b202c9d154b25b42b048570cf6648451aa577
   - git: https://github.com/tbidne/monad-effects.git
-    commit: 9a18d6777dbf7641b15fa4de43a2eba7755e45e0
+    commit: 29d9463487308e1f137451cf78c75c9a2eca6301
     subdirs:
       - lib/effects-env
       - lib/effects-exceptions

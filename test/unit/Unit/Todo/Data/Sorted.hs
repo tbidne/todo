@@ -17,7 +17,7 @@ import Todo.Data.Task
     TaskGroup (taskId),
   )
 import Todo.Data.TaskId (TaskId (unTaskId))
-import Todo.Index (Index (unIndex))
+import Todo.Index (Index (taskList))
 import Todo.Index qualified as Index
 import Unit.Prelude
 
@@ -160,7 +160,7 @@ testExampleSort
     expected === ids
 
 getExampleList :: IO (List SomeTask)
-getExampleList = (.unIndex) <$> Index.readIndex examplePath
+getExampleList = (.taskList) <$> Index.readIndex examplePath
 
 getIds :: SortedTasks -> List Text
 getIds = Sorted.traverseSorted (.taskId.unTaskId) (.taskId.unTaskId)

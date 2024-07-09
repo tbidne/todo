@@ -3,6 +3,7 @@
 
 module Functional.List (tests) where
 
+import Control.Exception (IOException)
 import Data.Aeson (AesonException)
 import Data.Text qualified as T
 import Functional.Prelude
@@ -13,8 +14,7 @@ tests testEnv =
   testGroup
     "List"
     [ sortExampleTests,
-      failureTests,
-      miscTests testEnv
+      failureTests testEnv
     ]
 
 sortExampleTests :: TestTree
@@ -103,8 +103,8 @@ testExampleStatusPriorityUnicode =
     (Just "status_priority")
     "example_status_priority_unicode"
 
-failureTests :: TestTree
-failureTests =
+failureTests :: IO TestEnv -> TestTree
+failureTests testEnv =
   testGroup
     "Failures"
     [ testIdDupsFails,
@@ -113,7 +113,8 @@ failureTests =
       testStatusBlockedBadRefFails,
       testStatusBadFails,
       testStatusBlockedEmptyFails,
-      testStatusBlockedIdsEmptyFails
+      testStatusBlockedIdsEmptyFails,
+      testNonExtantPathFails testEnv
     ]
 
 testIdDupsFails :: TestTree
@@ -165,56 +166,40 @@ testStatusBlockedIdsEmptyFails =
     "Blocked ids empty status fails"
     "status_blocked_ids_empty"
 
-miscTests :: IO TestEnv -> TestTree
-miscTests testEnv =
-  testGroup
-    "Miscellaneous"
-    [ testNonExtantPathSucceeds testEnv
-    ]
-
-testNonExtantPathSucceeds :: IO TestEnv -> TestTree
-testNonExtantPathSucceeds testEnv = goldenVsFile desc goldenPath actualPath $ do
+testNonExtantPathFails :: IO TestEnv -> TestTree
+testNonExtantPathFails testEnv = goldenVsFile desc goldenPath actualPath $ do
   testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|non-extant|] </> [osp|tasks.json|]
+  let newPath = testDir </> [osp|non-extant|] </> [osp|index.json|]
       args =
-        [ "--path",
+        [ "--index-path",
           unsafeDecodeOsToFp newPath,
           "list"
         ]
 
   -- run list
-  result <- massagePath <$> runTodo args
+  result <- massagePath <$> runTodoException @IOException args
+
+  let expectedInfix =
+        mconcat
+          [ "todo/functional/list/testNonExtantPathFails/non-extant/",
+            "index.json: withFile: does not exist"
+          ]
 
   -- Result includes a non-deterministic dir like:
   --
-  --     /some/dirs/todo/functional/list/testNonExtantPathSucceeds/non-extant/tasks.json
+  --     /some/dirs/todo/functional/list/testNonExtantPathSucceeds/non-extant/index.json
   --
-  -- To make this test work, we strip the problem dir i.e. .../todo/functional/rest...
-  let prologue = "File does not exist at path: '"
-      epilogue = "/todo/functional/list/testNonExtantPathSucceeds/non-extant/tasks.json'. Creating one."
-
-      mResultFixed = do
-        -- strip whitespace since tests will have some trailing
-        pStripped <- T.stripPrefix prologue (T.strip result)
-        _ <- T.stripSuffix epilogue pStripped
-
-        pure $ prologue <> "..." <> epilogue
-
-      resultFixed = case mResultFixed of
-        Just r -> r
-        Nothing ->
-          error
-            $ mconcat
-              [ "Output did not match expected format: '",
-                unpack result,
-                "'"
-              ]
+  -- We instead verify the infix expectation
+  let resultFixed =
+        if expectedInfix `T.isInfixOf` result
+          then "..." <> expectedInfix <> "..."
+          else result
 
   writeActualFile actualPath resultFixed
   where
-    name = [osp|testNonExtantPathSucceeds|]
-    desc = "Non-extant path succeeds"
-    path = outputDir `cfp` "testNonExtantPathSucceeds"
+    name = [osp|testNonExtantPathFails|]
+    desc = "Non-extant path fails"
+    path = outputDir `cfp` "testNonExtantPathFails"
     goldenPath = path <> ".golden"
     actualPath = path <> ".actual"
 
@@ -235,8 +220,8 @@ testGoldenExample extraArgs desc mSortArg goldenFilenName = goldenVsFile desc go
   writeActualFile actualPath result
   where
     args =
-      [ "--path",
-        "examples" `cfp` "tasks.json",
+      [ "--index-path",
+        "examples" `cfp` "index.json",
         "--color",
         "off"
       ]
@@ -254,7 +239,7 @@ testGolden runner desc fileName = goldenVsFile desc goldenPath actualPath $ do
   writeActualFile actualPath result
   where
     args =
-      [ "--path",
+      [ "--index-path",
         inputDir `cfp` fileName <> ".json",
         "--color",
         "off",

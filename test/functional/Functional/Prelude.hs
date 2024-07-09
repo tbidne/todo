@@ -177,4 +177,4 @@ concatSeq :: Seq Text -> Text
 concatSeq = fold . Seq.intersperse "\n"
 
 exampleJsonOsPath :: OsPath
-exampleJsonOsPath = [osp|examples|] </> [osp|tasks.json|]
+exampleJsonOsPath = [osp|examples|] </> [osp|index.json|]

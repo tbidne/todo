@@ -58,30 +58,28 @@ insertTask ::
   forall m.
   ( HasCallStack,
     MonadFail m,
-    MonadFileReader m,
     MonadFileWriter m,
     MonadHaskeline m,
     MonadTerminal m,
     MonadTime m,
     MonadThrow m
   ) =>
-  OsPath ->
+  -- | Index.
+  Index ->
   -- | Is color enabled.
   ColorSwitch ->
   -- | Is unicode enabled.
   UnicodeSwitch ->
   m ()
-insertTask tasksPath color unicode = do
-  index <- Index.readIndex tasksPath
-
+insertTask index color unicode = do
   (newIndex, newTaskIds) <- whileApplySetM index getMoreTasksAns mkSomeTask
 
-  Index.writeIndex tasksPath newIndex
+  Index.writeIndex newIndex
 
   currTime <- getSystemZonedTime
 
   let indexDiff = Index.filterOnIds newTaskIds newIndex
-      sorted = Sorted.sortTasks Nothing (Index.toList indexDiff)
+      sorted = Sorted.sortTasks Nothing (snd $ Index.toList indexDiff)
 
   putTextLn "Successfully added task. Modified tasks:\n"
   putTextLn

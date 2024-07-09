@@ -40,6 +40,9 @@ jobs:
       - name: Unit tests
         run: cabal test unit --test-options '--hedgehog-tests 10000'
 
+      - name: Integration tests
+        run: cabal test integration
+
       - name: Functional tests
         id: functional
         run: cabal test functional

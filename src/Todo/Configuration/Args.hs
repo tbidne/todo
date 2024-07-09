@@ -1,4 +1,4 @@
-module Todo.Runner.Args
+module Todo.Configuration.Args
   ( Args (..),
     Command (..),
     getArgs,
@@ -31,7 +31,21 @@ import Options.Applicative.Help.Chunk qualified as Chunk
 import Options.Applicative.Help.Pretty qualified as Pretty
 import Options.Applicative.Types (ArgPolicy (Intersperse))
 import Paths_todo qualified as Paths
+import Todo.Configuration.ConfigPhase
+  ( ConfigPhase (ConfigPhaseArgs),
+  )
+import Todo.Configuration.Core
+  ( CoreConfig (MkCoreConfig, colorSwitch, index, unicodeSwitch),
+    IndexConfig (MkIndexConfig, name, path),
+  )
 import Todo.Data.Sorted
+  ( SortType
+      ( SortPriority,
+        SortPriorityStatus,
+        SortStatus,
+        SortStatusPriority
+      ),
+  )
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Prelude
@@ -46,14 +60,11 @@ getArgs = execParser parserInfoArgs
 
 -- | CLI args.
 data Args = MkArgs
-  { -- | Command.
+  { -- | Core config.
+    coreConfig :: CoreConfig ConfigPhaseArgs,
+    -- | Command.
     command :: Command,
-    -- | Optional coloring.
-    colorSwitch :: Maybe ColorSwitch,
-    -- | Path to todo json file.
-    path :: Maybe OsPath,
-    -- | Optional unicode usage.
-    unicodeSwitch :: Maybe UnicodeSwitch
+    tomlPath :: Maybe OsPath
   }
   deriving stock (Eq, Show)
 
@@ -78,17 +89,27 @@ parserInfoArgs =
 argsParser :: Parser Args
 argsParser = do
   colorSwitch <- colorParser
-  path <- pathParser
+  tomlPath <- configPathParser
+  indexName <- indexNameParser
+  indexPath <- indexPathParser
   unicodeSwitch <- unicodeParser
   _ <- version
   _ <- OA.helper
   command <- commandParser
   pure
     $ MkArgs
-      { colorSwitch,
+      { coreConfig =
+          MkCoreConfig
+            { colorSwitch,
+              index =
+                MkIndexConfig
+                  { name = indexName,
+                    path = indexPath
+                  },
+              unicodeSwitch
+            },
         command,
-        path,
-        unicodeSwitch
+        tomlPath
       }
 
 version :: Parser (a -> a)
@@ -138,23 +159,56 @@ unicodeParser =
         "off" -> pure UnicodeOff
         other -> fail $ "Unrecognized unicode: " <> unpack other
 
-pathParser :: Parser (Maybe OsPath)
-pathParser =
+configPathParser :: Parser (Maybe OsPath)
+configPathParser =
   OA.optional
     $ OA.option
       osPath
       ( mconcat
-          [ OA.long "path",
-            OA.metavar "(none | PATH)",
+          [ OA.long "config-path",
+            OA.metavar "PATH",
             mkHelp helpTxt
           ]
       )
   where
     helpTxt =
       mconcat
-        [ "Path to todo json index. If the path is not given, we look in the ",
-          "XDG config directory e.g. ~/.config/todo/todo.config."
+        [ "Path to toml config. If the path is not given, we look in the ",
+          "XDG config directory e.g. ~/.config/todo/config.toml."
         ]
+
+indexNameParser :: Parser (Maybe Text)
+indexNameParser =
+  OA.optional
+    $ OA.option
+      OA.str
+      ( mconcat
+          [ OA.long "index-name",
+            OA.metavar "STR",
+            mkHelp helpTxt
+          ]
+      )
+  where
+    helpTxt =
+      mconcat
+        [ "Name of the index to use. Used in conjunction with the config ",
+          "file's index-legend field, to select a legend path from a list ",
+          "of paths."
+        ]
+
+indexPathParser :: Parser (Maybe OsPath)
+indexPathParser =
+  OA.optional
+    $ OA.option
+      osPath
+      ( mconcat
+          [ OA.long "index-path",
+            OA.metavar "PATH",
+            mkHelp helpTxt
+          ]
+      )
+  where
+    helpTxt = "Path to todo json index. Overrides --index-name."
 
 data Command
   = CmdDelete TaskId

@@ -1,0 +1,33 @@
+###############################################################################
+#                                   DISPLAY                                   #
+###############################################################################
+
+# If enabled, the terminal output uses colors. Defaults to true.
+color = false
+
+# If enabled, the terminal output uses unicode emojis. Defaults to true.
+unicode = false
+
+###############################################################################
+#                                  Index Path                                 #
+###############################################################################
+
+# The following values determine how we find the index file. The simplest
+# method is index-path, which overrides everything else. If it isn't set,
+# then we can use index-legend to list several paths, then set index-name
+# to pick a value out of the legend. Finally, if nothing is set (or given on
+# the CLI), then we look in the XDG config directory, e.g.
+# ~/.config/todo/index.json.
+
+# Sets the path to the index. Overrides index-name + legend.
+index-path = 'examples/index.json'
+
+# Selects a name from index-legend.
+index-name = 'default'
+
+# Map from names to paths. Allows one to specific a name rather than a full
+# path.
+index-legend = [
+  { name = 'default', path = 'examples/index.json' },
+  { name = 'another', path = 'examples/index2.json' }
+]
