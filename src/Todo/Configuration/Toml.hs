@@ -126,9 +126,7 @@ decodeToml ::
   ) =>
   OsPath ->
   m Toml
-decodeToml path = do
-  contents <- FR.readFileUtf8ThrowM path
-  throwLeft $ TOML.decode contents
+decodeToml = FR.readFileUtf8ThrowM >=> throwLeft . TOML.decode
 
 newtype ConfigNotFoundE = MkConfigNotFoundE OsPath
   deriving stock (Eq, Show)
