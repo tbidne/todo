@@ -1,0 +1,37 @@
+- id: some_group
+  status: not-started
+  priority: normal
+
+  - id: subtask2
+    status: not-started
+    priority: normal
+
+  - id: subtask1
+    status: not-started
+    priority: low
+
+  - id: nested_group
+    status: in-progress
+    priority: high
+
+    - id: nested_subtask1
+      status: completed
+      priority: high
+
+    - id: nested_subtask2
+      status: not-started
+      priority: high
+
+    - id: nested_subtask3
+      status: not-started
+      priority: normal
+
+- id: some_task
+  status: not-started
+  priority: low
+
+- id: completed_task
+  status: completed
+  priority: high
+
+

@@ -30,7 +30,8 @@ sortExampleTests =
       testExamplePriorityStatus,
       testExamplePriorityStatusUnicode,
       testExampleStatusPriority,
-      testExampleStatusPriorityUnicode
+      testExampleStatusPriorityUnicode,
+      testNestedDefaultSort
     ]
 
 testExample :: TestTree
@@ -102,6 +103,13 @@ testExampleStatusPriorityUnicode =
     "Sorted by status_priority (unicode)"
     (Just "status_priority")
     "example_status_priority_unicode"
+
+testNestedDefaultSort :: TestTree
+testNestedDefaultSort =
+  testGolden
+    runTodo
+    "Sorts nested by default"
+    "nested_sort"
 
 failureTests :: IO TestEnv -> TestTree
 failureTests testEnv =
