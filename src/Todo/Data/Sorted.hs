@@ -62,7 +62,7 @@ sortTasks mSortType xs = case mSortType of
     (completedTasks, incompleteTasks) = L.partition Task.someTaskIsCompleted xs
 
     defSort =
-      sortSomeTasks (cSomeTask (\x -> (Down x.status, Down x.priority, x.taskId)))
+      sortSomeTasks (cSomeTask (\x -> (Down x.priority, Down x.status, x.taskId)))
 
 sortSomeTasks ::
   (SomeTask -> SomeTask -> Ordering) ->

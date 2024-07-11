@@ -2,14 +2,6 @@
   status: not-started
   priority: normal
 
-  - id: subtask2
-    status: not-started
-    priority: normal
-
-  - id: subtask1
-    status: not-started
-    priority: low
-
   - id: nested_group
     status: in-progress
     priority: high
@@ -25,6 +17,14 @@
     - id: nested_subtask3
       status: not-started
       priority: normal
+
+  - id: subtask2
+    status: not-started
+    priority: normal
+
+  - id: subtask1
+    status: not-started
+    priority: low
 
 - id: some_task
   status: not-started

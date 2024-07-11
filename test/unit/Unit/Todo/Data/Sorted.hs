@@ -43,17 +43,17 @@ testExample =
     "Example"
     "testExample"
     Nothing
-    [ "groceries",
-      "bananas",
-      "apples",
+    [ "fix_car",
+      "paycheck",
       "soccer_match",
       "pack_bananas",
       "equipment",
       "cleats",
       "ball",
-      "fix_car",
       "haircut",
-      "paycheck",
+      "groceries",
+      "bananas",
+      "apples",
       "walk_dog"
     ]
 
@@ -153,7 +153,7 @@ testExampleSort
     let sorted = Sorted.sortTasks mSortType ys
         ids = getIds sorted
 
-    annotateShow sorted
+    annotateShow ids
 
     expected === ids
 

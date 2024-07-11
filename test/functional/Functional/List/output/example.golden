@@ -1,13 +1,13 @@
-- id: groceries
-  status: blocked: <fix_car>, <paycheck>, 'store closed'
+- id: fix_car
+  status: not-started
+  priority: high
+  deadline: 2024-06-22 12:15:00 UTC
+  description: Car needs brakes fixed
 
-  - id: bananas
-    status: not-started
-    priority: high
-
-  - id: apples
-    status: not-started
-    priority: normal
+- id: paycheck
+  status: in-progress
+  priority: high
+  deadline: 2024-08-12 12:00:00
 
 - id: soccer_match
   status: blocked: <fix_car>, <groceries>
@@ -30,20 +30,20 @@
       status: blocked: <fix_car>
       priority: normal
 
-- id: fix_car
-  status: not-started
-  priority: high
-  deadline: 2024-06-22 12:15:00 UTC
-  description: Car needs brakes fixed
-
 - id: haircut
   status: not-started
   priority: low
 
-- id: paycheck
-  status: in-progress
-  priority: high
-  deadline: 2024-08-12 12:00:00
+- id: groceries
+  status: blocked: <fix_car>, <paycheck>, 'store closed'
+
+  - id: bananas
+    status: not-started
+    priority: high
+
+  - id: apples
+    status: not-started
+    priority: normal
 
 - id: walk_dog
   status: completed
