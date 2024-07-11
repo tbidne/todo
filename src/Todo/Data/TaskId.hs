@@ -2,13 +2,22 @@ module Todo.Data.TaskId
   ( -- * Type
     TaskId (unTaskId),
 
-    -- * Functions
-    parseTaskId,
+    -- * Parsing
+    Internal.parseTaskId,
     unsafeTaskId,
+
+    -- * Validation
+    ValidateResult (..),
+    Internal.validateText,
+
+    -- * Rendering
     render,
     taskIdsToText,
     taskIdsToTextQuote,
     taskIdsToTextCustom,
+
+    -- * Misc
+    Internal.mkA,
   )
 where
 
@@ -16,16 +25,16 @@ import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
 import Todo.Data.TaskId.Internal
   ( TaskId (unTaskId),
-    mkTaskId,
-    parseTaskId,
+    ValidateResult (InvalidBadChar, InvalidEmpty, Valid),
   )
+import Todo.Data.TaskId.Internal qualified as Internal
 import Todo.Prelude
 import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
 import Todo.Render.Utils qualified as Render.Utils
 
 -- | Unsafe task id creation.
 unsafeTaskId :: (HasCallStack) => Text -> TaskId
-unsafeTaskId txt = case mkTaskId txt of
+unsafeTaskId txt = case Internal.mkTaskId txt of
   Left err -> error err
   Right x -> x
 

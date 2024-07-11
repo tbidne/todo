@@ -16,7 +16,7 @@
       {
         "id": "d",
         "priority": "normal",
-        "status": "blocked: a, x, b, y"
+        "status": "blocked: <a>, <x>, <b>, <y>"
       }
     ]
   }

@@ -53,6 +53,7 @@ import Data.Map.Strict qualified as Map
 import Data.Maybe (isJust)
 import Data.Sequence qualified as Seq
 import Data.Set qualified as Set
+import Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty)
 import Data.Set.NonEmpty qualified as NESet
 import Data.Tuple (uncurry)
 import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
@@ -64,6 +65,7 @@ import Todo.Data.Task
 import Todo.Data.TaskId (TaskId (unTaskId))
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskStatus (TaskStatus (Blocked))
+import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Index.Internal (Index (UnsafeIndex, path, taskList))
 import Todo.Prelude hiding (filter, toList)
 
@@ -182,7 +184,9 @@ fromList path xs = do
           foundKeys' <- updateFoundKeys (SomeTaskSingle t) foundKeys
 
           let blockedKeys' = case t.status of
-                Blocked tids -> Map.insert t.taskId tids blockedKeys
+                Blocked blocking -> case TaskStatus.filterBlockingIds blocking of
+                  IsEmpty -> blockedKeys
+                  IsNonEmpty tids -> Map.insert t.taskId tids blockedKeys
                 _ -> blockedKeys
 
           pure (foundKeys', blockedKeys')
@@ -324,14 +328,23 @@ getBlockingIds (UnsafeIndex idx _path) = foldl' go Map.empty idx
   where
     go :: Map TaskId (NESet TaskId) -> SomeTask -> Map TaskId (NESet TaskId)
     go mp (SomeTaskSingle t) = case t.status of
-      Blocked ids ->
-        let maps = idsToMaps t.taskId ids
-         in Map.unionsWith (<>) maps
+      Blocked blocking ->
+        case TaskStatus.filterBlockingIds blocking of
+          IsEmpty -> mp
+          IsNonEmpty ids ->
+            let maps = idsToMaps t.taskId ids
+             in Map.unionsWith (<>) maps
       _ -> mp
     go mp (SomeTaskGroup tg) =
-      let subMaps = go Map.empty <$> tg.subtasks
+      let subMaps :: Seq (Map TaskId (NESet TaskId))
+          subMaps = go Map.empty <$> tg.subtasks
+
+          groupMaps :: Seq (Map TaskId (NESet TaskId))
           groupMaps = case tg.status of
-            Just (Blocked ids) -> mp :<| neToSeq (idsToMaps tg.taskId ids)
+            Just (Blocked blocking) ->
+              case TaskStatus.filterBlockingIds blocking of
+                IsEmpty -> mp :<| Empty
+                IsNonEmpty ids -> mp :<| neToSeq (idsToMaps tg.taskId ids)
             _ -> mp :<| Empty
        in Map.unionsWith (<>) (groupMaps <> subMaps)
 

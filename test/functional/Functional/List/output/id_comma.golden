@@ -1,1 +1,1 @@
-aeson: Error in $[0].id: Task id contained comma: 'a,b'
+aeson: Error in $[0].id: Task id 'a,b' contained invalid char (',', '<', '>'): ,

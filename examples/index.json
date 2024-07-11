@@ -12,7 +12,7 @@
   },
   {
     "id": "groceries",
-    "status": "blocked: fix_car, paycheck",
+    "status": "blocked: <fix_car>, <paycheck>",
     "subtasks": [
       {
         "id": "apples",
@@ -46,7 +46,7 @@
       {
         "id": "pack_bananas",
         "priority": "normal",
-        "status": "blocked: groceries"
+        "status": "blocked: <groceries>"
       },
       {
         "id": "equipment",
@@ -57,12 +57,12 @@
             "id": "cleats",
             "description": "Get cleats",
             "priority": "normal",
-            "status": "blocked: fix_car"
+            "status": "blocked: <fix_car>"
           },
           {
             "id": "ball",
             "priority": "normal",
-            "status": "blocked: fix_car"
+            "status": "blocked: <fix_car>"
           }
         ]
       }

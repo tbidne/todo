@@ -4,13 +4,18 @@
 module Todo.Data.TaskStatus
   ( TaskStatus (..),
     parseTaskStatus,
+    filterBlockingIds,
     isCompleted,
     render,
+    Blocker (..),
+    parseBlockedTarget,
   )
 where
 
 import Data.Aeson qualified as Asn
+import Data.Set qualified as Set
 import Data.Set.NonEmpty qualified as NESet
+import Data.String (IsString, fromString)
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
 import Todo.Data.TaskId (TaskId)
@@ -19,13 +24,58 @@ import Todo.Prelude
 import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
 import Todo.Render.Utils qualified as Render.Utils
 
+-- | Something that blocks another task.
+data Blocker
+  = -- | A task that blocks another task. The task is is the blocker.
+    BlockerId TaskId
+  | -- | General description that blocks a task.
+    BlockerText Text
+  deriving stock (Eq, Ord, Show)
+
+instance ToJSON Blocker where
+  toJSON (BlockerId taskId) =
+    -- TaskId's ToJSON derives from its underlying Text, so this is fine.
+    toJSON $ angleBracket taskId.unTaskId
+  toJSON (BlockerText t) = toJSON t
+
+instance FromJSON Blocker where
+  parseJSON = Asn.withText "Blocker" parseBlockedTarget
+
+instance IsString Blocker where
+  fromString s = case parseBlockedTarget (pack s) of
+    EitherRight b -> b
+    EitherLeft err -> error err
+
+parseBlockedTarget :: (MonadFail m) => Text -> m Blocker
+parseBlockedTarget orig@(T.stripPrefix "<" -> Just start) =
+  case T.stripSuffix ">" start of
+    Just txt -> BlockerId <$> TaskId.parseTaskId txt
+    Nothing ->
+      fail
+        $ mconcat
+          [ "Blocker task id started with '<' but did not end with '>': '",
+            unpack orig,
+            "'"
+          ]
+parseBlockedTarget other = case TaskId.mkA "Blocker text" BlockerText other of
+  Left err -> fail err
+  Right x -> pure x
+
 -- | Task status.
 data TaskStatus
   = Completed
   | InProgress
   | NotStarted
-  | Blocked (NESet TaskId)
+  | -- | Task is blocked, where the blockers can be another task (represented
+    -- by TaskId) or a general text description.
+    Blocked (NESet Blocker)
   deriving stock (Eq, Ord, Show)
+
+filterBlockingIds :: NESet Blocker -> Set TaskId
+filterBlockingIds = NESet.foldl' f Set.empty
+  where
+    f acc (BlockerText _) = acc
+    f acc (BlockerId id) = Set.insert id acc
 
 instance Semigroup TaskStatus where
   Blocked xs <> Blocked ys = Blocked (xs <> ys)
@@ -60,9 +110,9 @@ parseTaskStatus txt = do
               nonEmpties = filter (not . T.null) splitStrs
            in case nonEmpties of
                 (x : xs) -> do
-                  (y :<|| ys) <- traverse TaskId.parseTaskId (x :<|| listToSeq xs)
+                  (y :<|| ys) <- traverse parseBlockedTarget (x :<|| listToSeq xs)
                   pure $ Just $ Blocked (NESet.fromList (y :| toList ys))
-                [] -> fail $ "Received no non-empty ids for 'blocked' status: " <> quoteTxt rest
+                [] -> fail $ "Received no non-empty blockers for 'blocked' status: " <> quoteTxt rest
     parseBlocked _ = pure Nothing
 
     parseExact :: Text -> TaskStatus -> Text -> m (Maybe TaskStatus)
@@ -76,7 +126,10 @@ parseTaskStatus txt = do
     quoteTxt t = "'" <> unpack t <> "'"
 
 instance ToJSON TaskStatus where
-  toJSON (Blocked ts) = toJSON $ "blocked: " <> TaskId.taskIdsToText ts
+  toJSON (Blocked ts) = toJSON $ "blocked: " <> blockedToText ts
+    where
+      blockedToText :: NESet Blocker -> Text
+      blockedToText = mapBlockedCustom identity (angleBracket . (.unTaskId))
   toJSON NotStarted = "not-started"
   toJSON InProgress = "in-progress"
   toJSON Completed = "completed"
@@ -91,10 +144,36 @@ render :: ColorSwitch -> TaskStatus -> Builder
 render ColorOff Completed = "completed"
 render ColorOff InProgress = "in-progress"
 render ColorOff (Blocked tids) =
-  displayBuilder $ "blocked: " <> TaskId.taskIdsToTextQuote tids
+  displayBuilder $ "blocked: " <> renderBlockers tids
 render ColorOff NotStarted = "not-started"
 render ColorOn Completed = Render.Utils.colorBuilder Pretty.Green "completed"
 render ColorOn InProgress = Render.Utils.colorBuilder Pretty.Yellow "in-progress"
 render ColorOn (Blocked tids) =
-  Render.Utils.colorBuilder Pretty.Red $ "blocked: " <> TaskId.taskIdsToTextQuote tids
+  Render.Utils.colorBuilder Pretty.Red $ "blocked: " <> renderBlockers tids
 render ColorOn NotStarted = Render.Utils.colorBuilder Pretty.Cyan "not-started"
+
+-- | taskIdsToTextCustom that single-quotes the text
+renderBlockers :: NESet Blocker -> Text
+renderBlockers = mapBlockedCustom quote (angleBracket . (.unTaskId))
+  where
+    quote t = "'" <> t <> "'"
+
+-- | Comma separates TaskIds together, using the provided function.
+mapBlockedCustom ::
+  (Text -> Text) ->
+  (TaskId -> Text) ->
+  NESet Blocker ->
+  Text
+mapBlockedCustom onText onTaskId =
+  T.intercalate ", "
+    . fmap g
+    . toList
+  where
+    g (BlockerText t) = onText t
+    g (BlockerId tid) = onTaskId tid
+
+-- TODO: This logic is a bit fragile, in the sense that we have invariants
+-- spread across several functions...consider make this more principled
+-- e.g. using optics' Iso to represent to/from Text with angle brackets.
+angleBracket :: (IsString a, Semigroup a) => a -> a
+angleBracket t = "<" <> t <> ">"

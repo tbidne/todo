@@ -33,7 +33,8 @@ import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority (TaskPriority (High, Low, Normal))
 import Todo.Data.TaskStatus
-  ( TaskStatus
+  ( Blocker (BlockerId, BlockerText),
+    TaskStatus
       ( Blocked,
         Completed,
         InProgress,
@@ -306,10 +307,17 @@ genTaskStatus =
     [ pure Completed,
       pure InProgress,
       pure NotStarted,
-      Blocked . NESet.fromList <$> genBlocked
+      Blocked . NESet.fromList <$> genBlockers
     ]
   where
-    genBlocked = Gen.nonEmpty (Range.linearFrom 1 1 20) genTaskId
+    genBlockers = Gen.nonEmpty (Range.linearFrom 1 1 20) genBlocker
+
+genBlocker :: Gen Blocker
+genBlocker =
+  Gen.choice
+    [ BlockerId <$> genTaskId,
+      BlockerText <$> genBlockerText
+    ]
 
 genTaskPriority :: Gen TaskPriority
 genTaskPriority = Gen.enumBounded
@@ -317,16 +325,32 @@ genTaskPriority = Gen.enumBounded
 -- We do not allow whitespace because it is currently stripped when reading
 -- Blocked TaskIds.
 genTaskId :: Gen TaskId
-genTaskId = genMassaged >>= TaskId.parseTaskId
+genTaskId = genBlockerText >>= TaskId.parseTaskId
+
+genBlockerText :: Gen Text
+genBlockerText = genMassaged
   where
     genMassaged = Gen.filter (not . badTxt) genRaw
-    genRaw = stripBad <$> Gen.text (Range.linearFrom 1 1 20) Gen.unicode
+    genRaw = stripBad <$> genTextNE 20
 
     badTxt = T.null
-    stripBad = T.replace "," "" . T.strip
+    stripBad =
+      T.replace ">" ""
+        . T.replace "<" ""
+        . T.replace "," ""
+        . T.strip
+
+genTextNE :: Int -> Gen Text
+genTextNE = genTextBounds 1
 
 genText :: Int -> Gen Text
-genText upperBound = Gen.text (Range.linearFrom 0 0 upperBound) Gen.unicode
+genText = genTextBounds 0
+
+genTextBounds :: Int -> Int -> Gen Text
+genTextBounds lowerBound upperBound =
+  Gen.text
+    (Range.linear lowerBound upperBound)
+    Gen.unicode
 
 containsNull :: Value -> Bool
 containsNull Null = True
