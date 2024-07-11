@@ -130,6 +130,8 @@ test-suite unit
     Unit.Prelude
     Unit.Todo.Data.Sorted
     Unit.Todo.Data.Task
+    Unit.Todo.Data.TaskPriority
+    Unit.Todo.Data.TaskStatus
     Unit.Todo.Index
 
   build-depends:

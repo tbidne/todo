@@ -61,11 +61,24 @@ parseBlockedTarget other = case TaskId.mkA "Blocker text" BlockerText other of
   Left err -> fail err
   Right x -> pure x
 
--- | Task status.
+-- | Task status. The (commutative) semigroup is roughly based on the ordering
+--
+-- @
+--   Completed < NotStarted < InProgress < Blocked
+-- @
+--
+-- where we take the max. There are exceptionals cases for
+--
+-- @
+--   Completed <> NotStarted == InProgress
+--   Blocked l <> Blocked r == Blocked (l <> r)
+-- @
+--
+-- The first line is why we do not have a monoid.
 data TaskStatus
   = Completed
-  | InProgress
   | NotStarted
+  | InProgress
   | -- | Task is blocked, where the blockers can be another task (represented
     -- by TaskId) or a general text description.
     Blocked (NESet Blocker)
@@ -79,10 +92,9 @@ filterBlockingIds = NESet.foldl' f Set.empty
 
 instance Semigroup TaskStatus where
   Blocked xs <> Blocked ys = Blocked (xs <> ys)
+  Completed <> NotStarted = InProgress
+  NotStarted <> Completed = InProgress
   l <> r = max l r
-
-instance Monoid TaskStatus where
-  mempty = Completed
 
 instance FromJSON TaskStatus where
   parseJSON = Asn.withText "TaskStatus" parseTaskStatus

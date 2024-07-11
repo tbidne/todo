@@ -22,7 +22,7 @@ import Data.Aeson.KeyMap qualified as KM
 import Data.Aeson.Types (Object, Parser)
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskPriority (TaskPriority (Normal))
-import Todo.Data.TaskStatus (TaskStatus, isCompleted)
+import Todo.Data.TaskStatus (TaskStatus (Completed), isCompleted)
 import Todo.Data.Timestamp (Timestamp)
 import Todo.Prelude
 
@@ -119,7 +119,9 @@ taskGroupStatus tg = case tg.status of
   Nothing -> deriveStatus tg.subtasks
     where
       deriveStatus =
-        mconcat
+        sconcat
+          -- Default to Completed.
+          . (Completed :|)
           . fmap (.status)
           . toList
 
@@ -128,10 +130,9 @@ taskGroupPriority tg = case tg.priority of
   Just p -> p
   Nothing -> derivePriority tg.subtasks
     where
-      -- FIXME: Maybe we don't want to use mconcat aka default to Low?
-      -- Probably want sconcat w/ Normal, right?
       derivePriority =
         sconcat
+          -- Default to Normal.
           . (Normal :|)
           . fmap (.priority)
           . filter (not . someTaskIsCompleted)
