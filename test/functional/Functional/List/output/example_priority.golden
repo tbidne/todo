@@ -21,6 +21,10 @@
   priority: high
   deadline: 2024-08-12 12:00:00
 
+- id: empty_group
+  status: completed
+  priority: normal
+
 - id: walk_dog
   status: completed
   priority: normal

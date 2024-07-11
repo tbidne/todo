@@ -60,4 +60,8 @@ Successfully deleted task
    status: not-started
    priority: low
 
+✅ id: empty_group
+   status: completed
+   priority: normal
+
 

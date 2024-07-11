@@ -48,6 +48,10 @@ Task id 'fix_car' is referenced by other tasks, so it cannot be deleted: 'ball',
    status: not-started
    priority: low
 
+✅ id: empty_group
+   status: completed
+   priority: normal
+
 ✅ id: walk_dog
    status: completed
    priority: normal

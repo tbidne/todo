@@ -99,6 +99,10 @@ Successfully added task. Modified tasks:
    priority: high
    deadline: 2020-05-09
 
+✅ id: empty_group
+   status: completed
+   priority: normal
+
 ✅ id: walk_dog
    status: completed
    priority: normal

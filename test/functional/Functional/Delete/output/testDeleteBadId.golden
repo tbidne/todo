@@ -48,6 +48,10 @@ Task id 'bad_id' not found in the index.
    status: not-started
    priority: low
 
+✅ id: empty_group
+   status: completed
+   priority: normal
+
 ✅ id: walk_dog
    status: completed
    priority: normal

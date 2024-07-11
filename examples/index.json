@@ -67,5 +67,9 @@
         ]
       }
     ]
+  },
+  {
+    "id": "empty_group",
+    "subtasks": []
   }
 ]

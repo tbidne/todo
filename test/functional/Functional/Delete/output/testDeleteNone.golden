@@ -58,6 +58,10 @@ Are you sure you want to delete (y/n)?
    status: not-started
    priority: low
 
+✅ id: empty_group
+   status: completed
+   priority: normal
+
 ✅ id: walk_dog
    status: completed
    priority: normal

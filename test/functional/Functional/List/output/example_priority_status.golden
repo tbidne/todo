@@ -21,6 +21,10 @@
   deadline: 2024-06-22 12:15:00 UTC
   description: Car needs brakes fixed
 
+- id: empty_group
+  status: completed
+  priority: normal
+
 - id: walk_dog
   status: completed
   priority: normal

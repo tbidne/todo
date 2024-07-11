@@ -91,14 +91,20 @@ renderTaskGroup ::
   TaskGroup ->
   Builder
 renderTaskGroup currTime color unicode nestLvl tg =
-  vsep
+  vsepLine
     [ indent nestLvl $ bullet <> "id: " <> TaskId.render color tg.taskId,
       indent nestLvl $ bulletIndent <> "status: " <> TaskStatus.render color (Task.taskGroupStatus tg),
-      indent nestLvl $ bulletIndent <> "priority: " <> TaskPriority.render color (Task.taskGroupPriority tg),
-      line
+      indent nestLvl $ bulletIndent <> "priority: " <> TaskPriority.render color (Task.taskGroupPriority tg)
     ]
-    <> vsep (renderSomeTask currTime color unicode (nestLvl + 1) <$> tg.subtasks)
+    <> subtasksRendered
   where
+    -- empty groups should only add one extra line, which is taken care of
+    -- by vsepLine above. If we have actual groups, the we add another newline
+    -- for an empty line separating the group from its subtasks.
+    subtasksRendered = case tg.subtasks of
+      Empty -> ""
+      xs@(_ :<| _) ->
+        line <> vsep (renderSomeTask currTime color unicode (nestLvl + 1) <$> xs)
     (bullet, bulletIndent) = statusToBullet unicode (SomeTaskGroup tg)
 
 renderTask ::

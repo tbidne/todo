@@ -57,6 +57,7 @@ testExample =
       "ball",
       "cleats",
       "haircut",
+      "empty_group",
       "walk_dog"
     ]
 
@@ -71,6 +72,7 @@ testExamplePriority =
       "bananas",
       "apples",
       "paycheck",
+      "empty_group",
       "walk_dog",
       "haircut",
       "soccer_match",
@@ -97,6 +99,7 @@ testExampleStatus =
       "paycheck",
       "fix_car",
       "haircut",
+      "empty_group",
       "walk_dog"
     ]
 
@@ -111,6 +114,7 @@ testExamplePriorityStatus =
       "apples",
       "paycheck",
       "fix_car",
+      "empty_group",
       "walk_dog",
       "soccer_match",
       "pack_bananas",
@@ -137,6 +141,7 @@ testExampleStatusPriority =
       "paycheck",
       "fix_car",
       "haircut",
+      "empty_group",
       "walk_dog"
     ]
 
