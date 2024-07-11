@@ -93,8 +93,8 @@ renderTaskGroup ::
 renderTaskGroup currTime color unicode nestLvl tg =
   vsepLine
     [ indent nestLvl $ bullet <> "id: " <> TaskId.render color tg.taskId,
-        indent nestLvl $ bulletIndent <> "status: " <> TaskStatus.render color (Task.taskGroupStatus tg),
-        indent nestLvl $ bulletIndent <> "priority: " <> TaskPriority.render color (Task.taskGroupPriority tg)
+      indent nestLvl $ bulletIndent <> "status: " <> TaskStatus.render color (Task.taskGroupStatus tg),
+      indent nestLvl $ bulletIndent <> "priority: " <> TaskPriority.render color (Task.taskGroupPriority tg)
     ]
     <> vsep (renderSomeTask currTime color unicode (nestLvl + 1) <$> tg.subtasks)
   where
