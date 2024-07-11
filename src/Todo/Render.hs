@@ -21,6 +21,14 @@ import Todo.Data.Task
 import Todo.Data.Task qualified as Task
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority qualified as TaskPriority
+import Todo.Data.TaskStatus
+  ( TaskStatus
+      ( Blocked,
+        Completed,
+        InProgress,
+        NotStarted
+      ),
+  )
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Prelude
@@ -173,6 +181,8 @@ renderMaybeEmpty nestLvl (Just b) = indent nestLvl b
 
 statusToBullet :: UnicodeSwitch -> SomeTask -> Tuple2 Builder Builder
 statusToBullet UnicodeOff _ = ("- ", "  ")
-statusToBullet UnicodeOn st
-  | Task.someTaskIsCompleted st = ("✅ ", "   ")
-  | otherwise = ("❌ ", "   ")
+statusToBullet UnicodeOn st = case st.status of
+  Completed -> ("✅ ", "   ")
+  NotStarted -> ("❌ ", "   ")
+  InProgress -> ("🚧 ", "   ")
+  Blocked _ -> ("⛔ ", "   ")

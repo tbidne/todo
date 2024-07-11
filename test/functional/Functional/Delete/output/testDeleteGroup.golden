@@ -1,24 +1,24 @@
 Found task:
 
 
-❌ id: soccer_match
+⛔ id: soccer_match
    status: blocked: <fix_car>, <groceries>
    priority: low
 
-  ❌ id: pack_bananas
+  ⛔ id: pack_bananas
      status: blocked: <groceries>
      priority: normal
 
-  ❌ id: equipment
+  ⛔ id: equipment
      status: blocked: <fix_car>
      priority: normal
 
-    ❌ id: cleats
+    ⛔ id: cleats
        status: blocked: <fix_car>
        priority: normal
        description: Get cleats
 
-    ❌ id: ball
+    ⛔ id: ball
        status: blocked: <fix_car>
        priority: normal
 
@@ -28,7 +28,7 @@ Are you sure you want to delete (y/n)?
 Successfully deleted task
 
 
-❌ id: groceries
+⛔ id: groceries
    status: blocked: <fix_car>, <paycheck>, 'store closed'
    priority: high
 
@@ -40,7 +40,7 @@ Successfully deleted task
      status: not-started
      priority: normal
 
-❌ id: paycheck
+🚧 id: paycheck
    status: in-progress
    priority: high
    deadline: 2024-08-12 12:00:00
