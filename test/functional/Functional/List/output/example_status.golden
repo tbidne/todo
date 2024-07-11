@@ -1,5 +1,5 @@
 - id: groceries
-  status: blocked: <fix_car>, <paycheck>
+  status: blocked: <fix_car>, <paycheck>, 'store closed'
 
   - id: apples
     status: not-started

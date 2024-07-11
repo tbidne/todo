@@ -1,7 +1,7 @@
 Task id 'bad_id' not found in the index.
 
 ❌ id: groceries
-   status: blocked: <fix_car>, <paycheck>
+   status: blocked: <fix_car>, <paycheck>, 'store closed'
 
   ❌ id: bananas
      status: not-started

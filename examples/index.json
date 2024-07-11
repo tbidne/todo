@@ -12,7 +12,7 @@
   },
   {
     "id": "groceries",
-    "status": "blocked: <fix_car>, <paycheck>",
+    "status": "blocked: <fix_car>, store closed, <paycheck>",
     "subtasks": [
       {
         "id": "apples",

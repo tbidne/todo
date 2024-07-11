@@ -45,7 +45,7 @@ mkA name onSuccess txt = case validateText txt of
         [ unpack name,
           " '",
           unpack txt,
-          "' contained invalid char (',', '<', '>'): ",
+          "' contains invalid char (',', '<', '>'): ",
           [c]
         ]
   Valid stripped -> Right $ onSuccess stripped

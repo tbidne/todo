@@ -122,7 +122,7 @@ testExample = testHedgehogOne "Reads example config" "testExample" $ do
         SomeTaskGroup
           MkTaskGroup
             { priority = Nothing,
-              status = Just (Blocked (NESet.fromList ("<fix_car>" :| ["<paycheck>"]))),
+              status = Just (Blocked (NESet.fromList ("<fix_car>" :| ["store closed", "<paycheck>"]))),
               subtasks =
                 [ SomeTaskSingle
                     MkSingleTask

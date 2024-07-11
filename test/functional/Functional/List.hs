@@ -114,6 +114,7 @@ failureTests testEnv =
       testStatusBadFails,
       testStatusBlockedEmptyFails,
       testStatusBlockedIdsEmptyFails,
+      testStatusBlockedTextLAngleFails,
       testNonExtantPathFails testEnv
     ]
 
@@ -165,6 +166,13 @@ testStatusBlockedIdsEmptyFails =
     (runTodoException @AesonException)
     "Blocked ids empty status fails"
     "status_blocked_ids_empty"
+
+testStatusBlockedTextLAngleFails :: TestTree
+testStatusBlockedTextLAngleFails =
+  testGolden
+    (runTodoException @AesonException)
+    "Blocked text with left angle bracket fails"
+    "status_blocked_text_langle"
 
 testNonExtantPathFails :: IO TestEnv -> TestTree
 testNonExtantPathFails testEnv = goldenVsFile desc goldenPath actualPath $ do
