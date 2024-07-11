@@ -1,6 +1,6 @@
 module Todo.Index
   ( -- * Types
-    Index (taskList, path),
+    Index,
 
     -- * Creation
     readIndex,
@@ -62,11 +62,11 @@ import Todo.Data.Task
     SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (status, subtasks, taskId),
   )
-import Todo.Data.TaskId (TaskId (unTaskId))
+import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskStatus (TaskStatus (Blocked))
 import Todo.Data.TaskStatus qualified as TaskStatus
-import Todo.Index.Internal (Index (UnsafeIndex, path, taskList))
+import Todo.Index.Internal (Index (UnsafeIndex))
 import Todo.Prelude hiding (filter, toList)
 
 -- | Reads the file to an 'Index'.

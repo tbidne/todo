@@ -40,7 +40,6 @@ module Todo.Index.Safe
 where
 
 import Data.Typeable (typeRep)
-import GHC.Records (HasField (getField))
 import Refined
   ( Predicate (validate),
     RefineException (RefineOtherException, RefineSomeException),
@@ -51,7 +50,7 @@ import Refined.Extras ((:=>))
 import Refined.Extras qualified as RE
 import Refined.Extras.Utils (pattern MkRefined)
 import Todo.Data.Task (SomeTask (SomeTaskGroup, SomeTaskSingle))
-import Todo.Data.TaskId (TaskId (unTaskId))
+import Todo.Data.TaskId (TaskId)
 import Todo.Index
   ( DuplicateIdE (MkDuplicateIdE),
     Index,

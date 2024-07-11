@@ -19,9 +19,12 @@ import Data.Text qualified as T
 import Todo.Prelude
 
 -- | Task id.
-newtype TaskId = UnsafeTaskId {unTaskId :: Text}
+newtype TaskId = UnsafeTaskId Text
   deriving stock (Show)
   deriving newtype (Eq, Ord, ToJSON)
+
+instance HasField "unTaskId" TaskId Text where
+  getField (UnsafeTaskId txt) = txt
 
 instance IsString TaskId where
   fromString str = case mkTaskId (pack str) of

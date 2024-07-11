@@ -12,7 +12,7 @@ where
 import Data.List qualified as L
 import Effects.Time (MonadTime (getSystemZonedTime), ZonedTime)
 import GHC.Real (fromIntegral)
-import Todo.Data.Sorted (SortedTasks (unSortedTasks))
+import Todo.Data.Sorted (SortedTasks)
 import Todo.Data.Task
   ( SingleTask (deadline, description, priority, status, taskId),
     SomeTask (SomeTaskGroup, SomeTaskSingle),
@@ -65,7 +65,7 @@ renderSorted ::
   Builder
 renderSorted currTime color unicode =
   renderSomeTasks currTime color unicode 0
-    . unSortedTasks
+    . (.unSortedTasks)
 
 renderSomeTasks ::
   (Foldable f, Functor f) =>

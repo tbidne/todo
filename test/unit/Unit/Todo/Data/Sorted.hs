@@ -16,8 +16,6 @@ import Todo.Data.Task
     SomeTask,
     TaskGroup (taskId),
   )
-import Todo.Data.TaskId (TaskId (unTaskId))
-import Todo.Index (Index (taskList))
 import Todo.Index qualified as Index
 import Unit.Prelude
 

@@ -1,6 +1,6 @@
 module Todo.Data.TaskId
   ( -- * Type
-    TaskId (unTaskId),
+    TaskId,
 
     -- * Parsing
     Internal.parseTaskId,
@@ -24,7 +24,7 @@ where
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
 import Todo.Data.TaskId.Internal
-  ( TaskId (unTaskId),
+  ( TaskId,
     ValidateResult (InvalidBadChar, InvalidEmpty, Valid),
   )
 import Todo.Data.TaskId.Internal qualified as Internal

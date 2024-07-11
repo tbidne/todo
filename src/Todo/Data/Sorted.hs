@@ -1,6 +1,6 @@
 module Todo.Data.Sorted
   ( -- * Types
-    SortedTasks (unSortedTasks),
+    SortedTasks,
     SortType (..),
 
     -- * Functions
@@ -13,7 +13,7 @@ import Data.List qualified as L
 import Data.Ord (Down (Down))
 import Data.Sequence qualified as Seq
 import Todo.Data.Sorted.Internal
-  ( SortedTasks (UnsafeSortedTasks, unSortedTasks),
+  ( SortedTasks (UnsafeSortedTasks),
   )
 import Todo.Data.Task
   ( SingleTask,

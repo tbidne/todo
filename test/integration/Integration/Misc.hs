@@ -31,7 +31,7 @@ import Todo.Data.TaskPriority (TaskPriority (High, Low, Normal))
 import Todo.Data.TaskStatus
   ( TaskStatus (Blocked, Completed, InProgress, NotStarted),
   )
-import Todo.Index.Internal (Index (UnsafeIndex, path, taskList))
+import Todo.Index.Internal (Index (UnsafeIndex))
 import Todo.Render.Utils
   ( ColorSwitch (ColorOff, ColorOn),
     UnicodeSwitch (UnicodeOff, UnicodeOn),
@@ -62,16 +62,14 @@ testXdg = testHedgehogOne "Reads Xdg" "testXdg" $ do
               { colorSwitch = ColorOff,
                 index =
                   UnsafeIndex
-                    { path =
-                        [osp|test|]
-                          </> [osp|integration|]
-                          </> [osp|toml|]
-                          </> [osp|todo|]
-                          </> [osp|index.json|],
-                      taskList =
-                        [ SomeTaskSingle $ MkSingleTask Nothing Nothing High Completed "xdg_task"
-                        ]
-                    },
+                    [ SomeTaskSingle $ MkSingleTask Nothing Nothing High Completed "xdg_task"
+                    ]
+                    ( [osp|test|]
+                        </> [osp|integration|]
+                        </> [osp|toml|]
+                        </> [osp|todo|]
+                        </> [osp|index.json|]
+                    ),
                 unicodeSwitch = UnicodeOff
               },
           command = CmdList Nothing
@@ -94,9 +92,8 @@ testExample = testHedgehogOne "Reads example config" "testExample" $ do
               { colorSwitch = ColorOff,
                 index =
                   UnsafeIndex
-                    { path = [osp|examples|] </> [osp|index.json|],
-                      taskList = expectedTaskList
-                    },
+                    expectedTaskList
+                    ([osp|examples|] </> [osp|index.json|]),
                 unicodeSwitch = UnicodeOff
               },
           command = CmdList Nothing
@@ -225,11 +222,8 @@ testCliOverridesToml = testHedgehogOne "CLI overrides TOML" "testCliOverridesTom
               { colorSwitch = ColorOff,
                 index =
                   UnsafeIndex
-                    { path = [osp|examples|] </> [osp|index2.json|],
-                      taskList =
-                        [ SomeTaskSingle $ MkSingleTask Nothing Nothing Normal NotStarted "a_task"
-                        ]
-                    },
+                    [SomeTaskSingle $ MkSingleTask Nothing Nothing Normal NotStarted "a_task"]
+                    ([osp|examples|] </> [osp|index2.json|]),
                 unicodeSwitch = UnicodeOff
               },
           command = CmdList Nothing
@@ -251,12 +245,7 @@ testTomlUsesMapName = testHedgehogOne desc "testTomlUsesMapName" $ do
         { coreConfig =
             MkCoreConfig
               { colorSwitch = ColorOn,
-                index =
-                  UnsafeIndex
-                    { path = tomlOsPath </> [osp|empty.json|],
-                      taskList =
-                        []
-                    },
+                index = UnsafeIndex [] (tomlOsPath </> [osp|empty.json|]),
                 unicodeSwitch = UnicodeOn
               },
           command = CmdList Nothing
@@ -282,11 +271,9 @@ testCliOverridesTomlMapName = testHedgehogOne desc "testCliOverridesTomlMapName"
               { colorSwitch = ColorOn,
                 index =
                   UnsafeIndex
-                    { path = tomlOsPath </> [osp|one.json|],
-                      taskList =
-                        [ SomeTaskSingle $ MkSingleTask Nothing Nothing Low InProgress "one_task"
-                        ]
-                    },
+                    [ SomeTaskSingle $ MkSingleTask Nothing Nothing Low InProgress "one_task"
+                    ]
+                    (tomlOsPath </> [osp|one.json|]),
                 unicodeSwitch = UnicodeOn
               },
           command = CmdList Nothing
