@@ -1,11 +1,9 @@
 - id: some_group
   status: not-started
   priority: normal
-
   - id: nested_group
     status: in-progress
     priority: high
-
     - id: nested_subtask2
       status: not-started
       priority: high

@@ -1,5 +1,16 @@
 Task id 'fix_car' is referenced by other tasks, so it cannot be deleted: 'ball', 'cleats', 'groceries'
 
+❌ id: groceries
+   status: blocked: <fix_car>, <paycheck>, 'store closed'
+   priority: high
+  ❌ id: bananas
+     status: not-started
+     priority: high
+
+  ❌ id: apples
+     status: not-started
+     priority: normal
+
 ❌ id: fix_car
    status: not-started
    priority: high
@@ -14,7 +25,6 @@ Task id 'fix_car' is referenced by other tasks, so it cannot be deleted: 'ball',
 ❌ id: soccer_match
    status: blocked: <fix_car>, <groceries>
    priority: low
-
   ❌ id: pack_bananas
      status: blocked: <groceries>
      priority: normal
@@ -22,7 +32,6 @@ Task id 'fix_car' is referenced by other tasks, so it cannot be deleted: 'ball',
   ❌ id: equipment
      status: blocked: <fix_car>
      priority: normal
-
     ❌ id: ball
        status: blocked: <fix_car>
        priority: normal
@@ -35,17 +44,6 @@ Task id 'fix_car' is referenced by other tasks, so it cannot be deleted: 'ball',
 ❌ id: haircut
    status: not-started
    priority: low
-
-❌ id: groceries
-   status: blocked: <fix_car>, <paycheck>, 'store closed'
-
-  ❌ id: bananas
-     status: not-started
-     priority: high
-
-  ❌ id: apples
-     status: not-started
-     priority: normal
 
 ✅ id: walk_dog
    status: completed

@@ -7,6 +7,7 @@ module Todo.Data.Task
     -- ** Grouped tasks
     TaskGroup (..),
     taskGroupStatus,
+    taskGroupPriority,
 
     -- ** Some Task
     SomeTask (..),
@@ -20,7 +21,7 @@ import Data.Aeson qualified as Asn
 import Data.Aeson.KeyMap qualified as KM
 import Data.Aeson.Types (Object, Parser)
 import Todo.Data.TaskId (TaskId)
-import Todo.Data.TaskPriority (TaskPriority)
+import Todo.Data.TaskPriority (TaskPriority (Normal))
 import Todo.Data.TaskStatus (TaskStatus, isCompleted)
 import Todo.Data.Timestamp (Timestamp)
 import Todo.Prelude
@@ -122,15 +123,29 @@ taskGroupStatus tg = case tg.status of
           . fmap (.status)
           . toList
 
+taskGroupPriority :: TaskGroup -> TaskPriority
+taskGroupPriority tg = case tg.priority of
+  Just p -> p
+  Nothing -> derivePriority tg.subtasks
+    where
+      -- FIXME: Maybe we don't want to use mconcat aka default to Low?
+      -- Probably want sconcat w/ Normal, right?
+      derivePriority =
+        sconcat
+          . (Normal :|)
+          . fmap (.priority)
+          . filter (not . someTaskIsCompleted)
+          . toList
+
 -- | Wrapper for either a single 'Task' or 'TaskGroup'.
 data SomeTask
   = SomeTaskSingle SingleTask
   | SomeTaskGroup TaskGroup
   deriving stock (Eq, Show)
 
-instance HasField "priority" SomeTask (Maybe TaskPriority) where
-  getField (SomeTaskSingle t) = Just t.priority
-  getField (SomeTaskGroup tg) = tg.priority
+instance HasField "priority" SomeTask TaskPriority where
+  getField (SomeTaskSingle t) = t.priority
+  getField (SomeTaskGroup tg) = taskGroupPriority tg
 
 instance HasField "status" SomeTask TaskStatus where
   getField (SomeTaskSingle t) = t.status

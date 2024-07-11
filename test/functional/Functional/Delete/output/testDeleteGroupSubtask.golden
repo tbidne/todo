@@ -12,6 +12,17 @@ Are you sure you want to delete (y/n)?
 Successfully deleted task
 
 
+❌ id: groceries
+   status: blocked: <fix_car>, <paycheck>, 'store closed'
+   priority: high
+  ❌ id: bananas
+     status: not-started
+     priority: high
+
+  ❌ id: apples
+     status: not-started
+     priority: normal
+
 ❌ id: fix_car
    status: not-started
    priority: high
@@ -26,7 +37,6 @@ Successfully deleted task
 ❌ id: soccer_match
    status: blocked: <fix_car>, <groceries>
    priority: low
-
   ❌ id: pack_bananas
      status: blocked: <groceries>
      priority: normal
@@ -34,7 +44,6 @@ Successfully deleted task
   ❌ id: equipment
      status: blocked: <fix_car>
      priority: normal
-
     ❌ id: ball
        status: blocked: <fix_car>
        priority: normal
@@ -42,17 +51,6 @@ Successfully deleted task
 ❌ id: haircut
    status: not-started
    priority: low
-
-❌ id: groceries
-   status: blocked: <fix_car>, <paycheck>, 'store closed'
-
-  ❌ id: bananas
-     status: not-started
-     priority: high
-
-  ❌ id: apples
-     status: not-started
-     priority: normal
 
 ✅ id: walk_dog
    status: completed
