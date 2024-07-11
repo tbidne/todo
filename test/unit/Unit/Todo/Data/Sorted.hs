@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module Unit.Todo.Data.Sorted (tests) where
 
 import Hedgehog.Gen qualified as G
@@ -23,7 +25,8 @@ tests :: TestTree
 tests =
   testGroup
     "Todo.Data.Sorted"
-    [ exampleTests
+    [ exampleTests,
+      otherTests
     ]
 
 exampleTests :: TestTree
@@ -48,8 +51,8 @@ testExample =
       "soccer_match",
       "pack_bananas",
       "equipment",
-      "cleats",
       "ball",
+      "cleats",
       "haircut",
       "groceries",
       "bananas",
@@ -69,8 +72,8 @@ testExamplePriority =
       "haircut",
       "soccer_match",
       "equipment",
-      "cleats",
       "ball",
+      "cleats",
       "pack_bananas",
       "groceries",
       "bananas",
@@ -89,8 +92,8 @@ testExampleStatus =
       "soccer_match",
       "pack_bananas",
       "equipment",
-      "cleats",
       "ball",
+      "cleats",
       "fix_car",
       "haircut",
       "paycheck",
@@ -109,8 +112,8 @@ testExamplePriorityStatus =
       "soccer_match",
       "pack_bananas",
       "equipment",
-      "cleats",
       "ball",
+      "cleats",
       "haircut",
       "groceries",
       "bananas",
@@ -129,13 +132,47 @@ testExampleStatusPriority =
       "soccer_match",
       "pack_bananas",
       "equipment",
-      "cleats",
       "ball",
+      "cleats",
       "fix_car",
       "haircut",
       "paycheck",
       "walk_dog"
     ]
+
+otherTests :: TestTree
+otherTests =
+  testGroup
+    "Other sorting is deterministic and permutation-invariant"
+    [ testNested
+    ]
+
+testNested :: TestTree
+testNested =
+  testSort
+    (getList path)
+    "Nested groups sorted by default"
+    "testNested"
+    Nothing
+    [ "some_group",
+      "nested_group",
+      "nested_subtask2",
+      "nested_subtask3",
+      "nested_subtask1",
+      "subtask2",
+      "subtask1",
+      "some_task",
+      "completed_task"
+    ]
+  where
+    path =
+      [osp|test|]
+        </> [osp|unit|]
+        </> [osp|Unit|]
+        </> [osp|Todo|]
+        </> [osp|Data|]
+        </> [osp|Sorted|]
+        </> [osp|nested_sort.json|]
 
 testExampleSort ::
   String ->
@@ -143,12 +180,22 @@ testExampleSort ::
   Maybe SortType ->
   List Text ->
   TestTree
-testExampleSort
+testExampleSort = testSort getExampleList
+
+testSort ::
+  IO (List SomeTask) ->
+  String ->
+  PropertyName ->
+  Maybe SortType ->
+  List Text ->
+  TestTree
+testSort
+  getTasks
   desc
   name
   mSortType
   expected = testPropertyNamed desc name $ property $ do
-    xs <- liftIO getExampleList
+    xs <- liftIO getTasks
     ys <- forAll (G.shuffle xs)
     let sorted = Sorted.sortTasks mSortType ys
         ids = getIds sorted
@@ -158,7 +205,10 @@ testExampleSort
     expected === ids
 
 getExampleList :: IO (List SomeTask)
-getExampleList = (.taskList) <$> Index.readIndex examplePath
+getExampleList = getList examplePath
+
+getList :: OsPath -> IO (List SomeTask)
+getList path = (.taskList) <$> Index.readIndex path
 
 getIds :: SortedTasks -> List Text
 getIds = Sorted.traverseSorted (.taskId.unTaskId) (.taskId.unTaskId)

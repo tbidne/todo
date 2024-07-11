@@ -6,10 +6,6 @@
     status: in-progress
     priority: high
 
-    - id: nested_subtask1
-      status: completed
-      priority: high
-
     - id: nested_subtask2
       status: not-started
       priority: high
@@ -17,6 +13,10 @@
     - id: nested_subtask3
       status: not-started
       priority: normal
+
+    - id: nested_subtask1
+      status: completed
+      priority: high
 
   - id: subtask2
     status: not-started

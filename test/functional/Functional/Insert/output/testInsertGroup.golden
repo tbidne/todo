@@ -91,14 +91,14 @@ Successfully added task. Modified tasks:
      status: blocked: <fix_car>
      priority: normal
 
+    ❌ id: ball
+       status: blocked: <fix_car>
+       priority: normal
+
     ❌ id: cleats
        status: blocked: <fix_car>
        priority: normal
        description: Get cleats
-
-    ❌ id: ball
-       status: blocked: <fix_car>
-       priority: normal
 
 ❌ id: haircut
    status: not-started

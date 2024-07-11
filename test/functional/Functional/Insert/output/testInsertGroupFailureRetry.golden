@@ -46,14 +46,14 @@ Successfully added task. Modified tasks:
        status: not-started
        priority: high
 
+    ❌ id: ball
+       status: blocked: <fix_car>
+       priority: normal
+
     ❌ id: cleats
        status: blocked: <fix_car>
        priority: normal
        description: Get cleats
-
-    ❌ id: ball
-       status: blocked: <fix_car>
-       priority: normal
 
 
 
@@ -84,14 +84,14 @@ Successfully added task. Modified tasks:
        status: not-started
        priority: high
 
+    ❌ id: ball
+       status: blocked: <fix_car>
+       priority: normal
+
     ❌ id: cleats
        status: blocked: <fix_car>
        priority: normal
        description: Get cleats
-
-    ❌ id: ball
-       status: blocked: <fix_car>
-       priority: normal
 
 ❌ id: haircut
    status: not-started

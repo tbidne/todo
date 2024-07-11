@@ -74,17 +74,22 @@ sortSomeTasks partitionCompleted c xs =
     else sortFn xs
   where
     sortFn :: List SomeTask -> List SomeTask
-    sortFn = fmap (sortSomeTaskSubtasks c) . L.sortBy c
+    sortFn = fmap (sortSomeTaskSubtasks partitionCompleted c) . L.sortBy c
 
     (completedTasks, incompleteTasks) = L.partition Task.someTaskIsCompleted xs
 
-sortSomeTaskSubtasks :: (SomeTask -> SomeTask -> Ordering) -> SomeTask -> SomeTask
-sortSomeTaskSubtasks _ t@(SomeTaskSingle _) = t
-sortSomeTaskSubtasks c (SomeTaskGroup t) =
-  SomeTaskGroup $ sortTaskGroupSubtasks c t
+sortSomeTaskSubtasks :: Bool -> (SomeTask -> SomeTask -> Ordering) -> SomeTask -> SomeTask
+sortSomeTaskSubtasks _ _ t@(SomeTaskSingle _) = t
+sortSomeTaskSubtasks partitionCompleted c (SomeTaskGroup t) =
+  SomeTaskGroup $ sortTaskGroupSubtasks partitionCompleted c t
 
-sortTaskGroupSubtasks :: (SomeTask -> SomeTask -> Ordering) -> TaskGroup -> TaskGroup
-sortTaskGroupSubtasks c t = t {subtasks = Seq.sortBy c t.subtasks}
+sortTaskGroupSubtasks :: Bool -> (SomeTask -> SomeTask -> Ordering) -> TaskGroup -> TaskGroup
+sortTaskGroupSubtasks partitionCompleted c t = t {subtasks = subtasks'}
+  where
+    -- TODO: Avoid the Seq <-> List conversion (Either replace a type or
+    -- use Foldable).
+    subtasks' =
+      Seq.fromList $ sortSomeTasks partitionCompleted c (toList t.subtasks)
 
 cSomeTask :: (Ord a) => (SomeTask -> a) -> SomeTask -> SomeTask -> Ordering
 cSomeTask f x y = f x `compare` f y

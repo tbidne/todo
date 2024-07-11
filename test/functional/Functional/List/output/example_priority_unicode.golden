@@ -26,14 +26,14 @@
      status: blocked: <fix_car>
      priority: normal
 
+    ❌ id: ball
+       status: blocked: <fix_car>
+       priority: normal
+
     ❌ id: cleats
        status: blocked: <fix_car>
        priority: normal
        description: Get cleats
-
-    ❌ id: ball
-       status: blocked: <fix_car>
-       priority: normal
 
   ❌ id: pack_bananas
      status: blocked: <groceries>
