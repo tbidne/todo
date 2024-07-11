@@ -7,6 +7,7 @@
 ❌ id: groceries
    status: blocked: <fix_car>, <paycheck>, 'store closed'
    priority: high
+
   ❌ id: bananas
      status: not-started
      priority: high
@@ -32,9 +33,11 @@
 ❌ id: soccer_match
    status: blocked: <fix_car>, <groceries>
    priority: low
+
   ❌ id: equipment
      status: blocked: <fix_car>
      priority: normal
+
     ❌ id: ball
        status: blocked: <fix_car>
        priority: normal

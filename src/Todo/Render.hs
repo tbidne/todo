@@ -91,10 +91,11 @@ renderTaskGroup ::
   TaskGroup ->
   Builder
 renderTaskGroup currTime color unicode nestLvl tg =
-  vsepLine
+  vsep
     [ indent nestLvl $ bullet <> "id: " <> TaskId.render color tg.taskId,
       indent nestLvl $ bulletIndent <> "status: " <> TaskStatus.render color (Task.taskGroupStatus tg),
-      indent nestLvl $ bulletIndent <> "priority: " <> TaskPriority.render color (Task.taskGroupPriority tg)
+      indent nestLvl $ bulletIndent <> "priority: " <> TaskPriority.render color (Task.taskGroupPriority tg),
+      line
     ]
     <> vsep (renderSomeTask currTime color unicode (nestLvl + 1) <$> tg.subtasks)
   where
@@ -133,6 +134,9 @@ renderTask currTime color unicode nestLvl t =
 vsep :: (Foldable f) => f Builder -> Builder
 vsep = concatWith (\x y -> x <> line <> y)
 
+-- | Notice that this is __not__ the same as @vsep [..., line]@. In particular,
+-- this adds a single line after everything, whereas the former has the effect
+-- of adding __two__ lines.
 vsepLine :: (Foldable f) => f Builder -> Builder
 vsepLine = (<> line) . vsep
 

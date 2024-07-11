@@ -33,6 +33,7 @@ Successfully added task. Modified tasks:
 ❌ id: soccer_match
    status: blocked: <fix_car>, <groceries>
    priority: low
+
   ❌ id: pack_bananas
      status: blocked: <groceries>
      priority: normal
@@ -40,6 +41,7 @@ Successfully added task. Modified tasks:
   ❌ id: equipment
      status: blocked: <fix_car>
      priority: normal
+
     ❌ id: water
        status: not-started
        priority: high
@@ -58,6 +60,7 @@ Successfully added task. Modified tasks:
 ❌ id: groceries
    status: blocked: <fix_car>, <paycheck>, 'store closed'
    priority: high
+
   ❌ id: bananas
      status: not-started
      priority: high
@@ -66,20 +69,21 @@ Successfully added task. Modified tasks:
      status: not-started
      priority: normal
 
+❌ id: paycheck
+   status: in-progress
+   priority: high
+   deadline: 2024-08-12 12:00:00
+
 ❌ id: fix_car
    status: not-started
    priority: high
    deadline: 2024-06-22 12:15:00 UTC
    description: Car needs brakes fixed
 
-❌ id: paycheck
-   status: in-progress
-   priority: high
-   deadline: 2024-08-12 12:00:00
-
 ❌ id: soccer_match
    status: blocked: <fix_car>, <groceries>
    priority: low
+
   ❌ id: pack_bananas
      status: blocked: <groceries>
      priority: normal
@@ -87,6 +91,7 @@ Successfully added task. Modified tasks:
   ❌ id: equipment
      status: blocked: <fix_car>
      priority: normal
+
     ❌ id: water
        status: not-started
        priority: high

@@ -61,7 +61,7 @@ parseBlockedTarget other = case TaskId.mkA "Blocker text" BlockerText other of
   Left err -> fail err
   Right x -> pure x
 
--- | Task status. The (commutative) semigroup is roughly based on the ordering
+-- | Task status. The (commutative) semigroup is based roughly  on the ordering
 --
 -- @
 --   Completed < NotStarted < InProgress < Blocked

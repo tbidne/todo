@@ -105,8 +105,7 @@ testTaskGroupUsesSetStatus subtasks = testCase "TaskGroup uses set status" $ do
 testTaskGroupDerivesStatus :: Seq SomeTask -> TestTree
 testTaskGroupDerivesStatus subtasks = testCase "TaskGroup derives status" $ do
   let result = Task.taskGroupStatus taskGroup
-  -- NotStarted is the greatest subtask status
-  NotStarted @=? result
+  InProgress @=? result
   where
     taskGroup =
       MkTaskGroup

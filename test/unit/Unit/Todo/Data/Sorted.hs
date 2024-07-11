@@ -49,8 +49,8 @@ testExample =
     [ "groceries",
       "bananas",
       "apples",
-      "fix_car",
       "paycheck",
+      "fix_car",
       "soccer_match",
       "pack_bananas",
       "equipment",
@@ -94,9 +94,9 @@ testExampleStatus =
       "equipment",
       "ball",
       "cleats",
+      "paycheck",
       "fix_car",
       "haircut",
-      "paycheck",
       "walk_dog"
     ]
 
@@ -109,8 +109,8 @@ testExamplePriorityStatus =
     [ "groceries",
       "bananas",
       "apples",
-      "fix_car",
       "paycheck",
+      "fix_car",
       "walk_dog",
       "soccer_match",
       "pack_bananas",
@@ -134,9 +134,9 @@ testExampleStatusPriority =
       "equipment",
       "ball",
       "cleats",
+      "paycheck",
       "fix_car",
       "haircut",
-      "paycheck",
       "walk_dog"
     ]
 
