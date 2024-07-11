@@ -198,6 +198,13 @@ testExample = testHedgehogOne "Reads example config" "testExample" $ do
                       }
                 ],
               taskId = "soccer_match"
+            },
+        SomeTaskGroup
+          MkTaskGroup
+            { priority = Nothing,
+              status = Nothing,
+              subtasks = Empty,
+              taskId = "empty_group"
             }
       ]
 
