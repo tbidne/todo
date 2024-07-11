@@ -47,8 +47,8 @@ sortTasks ::
   SortedTasks
 sortTasks mSortType xs = case mSortType of
   Nothing ->
-    UnsafeSortedTasks $ defSort incompleteTasks <> defSort completedTasks
-  Just sortType -> UnsafeSortedTasks $ sortSomeTasks (toOrd sortType) xs
+    UnsafeSortedTasks $ sortSomeTasks True defSort xs
+  Just sortType -> UnsafeSortedTasks $ sortSomeTasks False (toOrd sortType) xs
   where
     toOrd SortPriority =
       cSomeTask (\x -> (Down x.priority, x.taskId))
@@ -59,18 +59,24 @@ sortTasks mSortType xs = case mSortType of
     toOrd SortStatusPriority =
       cSomeTask (\x -> (Down x.status, Down x.priority, x.taskId))
 
-    (completedTasks, incompleteTasks) = L.partition Task.someTaskIsCompleted xs
-
-    defSort =
-      sortSomeTasks (cSomeTask (\x -> (Down x.priority, Down x.status, x.taskId)))
+    defSort = cSomeTask (\x -> (Down x.priority, Down x.status, x.taskId))
 
 sortSomeTasks ::
+  -- | Partition completed tasks?
+  Bool ->
+  -- | Comparison function.
   (SomeTask -> SomeTask -> Ordering) ->
   List SomeTask ->
   List SomeTask
-sortSomeTasks c =
-  fmap (sortSomeTaskSubtasks c)
-    . L.sortBy c
+sortSomeTasks partitionCompleted c xs =
+  if partitionCompleted
+    then sortFn incompleteTasks <> sortFn completedTasks
+    else sortFn xs
+  where
+    sortFn :: List SomeTask -> List SomeTask
+    sortFn = fmap (sortSomeTaskSubtasks c) . L.sortBy c
+
+    (completedTasks, incompleteTasks) = L.partition Task.someTaskIsCompleted xs
 
 sortSomeTaskSubtasks :: (SomeTask -> SomeTask -> Ordering) -> SomeTask -> SomeTask
 sortSomeTaskSubtasks _ t@(SomeTaskSingle _) = t
