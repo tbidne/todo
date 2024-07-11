@@ -14,3 +14,6 @@ cradle:
 
     - path: "./test/functional"
       component: "todo:test:functional"
+
+    - path: "./benchmarks/Main.hs"
+      component: "todo:bench:benchmarks"

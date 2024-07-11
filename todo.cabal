@@ -202,3 +202,16 @@ test-suite functional
     , todo
 
   hs-source-dirs: test/functional
+
+benchmark benchmarks
+  import:         common-lang
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+  build-depends:
+    , base
+    , deepseq      >=1.4.4.0 && <1.6
+    , effects-fs
+    , tasty-bench  ^>=0.3
+    , todo
+
+  hs-source-dirs: benchmarks
