@@ -1,6 +1,6 @@
 index-name = 'empty'
 
 index-legend = [
-  { name = 'empty', path = 'test\integration\toml\empty.json' },
-  { name = 'one', path = 'test\integration\toml\one.json' }
+  { name = 'empty', path = 'empty.json' },
+  { name = 'one', path = 'one.json' }
 ]

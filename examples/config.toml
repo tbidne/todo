@@ -26,8 +26,8 @@ index-path = 'examples/index.json'
 index-name = 'default'
 
 # Map from names to paths. Allows one to specific a name rather than a full
-# path.
+# path. Paths can be absolute or relative to this toml file.
 index-legend = [
-  { name = 'default', path = 'examples/index.json' },
-  { name = 'another', path = 'examples/index2.json' }
+  { name = 'default', path = 'index.json' },
+  { name = 'another', path = 'index2.json' }
 ]

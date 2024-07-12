@@ -93,6 +93,7 @@ library
     , effects-optparse      ^>=0.1
     , effects-terminal      ^>=0.1
     , effects-time          ^>=0.1
+    , filepath              >=1.4.100.1 && <1.6
     , haskeline             ^>=0.8.1.1
     , mtl                   >=2.2.1     && <2.4
     , nonempty-containers   >=0.3.4.2   && <0.4

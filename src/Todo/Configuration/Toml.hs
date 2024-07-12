@@ -106,18 +106,18 @@ maybeReadToml ::
     MonadThrow m
   ) =>
   Maybe OsPath ->
-  m (Maybe Toml)
+  m (Maybe (Tuple2 OsPath Toml))
 maybeReadToml Nothing = do
   tomlPath <- (</> [osp|config.toml|]) <$> getTodoXdgConfig
   exists <- PR.doesFileExist tomlPath
   if exists
-    then Just <$> decodeToml tomlPath
+    then Just . (tomlPath,) <$> decodeToml tomlPath
     else pure Nothing
 maybeReadToml (Just tomlPath) = do
   exists <- PR.doesFileExist tomlPath
   unless exists $ throwM $ MkConfigNotFoundE tomlPath
 
-  Just <$> decodeToml tomlPath
+  Just . (tomlPath,) <$> decodeToml tomlPath
 
 decodeToml ::
   ( HasCallStack,

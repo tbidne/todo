@@ -13,6 +13,7 @@ where
 import Data.Map.Strict qualified as Map
 import Effects.FileSystem.PathReader (doesFileExist)
 import Effects.FileSystem.Utils qualified as FsUtils
+import System.OsPath qualified as FP
 import Todo.Configuration.Args (Args (command, coreConfig), Command)
 import Todo.Configuration.ConfigPhase
   ( ConfigPhase (ConfigPhaseMerged),
@@ -39,12 +40,15 @@ mergeConfig ::
     MonadThrow m
   ) =>
   Args ->
-  Maybe Toml ->
+  Maybe (Tuple2 OsPath Toml) ->
   m Merged
 mergeConfig args Nothing = do
   let mIndexPath = args.coreConfig.index.path
+      tasksPathArgs = case mIndexPath of
+        Just indexPath -> TasksPathArgsPath indexPath
+        Nothing -> TasksPathArgsXdg
 
-  indexPath <- getTasksPath Nothing Map.empty mIndexPath
+  indexPath <- getTasksPath tasksPathArgs
   index <- Index.readIndex indexPath
 
   pure
@@ -59,18 +63,20 @@ mergeConfig args Nothing = do
             },
         command = args.command
       }
-mergeConfig args (Just toml) = do
+mergeConfig args (Just (tomlPath, toml)) = do
   let mIndexName =
         args.coreConfig.index.name <|> toml.coreConfig.index.name
       mIndexPath =
         args.coreConfig.index.path <|> toml.coreConfig.index.path
 
-  -- TODO: Right now this requires either an absolute path. We should at
-  -- least allow:
-  --
-  --   - paths relative to config (e.g. index-legend entry { path: 'a_path'})
-  --   - maybe relative to the current directory?
-  indexPath <- getTasksPath mIndexName toml.taskNamePathMap mIndexPath
+      tasksPathArgs = case mIndexPath of
+        Just indexPath -> TasksPathArgsPath indexPath
+        Nothing -> case mIndexName of
+          Just indexName ->
+            TasksPathArgsMap indexName tomlPath toml.taskNamePathMap
+          Nothing -> TasksPathArgsXdg
+
+  indexPath <- getTasksPath tasksPathArgs
   index <- Index.readIndex indexPath
 
   pure
@@ -86,6 +92,17 @@ mergeConfig args (Just toml) = do
         command = args.command
       }
 
+-- | Args for finding the index path.
+data TasksPathArgs
+  = -- | Explicit index path given, use it.
+    TasksPathArgsPath OsPath
+  | -- | No explicit path given, but we do have index name. Look it up in the
+    -- map (the other OsPath is the toml file's path, used for looking up
+    -- relative paths).
+    TasksPathArgsMap Text OsPath (Map Text OsPath)
+  | -- | No path or index name given. Lookup Xdg.
+    TasksPathArgsXdg
+
 -- | Retrieves the path to the tasks json file based on the configuration.
 -- The semantics are:
 --
@@ -96,21 +113,26 @@ mergeConfig args (Just toml) = do
 --   3. Fall back to XDG config e.g. ~/.config/todo/index.json. If this does
 --      not exists, throw an error.
 getTasksPath ::
-  (HasCallStack, MonadPathReader m, MonadThrow m) =>
-  -- | Task name @n@.
-  Maybe Text ->
-  -- | Name -> Path map, @map@.
-  Map Text OsPath ->
-  -- | Task path @p@.
-  Maybe OsPath ->
+  ( HasCallStack,
+    MonadPathReader m,
+    MonadThrow m
+  ) =>
+  TasksPathArgs ->
   m OsPath
-getTasksPath _ _ (Just p) = pure p
-getTasksPath (Just taskName) taskNamePathMap Nothing =
+getTasksPath (TasksPathArgsPath p) = pure p
+getTasksPath (TasksPathArgsMap taskName tomlPath taskNamePathMap) =
+  -- We support absolute path and paths relative to the toml file itself.
+  -- No other relative paths are allowed (e.g. relative to current directory
+  -- is not handled).
   case Map.lookup taskName taskNamePathMap of
-    Just path -> pure path
+    Just path ->
+      if FP.isAbsolute path
+        then pure path
+        else
+          let dir = FP.takeDirectory tomlPath
+           in pure $ dir </> path
     Nothing -> throwM $ MkTaskNameLookupE taskName
-getTasksPath Nothing _ Nothing = do
-  -- get XDG location
+getTasksPath TasksPathArgsXdg = do
   xdgConfigDir <- getTodoXdgConfig
   let tasksPath = xdgConfigDir </> [osp|index.json|]
   exists <- doesFileExist tasksPath
