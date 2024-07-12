@@ -131,7 +131,7 @@ getTasksPath (TasksPathArgsMap taskName tomlPath taskNamePathMap) =
         else
           let dir = FP.takeDirectory tomlPath
            in pure $ dir </> path
-    Nothing -> throwM $ MkTaskNameLookupE taskName
+    Nothing -> throwM $ MkTaskNameLookupE tomlPath taskName
 getTasksPath TasksPathArgsXdg = do
   xdgConfigDir <- getTodoXdgConfig
   let tasksPath = xdgConfigDir </> [osp|index.json|]
@@ -140,15 +140,17 @@ getTasksPath TasksPathArgsXdg = do
     then pure tasksPath
     else throwM $ MkXdgIndexNotFoundE tasksPath
 
-newtype TaskNameLookupE = MkTaskNameLookupE Text
+data TaskNameLookupE = MkTaskNameLookupE OsPath Text
   deriving stock (Eq, Show)
 
 instance Exception TaskNameLookupE where
-  displayException (MkTaskNameLookupE name) =
+  displayException (MkTaskNameLookupE path name) =
     mconcat
       [ "No task with name '",
         unpack name,
-        "' found in task map."
+        "' found in task map: '",
+        FsUtils.decodeOsToFpLenient path,
+        "'"
       ]
 
 newtype XdgIndexNotFoundE = MkXdgIndexNotFoundE OsPath
