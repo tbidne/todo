@@ -64,8 +64,9 @@ testBadIndexNameFailure = testHedgehogOne desc "testBadIndexNameFailure" $ do
       ]
     expected =
       mconcat
-        [ "No task with name 'bad-name' found in task map: ",
-          "'test/integration/toml/no-path.toml'"
+        [ "No task with name 'bad-name' found in task map: '",
+          noPathConfigFilePath,
+          "'"
         ]
 
 testBadXdgFailure :: TestTree
