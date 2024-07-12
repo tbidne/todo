@@ -1,5 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
+{- HLINT ignore "Replace case with maybe" -}
+
 module Todo.Configuration.Merged
   ( Merged (..),
     mergeConfig,
