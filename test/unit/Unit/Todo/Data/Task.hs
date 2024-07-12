@@ -28,7 +28,6 @@ import Todo.Data.Task
     SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
-import Todo.Data.Task qualified as Task
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority (TaskPriority (High, Low, Normal))
@@ -59,8 +58,11 @@ taskGroupTasks =
     [ testTaskGroupUsesSetStatus tasks,
       testTaskGroupDerivesStatus tasks,
       testTaskGroupEmptyDerivesCompleted,
+      testTaskGroupDerivesNotStarted,
       testTaskGroupUsesSetPriority tasks,
-      testTaskGroupNoDerivesPriority tasks
+      testTaskGroupDerivesPriority tasks,
+      testTaskGroupDerivesHigh,
+      testTaskGroupDerivesLow
     ]
   where
     t1 =
@@ -91,69 +93,187 @@ taskGroupTasks =
 
 testTaskGroupUsesSetStatus :: Seq SomeTask -> TestTree
 testTaskGroupUsesSetStatus subtasks = testCase "TaskGroup uses set status" $ do
-  let result = Task.taskGroupStatus taskGroup
+  let result = taskGroup.status
   Completed @=? result
   where
     taskGroup =
-      MkTaskGroup
-        { taskId = TaskId.unsafeTaskId "tg",
-          priority = Nothing,
-          status = Just Completed,
-          subtasks
-        }
+      SomeTaskGroup
+        $ MkTaskGroup
+          { taskId = TaskId.unsafeTaskId "tg",
+            priority = Nothing,
+            status = Just Completed,
+            subtasks
+          }
 
 testTaskGroupDerivesStatus :: Seq SomeTask -> TestTree
 testTaskGroupDerivesStatus subtasks = testCase "TaskGroup derives status" $ do
-  let result = Task.taskGroupStatus taskGroup
+  let result = taskGroup.status
   InProgress @=? result
   where
     taskGroup =
-      MkTaskGroup
-        { taskId = TaskId.unsafeTaskId "tg",
-          priority = Nothing,
-          status = Nothing,
-          subtasks
-        }
+      SomeTaskGroup
+        $ MkTaskGroup
+          { taskId = TaskId.unsafeTaskId "tg",
+            priority = Nothing,
+            status = Nothing,
+            subtasks
+          }
 
 testTaskGroupEmptyDerivesCompleted :: TestTree
 testTaskGroupEmptyDerivesCompleted = testCase "TaskGroup empty derives completed" $ do
-  let result = Task.taskGroupStatus taskGroup
-  -- Completed is the least subtask status
+  let result = taskGroup.status
+  -- Completed is the default for empty
   Completed @=? result
   where
     taskGroup =
-      MkTaskGroup
-        { taskId = TaskId.unsafeTaskId "tg",
-          priority = Nothing,
-          status = Nothing,
-          subtasks = Empty
-        }
+      SomeTaskGroup
+        $ MkTaskGroup
+          { taskId = TaskId.unsafeTaskId "tg",
+            priority = Nothing,
+            status = Nothing,
+            subtasks = Empty
+          }
+
+testTaskGroupDerivesNotStarted :: TestTree
+testTaskGroupDerivesNotStarted = testCase "TaskGroup not-started derives not-started" $ do
+  let result = taskGroup.status
+  NotStarted @=? result
+  where
+    taskGroup =
+      SomeTaskGroup
+        $ MkTaskGroup
+          { taskId = TaskId.unsafeTaskId "tg",
+            priority = Nothing,
+            status = Nothing,
+            subtasks = t1 :<| t2 :<| Empty
+          }
+
+    t1 =
+      SomeTaskSingle
+        $ MkSingleTask
+          { taskId = TaskId.unsafeTaskId "t1",
+            priority = Low,
+            status = NotStarted,
+            deadline = Nothing,
+            description = Nothing
+          }
+
+    t2 =
+      SomeTaskSingle
+        $ MkSingleTask
+          { taskId = TaskId.unsafeTaskId "t2",
+            priority = Low,
+            status = NotStarted,
+            deadline = Nothing,
+            description = Nothing
+          }
 
 testTaskGroupUsesSetPriority :: Seq SomeTask -> TestTree
 testTaskGroupUsesSetPriority subtasks = testCase "TaskGroup uses set priority" $ do
   let result = taskGroup.priority
-  Just Low @=? result
+  Low @=? result
   where
     taskGroup =
-      MkTaskGroup
-        { taskId = TaskId.unsafeTaskId "tg",
-          priority = Just Low,
-          status = Nothing,
-          subtasks
-        }
+      SomeTaskGroup
+        $ MkTaskGroup
+          { taskId = TaskId.unsafeTaskId "tg",
+            priority = Just Low,
+            status = Nothing,
+            subtasks
+          }
 
-testTaskGroupNoDerivesPriority :: Seq SomeTask -> TestTree
-testTaskGroupNoDerivesPriority subtasks = testCase "TaskGroup does not derive priority" $ do
+testTaskGroupDerivesPriority :: Seq SomeTask -> TestTree
+testTaskGroupDerivesPriority subtasks = testCase "TaskGroup derives priority" $ do
   let result = taskGroup.priority
-  Nothing @=? result
+  -- Normal because only High task is Completed
+  Normal @=? result
   where
     taskGroup =
-      MkTaskGroup
-        { taskId = TaskId.unsafeTaskId "tg",
-          priority = Nothing,
-          status = Nothing,
-          subtasks
-        }
+      SomeTaskGroup
+        $ MkTaskGroup
+          { taskId = TaskId.unsafeTaskId "tg",
+            priority = Nothing,
+            status = Nothing,
+            subtasks
+          }
+
+testTaskGroupDerivesHigh :: TestTree
+testTaskGroupDerivesHigh = testCase "TaskGroup derives priority high" $ do
+  let result = taskGroup.priority
+  High @=? result
+  where
+    taskGroup =
+      SomeTaskGroup
+        $ MkTaskGroup
+          { taskId = TaskId.unsafeTaskId "tg",
+            priority = Nothing,
+            status = Nothing,
+            subtasks = t1 :<| t2 :<| t3 :<| Empty
+          }
+
+    t1 =
+      SomeTaskSingle
+        $ MkSingleTask
+          { taskId = TaskId.unsafeTaskId "t1",
+            priority = Low,
+            status = NotStarted,
+            deadline = Nothing,
+            description = Nothing
+          }
+
+    t2 =
+      SomeTaskSingle
+        $ MkSingleTask
+          { taskId = TaskId.unsafeTaskId "t2",
+            priority = Normal,
+            status = NotStarted,
+            deadline = Nothing,
+            description = Nothing
+          }
+
+    t3 =
+      SomeTaskSingle
+        $ MkSingleTask
+          { taskId = TaskId.unsafeTaskId "t3",
+            priority = High,
+            status = NotStarted,
+            deadline = Nothing,
+            description = Nothing
+          }
+
+testTaskGroupDerivesLow :: TestTree
+testTaskGroupDerivesLow = testCase "TaskGroup derives priority low" $ do
+  let result = taskGroup.priority
+  Low @=? result
+  where
+    taskGroup =
+      SomeTaskGroup
+        $ MkTaskGroup
+          { taskId = TaskId.unsafeTaskId "tg",
+            priority = Nothing,
+            status = Nothing,
+            subtasks = t1 :<| t2 :<| Empty
+          }
+
+    t1 =
+      SomeTaskSingle
+        $ MkSingleTask
+          { taskId = TaskId.unsafeTaskId "t1",
+            priority = Low,
+            status = NotStarted,
+            deadline = Nothing,
+            description = Nothing
+          }
+
+    t2 =
+      SomeTaskSingle
+        $ MkSingleTask
+          { taskId = TaskId.unsafeTaskId "t2",
+            priority = Low,
+            status = NotStarted,
+            deadline = Nothing,
+            description = Nothing
+          }
 
 jsonTests :: TestTree
 jsonTests =

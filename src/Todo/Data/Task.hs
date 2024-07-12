@@ -116,24 +116,63 @@ instance ToJSON TaskGroup where
 taskGroupStatus :: TaskGroup -> TaskStatus
 taskGroupStatus tg = case tg.status of
   Just s -> s
-  Nothing -> deriveStatus tg.subtasks
+  Nothing -> case tg.subtasks of
+    -- Empty -> Completed
+    Empty -> Completed
+    -- NonEmpty -> multiply together
+    (x :<| xs) -> deriveStatus x.status xs
     where
-      deriveStatus =
+      -- NOTE: [Deriving empty status]
+      --
+      -- Why don't we use sconcat + Completed? Because
+      --
+      --   Completed <> NotStarted == InProgress
+      --
+      -- which is not what we want. The is exactly what prevents TaskStatus
+      -- from being a monoid. OTOH, defaulting empty to Completed and o/w
+      -- multiplying all non-empty elements together gets us what we want.
+      --
+      -- See NOTE: [Deriving empty priority] for a longer exposition on this
+      -- problem wrt priority.
+      deriveStatus y =
         sconcat
-          -- Default to Completed.
-          . (Completed :|)
+          . (y :|)
           . fmap (.status)
           . toList
 
 taskGroupPriority :: TaskGroup -> TaskPriority
 taskGroupPriority tg = case tg.priority of
   Just p -> p
-  Nothing -> derivePriority tg.subtasks
+  Nothing -> case tg.subtasks of
+    -- Empty -> Normal
+    Empty -> Normal
+    -- NonEmpty -> multiply together
+    (x :<| xs) -> derivePriority x.priority xs
     where
-      derivePriority =
+      derivePriority y =
         sconcat
-          -- Default to Normal.
-          . (Normal :|)
+          -- NOTE: [Deriving empty priority]
+          --
+          -- Notice different cases for empty vs. non-empty. Why don't we use
+          -- sconcat or mconcat? Consider that we have:
+          --
+          --   Normal <> Low == Normal
+          --
+          -- Because of that, here's what we'd get:
+          --
+          -- 1. sconcat Low [] -> Low          (should be Normal)
+          -- 2. sconcat Normal [Low] -> Normal (should be Low)
+          -- 3. mconcat [Low] -> Normal        (should be Low)
+          --
+          -- We only want to fall back to Normal when there are no statuses
+          -- (i.e. subtasks is empty). But each of the strategies above
+          -- has at least one scenario where it doesn't give us what we want.
+          --
+          -- Hence we explicitly split out each cases, which does what we want.
+          --
+          -- See NOTE: [Deriving empty status] for the same idea, but for
+          -- statuses.
+          . (y :|)
           . fmap (.priority)
           . filter (not . someTaskIsCompleted)
           . toList
