@@ -41,7 +41,6 @@ instance DecodeTOML Toml where
   tomlDecoder = do
     colorSwitch <- decodeColorSwitch
     indexName <- decodeIndexName
-    indexPath <- decodeIndexPath
     unicodeSwitch <- decodeUnicodeSwitch
 
     taskNamePathMap <- decodeTaskNamePathMap
@@ -54,7 +53,7 @@ instance DecodeTOML Toml where
                 index =
                   MkIndexConfig
                     { name = indexName,
-                      path = indexPath
+                      path = ()
                     },
                 unicodeSwitch
               },
@@ -89,12 +88,6 @@ decodeTaskNamePathMap =
 
 decodeIndexName :: Decoder (Maybe Text)
 decodeIndexName = getFieldOptWith tomlDecoder "index-name"
-
-decodeIndexPath :: Decoder (Maybe OsPath)
-decodeIndexPath = getFieldOptWith decoder "index-path"
-  where
-    decoder :: Decoder OsPath
-    decoder = tomlDecoder >>= FsUtils.encodeFpToValidOsFail
 
 decodeUnicodeSwitch :: Decoder (Maybe UnicodeSwitch)
 decodeUnicodeSwitch = getFieldOptWith tomlDecoder "unicode"

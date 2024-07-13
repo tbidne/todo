@@ -22,16 +22,24 @@ import Todo.Index (Index)
 import Todo.Prelude
 import Todo.Render.Utils (ColorSwitch, UnicodeSwitch)
 
-data IndexConfig = MkIndexConfig
+data IndexConfig p = MkIndexConfig
   { name :: Maybe Text,
-    path :: Maybe OsPath
+    path :: IndexPathF p
   }
-  deriving stock (Eq, Show)
+
+deriving stock instance (Eq (IndexPathF p)) => Eq (IndexConfig p)
+
+deriving stock instance (Show (IndexPathF p)) => Show (IndexConfig p)
+
+type IndexPathF :: ConfigPhase -> Type
+type family IndexPathF p where
+  IndexPathF ConfigPhaseArgs = Maybe OsPath
+  IndexPathF ConfigPhaseToml = ()
 
 type IndexF :: ConfigPhase -> Type
 type family IndexF p where
-  IndexF ConfigPhaseArgs = IndexConfig
-  IndexF ConfigPhaseToml = IndexConfig
+  IndexF ConfigPhaseArgs = IndexConfig ConfigPhaseArgs
+  IndexF ConfigPhaseToml = IndexConfig ConfigPhaseToml
   IndexF ConfigPhaseMerged = Index
 
 type CoreConfig :: ConfigPhase -> Type

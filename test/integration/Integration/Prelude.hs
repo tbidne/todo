@@ -143,32 +143,17 @@ unsafeParseTimestamp s = case Timestamp.parseTimestamp s of
   Just t -> t
 
 exampleConfigFilePath :: FilePath
+exampleConfigFilePath = FsUtils.unsafeDecodeOsToFp exampleConfigOsPath
+
 exampleConfigOsPath :: OsPath
-noPathConfigFilePath :: FilePath
-noPathConfigOsPath :: OsPath
-
-#if WINDOWS
-
-exampleConfigFilePath = FsUtils.unsafeDecodeOsToFp exampleConfigOsPath
-exampleConfigOsPath = [osp|examples|] </> [osp|config_windows.toml|]
-
-noPathConfigFilePath = FsUtils.unsafeDecodeOsToFp noPathConfigOsPath
-noPathConfigOsPath =
-  [osp|test|]
-    </> [osp|integration|]
-    </> [osp|toml|]
-    </> [osp|no-path_windows.toml|]
-
-#else
-
-exampleConfigFilePath = FsUtils.unsafeDecodeOsToFp exampleConfigOsPath
 exampleConfigOsPath = [osp|examples|] </> [osp|config.toml|]
 
+noPathConfigFilePath :: FilePath
 noPathConfigFilePath = FsUtils.unsafeDecodeOsToFp noPathConfigOsPath
+
+noPathConfigOsPath :: OsPath
 noPathConfigOsPath =
   [osp|test|]
     </> [osp|integration|]
     </> [osp|toml|]
     </> [osp|no-path.toml|]
-
-#endif

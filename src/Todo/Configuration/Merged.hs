@@ -68,8 +68,7 @@ mergeConfig args Nothing = do
 mergeConfig args (Just (tomlPath, toml)) = do
   let mIndexName =
         args.coreConfig.index.name <|> toml.coreConfig.index.name
-      mIndexPath =
-        args.coreConfig.index.path <|> toml.coreConfig.index.path
+      mIndexPath = args.coreConfig.index.path
 
       tasksPathArgs = case mIndexPath of
         Just indexPath -> TasksPathArgsPath indexPath

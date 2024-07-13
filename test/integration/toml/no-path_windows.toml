@@ -1,6 +1,0 @@
-index-name = 'empty'
-
-index-legend = [
-  { name = 'empty', path = 'empty.json' },
-  { name = 'one', path = 'one.json' }
-]
