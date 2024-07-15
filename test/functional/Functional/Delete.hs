@@ -15,12 +15,15 @@ tests testEnv =
       testDeleteMany testEnv,
       testDeleteGroupSubtask testEnv,
       testDeleteBadId testEnv,
-      testDeleteBlockedId testEnv
+      testDeleteBlockedId testEnv,
+      testDeleteBlockedSuccess testEnv,
+      testDeleteTaskRepeatedly testEnv
     ]
 
 testDeleteNone :: IO TestEnv -> TestTree
 testDeleteNone =
   testDeleteGoldenRunner
+    exampleJson
     (runTodoResponses ["n"])
     "Does not delete a task"
     [osp|testDeleteNone|]
@@ -43,7 +46,10 @@ testDeleteMany =
 
 testDeleteGroupSubtask :: IO TestEnv -> TestTree
 testDeleteGroupSubtask =
-  testDeleteGolden "Deletes a group subtask" [osp|testDeleteGroupSubtask|] ["cleats"]
+  testDeleteGolden
+    "Deletes a group subtask"
+    [osp|testDeleteGroupSubtask|]
+    ["cleats"]
 
 testDeleteBadId :: IO TestEnv -> TestTree
 testDeleteBadId =
@@ -59,20 +65,45 @@ testDeleteBlockedId =
     [osp|testDeleteBlockedId|]
     ["fix_car"]
 
+testDeleteBlockedSuccess :: IO TestEnv -> TestTree
+testDeleteBlockedSuccess =
+  testDeleteGoldenRunner
+    indexPath
+    (runTodoResponses ["y"])
+    "Delete task that blocks deleted tasks succeeds"
+    [osp|testDeleteBlockedSuccess|]
+    ["g", "t2"]
+  where
+    indexPath = inputOsPath </> [osp|delete_blocked_success.json|]
+
+testDeleteTaskRepeatedly :: IO TestEnv -> TestTree
+testDeleteTaskRepeatedly =
+  testDeleteGoldenRunner
+    indexPath
+    (runTodoResponses ["y"])
+    "Deletes tasks multiple times"
+    [osp|testDeleteTaskRepeatedly|]
+    ["g2", "s212", "t2"]
+  where
+    indexPath = inputOsPath </> [osp|delete_repeatedly.json|]
+
 testDeleteGolden :: TestName -> OsPath -> List String -> IO TestEnv -> TestTree
-testDeleteGolden = testDeleteGoldenRunner (runTodoResponses ["y"])
+testDeleteGolden =
+  testDeleteGoldenRunner exampleJson (runTodoResponses ["y"])
 
 testDeleteErrorGolden :: TestName -> OsPath -> List String -> IO TestEnv -> TestTree
-testDeleteErrorGolden = testDeleteGoldenRunner (runTodoException @DeleteE)
+testDeleteErrorGolden =
+  testDeleteGoldenRunner exampleJson (runTodoException @DeleteE)
 
 testDeleteGoldenRunner ::
+  OsPath ->
   (List String -> IO Text) ->
   TestName ->
   OsPath ->
   List String ->
   IO TestEnv ->
   TestTree
-testDeleteGoldenRunner runner desc name taskIds testEnv =
+testDeleteGoldenRunner indexPath runner desc name taskIds testEnv =
   goldenVsFile desc goldenPath actualPath $ do
     testDir <- getTestDir' testEnv name
     let newPath = testDir </> [osp|index.json|]
@@ -86,7 +117,7 @@ testDeleteGoldenRunner runner desc name taskIds testEnv =
             ++ taskIds
 
     -- copy example to test dir
-    copyFileWithMetadata exampleJson newPath
+    copyFileWithMetadata indexPath newPath
 
     -- run delete
     deleteResult <- runner deleteArgs
@@ -102,6 +133,12 @@ getTestDir' testEnv name = getTestDir testEnv ([osp|delete|] </> name)
 
 exampleJson :: OsPath
 exampleJson = [osp|examples|] </> [osp|index.json|]
+
+inputOsPath :: OsPath
+inputOsPath = unsafeEncodeFpToOs inputFilePath
+
+inputFilePath :: FilePath
+inputFilePath = "test" `cfp` "functional" `cfp` "Functional" `cfp` "Delete" `cfp` "input"
 
 outputDir :: FilePath
 outputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "Delete" `cfp` "output"

@@ -1,0 +1,54 @@
+Found task(s):
+
+
+🚧 id: g2
+   status: in-progress
+   priority: normal
+
+  🚧 id: s21
+     status: in-progress
+     priority: normal
+
+  🚧 id: s22
+     status: in-progress
+     priority: normal
+
+    🚧 id: s211
+       status: in-progress
+       priority: normal
+
+    🚧 id: s212
+       status: in-progress
+       priority: normal
+
+    🚧 id: s213
+       status: in-progress
+       priority: normal
+
+❌ id: t2
+   status: not-started
+   priority: normal
+
+
+Are you sure you want to delete (y/n)? 
+
+Successfully deleted tasks(s). New index:
+
+
+🚧 id: g1
+   status: in-progress
+   priority: normal
+
+  🚧 id: s11
+     status: in-progress
+     priority: normal
+
+  ❌ id: s12
+     status: not-started
+     priority: normal
+
+🚧 id: t1
+   status: in-progress
+   priority: normal
+
+

@@ -1,0 +1,27 @@
+[
+  {
+    "id": "t1",
+    "status": "in-progress",
+    "priority": "normal"
+  },
+  {
+    "id": "g",
+    "subtasks": [
+      {
+        "id": "s1",
+        "status": "in-progress",
+        "priority": "normal"
+      },
+      {
+        "id": "s2",
+        "status": "blocked: <t2>",
+        "priority": "normal"
+      }
+    ]
+  },
+  {
+    "id": "t2",
+    "status": "blocked: <s1>",
+    "priority": "normal"
+  }
+]

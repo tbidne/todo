@@ -1,0 +1,57 @@
+[
+  {
+    "id": "t1",
+    "status": "in-progress",
+    "priority": "normal"
+  },
+  {
+    "id": "g1",
+    "subtasks": [
+      {
+        "id": "s11",
+        "status": "in-progress",
+        "priority": "normal"
+      },
+      {
+        "id": "s12",
+        "status": "not-started",
+        "priority": "normal"
+      }
+    ]
+  },
+  {
+    "id": "t2",
+    "status": "not-started",
+    "priority": "normal"
+  },
+  {
+    "id": "g2",
+    "subtasks": [
+      {
+        "id": "s21",
+        "status": "in-progress",
+        "priority": "normal"
+      },
+      {
+        "id": "s22",
+        "subtasks": [
+          {
+            "id": "s211",
+            "status": "in-progress",
+            "priority": "normal"
+          },
+          {
+            "id": "s212",
+            "status": "in-progress",
+            "priority": "normal"
+          },
+          {
+            "id": "s213",
+            "status": "in-progress",
+            "priority": "normal"
+          }
+        ]
+      }
+    ]
+  }
+]
