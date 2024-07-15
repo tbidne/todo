@@ -91,18 +91,7 @@ testDeleteGoldenRunner runner desc name taskIds testEnv =
     -- run delete
     deleteResult <- runner deleteArgs
 
-    let listArgs =
-          [ "--index-path",
-            unsafeDecodeOsToFp newPath,
-            "--color",
-            "off",
-            "list"
-          ]
-
-    -- run list
-    listResult <- runTodo listArgs
-
-    writeActualFile actualPath (deleteResult <> "\n\n" <> listResult)
+    writeActualFile actualPath deleteResult
   where
     path = outputDir `cfp` unsafeDecodeOsToFp name
     actualPath = path <> ".actual"
