@@ -5,6 +5,11 @@ module Todo.Configuration.Core
     CoreConfig (..),
     IndexConfig (..),
 
+    -- * Synonyms
+    CoreConfigArgs,
+    CoreConfigToml,
+    CoreConfigMerged,
+
     -- * Misc
     IndexF,
   )
@@ -62,3 +67,9 @@ deriving stock instance
     Eq (ConfigPhaseF p UnicodeSwitch)
   ) =>
   Eq (CoreConfig p)
+
+type CoreConfigArgs = CoreConfig ConfigPhaseArgs
+
+type CoreConfigToml = CoreConfig ConfigPhaseToml
+
+type CoreConfigMerged = CoreConfig ConfigPhaseMerged

@@ -17,6 +17,14 @@ import Refined (Refined)
 import Refined qualified as R
 import Refined.Extras qualified as RE
 import Todo.Command.Utils qualified as CUtils
+import Todo.Configuration.Core
+  ( CoreConfig
+      ( colorSwitch,
+        index,
+        unicodeSwitch
+      ),
+    CoreConfigMerged,
+  )
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.Task
   ( SingleTask
@@ -51,7 +59,6 @@ import Todo.Index.Safe
 import Todo.Index.Safe qualified as Safe
 import Todo.Prelude
 import Todo.Render qualified as Render
-import Todo.Render.Utils (ColorSwitch, UnicodeSwitch)
 
 -- | Inserts new task(s) into the file.
 insertTask ::
@@ -64,14 +71,9 @@ insertTask ::
     MonadTime m,
     MonadThrow m
   ) =>
-  -- | Index.
-  Index ->
-  -- | Is color enabled.
-  ColorSwitch ->
-  -- | Is unicode enabled.
-  UnicodeSwitch ->
+  CoreConfigMerged ->
   m ()
-insertTask index color unicode = do
+insertTask coreConfig = do
   (newIndex, newTaskIds) <- whileApplySetM index getMoreTasksAns mkSomeTask
 
   Index.writeIndex newIndex
@@ -86,6 +88,10 @@ insertTask index color unicode = do
     $ TL.toStrict
     $ TLB.toLazyText
     $ Render.renderSorted currTime color unicode sorted
+  where
+    color = coreConfig.colorSwitch
+    index = coreConfig.index
+    unicode = coreConfig.unicodeSwitch
 
 mkSomeTask ::
   ( HasCallStack,

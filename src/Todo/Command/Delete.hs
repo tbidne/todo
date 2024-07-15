@@ -6,13 +6,27 @@ where
 import Data.Map.Strict qualified as Map
 import Effects.Time (MonadTime (getSystemZonedTime))
 import Todo.Command.Utils qualified as CUtils
+import Todo.Configuration.Core
+  ( CoreConfig
+      ( colorSwitch,
+        index,
+        unicodeSwitch
+      ),
+    CoreConfigMerged,
+  )
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.TaskId (TaskId)
-import Todo.Index (DeleteE (DeleteRefId, DeleteTaskIdNotFound), Index, TaskIdNotFoundE (MkTaskIdNotFoundE), (∉))
+import Todo.Index
+  ( DeleteE
+      ( DeleteRefId,
+        DeleteTaskIdNotFound
+      ),
+    TaskIdNotFoundE (MkTaskIdNotFoundE),
+    (∉),
+  )
 import Todo.Index qualified as Index
 import Todo.Prelude
 import Todo.Render qualified as Render
-import Todo.Render.Utils (ColorSwitch, UnicodeSwitch)
 
 -- | Delete a task.
 deleteTask ::
@@ -24,16 +38,10 @@ deleteTask ::
     MonadTime m,
     MonadThrow m
   ) =>
-  -- | Index.
-  Index ->
-  -- | Is color enabled.
-  ColorSwitch ->
-  -- | Is unicode enabled.
-  UnicodeSwitch ->
-  -- | Task ids to delete.
+  CoreConfigMerged ->
   NESet TaskId ->
   m ()
-deleteTask index color unicode taskIds = do
+deleteTask coreConfig taskIds = do
   let (toDelete, toSave) = Index.partitionTaskIds taskIds index
       blockingIds = Index.getBlockingIds toSave
 
@@ -67,5 +75,9 @@ deleteTask index color unicode taskIds = do
     else
       putTextLn "Did not delete any tasks."
   where
+    color = coreConfig.colorSwitch
+    index = coreConfig.index
+    unicode = coreConfig.unicodeSwitch
+
     sort = Sorted.sortTasks Nothing . (.taskList)
     render currTime = Render.renderSorted currTime color unicode

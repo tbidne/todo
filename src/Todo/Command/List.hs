@@ -6,13 +6,19 @@ where
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder qualified as TLB
 import Effects.Time (MonadTime (getSystemZonedTime))
+import Todo.Configuration.Core
+  ( CoreConfig
+      ( colorSwitch,
+        index,
+        unicodeSwitch
+      ),
+    CoreConfigMerged,
+  )
 import Todo.Data.Sorted (SortType)
 import Todo.Data.Sorted qualified as Sorted
-import Todo.Index (Index)
 import Todo.Index qualified as Index
 import Todo.Prelude
 import Todo.Render qualified as Render
-import Todo.Render.Utils (ColorSwitch, UnicodeSwitch)
 
 -- | Lists tasks from the given file.
 listTasks ::
@@ -20,16 +26,11 @@ listTasks ::
     MonadTerminal m,
     MonadTime m
   ) =>
-  -- | Index.
-  Index ->
-  -- | Is color enabled.
-  ColorSwitch ->
-  -- | Is unicode enabled.
-  UnicodeSwitch ->
+  CoreConfigMerged ->
   -- | The sort type.
   Maybe SortType ->
   m ()
-listTasks index color unicode msortType = do
+listTasks coreConfig msortType = do
   let xs = snd $ Index.toList index
       sorted = Sorted.sortTasks msortType xs
 
@@ -39,3 +40,7 @@ listTasks index color unicode msortType = do
     $ TL.toStrict
     $ TLB.toLazyText
     $ Render.renderSorted currTime color unicode sorted
+  where
+    color = coreConfig.colorSwitch
+    index = coreConfig.index
+    unicode = coreConfig.unicodeSwitch

@@ -14,9 +14,6 @@ import Todo.Configuration.Args
     Command (CmdDelete, CmdInsert, CmdList),
     getArgs,
   )
-import Todo.Configuration.Core
-  ( CoreConfig (colorSwitch, index, unicodeSwitch),
-  )
 import Todo.Configuration.Merged (Merged (coreConfig))
 import Todo.Configuration.Merged qualified as Merged
 import Todo.Configuration.Toml qualified as Toml
@@ -65,11 +62,7 @@ withConfig ::
   Merged ->
   m ()
 withConfig mergedConfig = case mergedConfig.command of
-  CmdDelete taskIds -> Todo.deleteTask index colorSwitch unicodeSwitch taskIds
-  CmdInsert -> Todo.insertTask index colorSwitch unicodeSwitch
+  CmdDelete taskIds -> Todo.deleteTask mergedConfig.coreConfig taskIds
+  CmdInsert -> Todo.insertTask mergedConfig.coreConfig
   CmdList mSortType ->
-    Todo.listTasks index colorSwitch unicodeSwitch mSortType
-  where
-    index = mergedConfig.coreConfig.index
-    colorSwitch = mergedConfig.coreConfig.colorSwitch
-    unicodeSwitch = mergedConfig.coreConfig.unicodeSwitch
+    Todo.listTasks mergedConfig.coreConfig mSortType
