@@ -23,10 +23,15 @@ module Todo.Prelude
     foldMappersAlt,
     foldMappersAltA,
 
-    -- * From List
+    -- * List Conversions
+    -- ** FromList
     listToSeq,
     unsafeListToNonEmpty,
     unsafeListToNESeq,
+    unsafeListToNESet,
+
+    -- ** ToList
+    seqToList,
 
     -- * Develop
     todo,
@@ -110,6 +115,7 @@ import Data.Sequence.NonEmpty qualified as NESeq
 import Data.Set as X (Set)
 import Data.Set qualified as Set
 import Data.Set.NonEmpty as X (NESet)
+import Data.Set.NonEmpty qualified as NESet
 import Data.String as X (String)
 import Data.Text as X (Text, pack, unpack)
 import Data.Text qualified as T
@@ -221,11 +227,17 @@ builderToTxt = TL.toStrict . TLB.toLazyText
 listToSeq :: List a -> Seq a
 listToSeq = Seq.fromList
 
+seqToList :: Seq a -> List a
+seqToList = toList
+
 unsafeListToNonEmpty :: (HasCallStack) => List a -> NonEmpty a
 unsafeListToNonEmpty = NE.fromList
 
 unsafeListToNESeq :: (HasCallStack) => List a -> NESeq a
 unsafeListToNESeq = NESeq.fromList . unsafeListToNonEmpty
+
+unsafeListToNESet :: (HasCallStack, Ord a) => List a -> NESet a
+unsafeListToNESet = NESet.fromList . unsafeListToNonEmpty
 
 showt :: (Show a) => a -> Text
 showt = pack . show

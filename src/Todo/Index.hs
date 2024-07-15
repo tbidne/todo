@@ -1,6 +1,6 @@
 module Todo.Index
   ( -- * Types
-    Index,
+    Index (IndexNil, IndexCons),
 
     -- * Creation
     readIndex,
@@ -30,6 +30,8 @@ module Todo.Index
     -- * Predicates
     filter,
     filterOnIds,
+    partitionTaskIds,
+    partition,
 
     -- * Exceptions,
     BlockedIdRefE (..),
@@ -68,6 +70,18 @@ import Todo.Data.TaskStatus (TaskStatus (Blocked))
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Index.Internal (Index (UnsafeIndex))
 import Todo.Prelude hiding (filter, toList)
+
+pattern IndexNil :: OsPath -> Index
+pattern IndexNil p <- UnsafeIndex [] p
+  where
+    IndexNil p = UnsafeIndex [] p
+
+pattern IndexCons :: SomeTask -> List SomeTask -> OsPath -> Index
+pattern IndexCons t ts p <- UnsafeIndex (t : ts) p
+  where
+    IndexCons t ts p = UnsafeIndex (t : ts) p
+
+{-# COMPLETE IndexNil, IndexCons #-}
 
 -- | Reads the file to an 'Index'.
 readIndex ::
@@ -253,6 +267,59 @@ filterOnIds taskIds = filter go
 -- | Filters the index on some predicate.
 filter :: (SomeTask -> Bool) -> Index -> Index
 filter p (UnsafeIndex taskList path) = UnsafeIndex (L.filter p taskList) path
+
+-- | Partitions the Index on the TaskId set. The left result is all tasks
+-- whose ids belong in the set __and__ tasks who have a some parent in the
+-- set.
+--
+-- The right set is all tasks whose ids do not belong in the set.
+partitionTaskIds ::
+  -- | TaskIds set s.
+  NESet TaskId ->
+  -- | Index to partition.
+  Index ->
+  -- | (Tasks in s, Tasks not in s)
+  Tuple2 Index Index
+partitionTaskIds taskIds = partition pred
+  where
+    pred = (`NESet.member` taskIds) . (.taskId)
+
+type PartitionAcc = Tuple2 (List SomeTask) (List SomeTask)
+
+-- | Partitions the Index according to the predicate @p@. If @p t@ is true
+-- for some @t@ then @t@ is added to the left result, unchanged. This means
+-- that, for instance, the entire task group is returned without checking
+-- any children.
+--
+-- On the other hand, if @p t@ returns false for some task group @t@, then
+-- we check subtasks. Any subtasks returning true will be added to the
+-- left result, whereas @t'@ will be added to the right result, where @t'@
+-- is the original group @t@ with the children that also return false.
+partition ::
+  -- | Predicate p.
+  (SomeTask -> Bool) ->
+  -- | Index to partition.
+  Index ->
+  -- | (p == True, p == False)
+  Tuple2 Index Index
+partition taskPred index =
+  (UnsafeIndex tasksIn index.path, UnsafeIndex tasksOut index.path)
+  where
+    (tasksIn, tasksOut) = foldl' go ([], []) index.taskList
+
+    go :: PartitionAcc -> SomeTask -> PartitionAcc
+    go (accIn, accOut) st@(SomeTaskSingle _) =
+      if taskPred st
+        then (st : accIn, accOut)
+        else (accIn, st : accOut)
+    go (accIn, accOut) st@(SomeTaskGroup tg) =
+      if taskPred st
+        then (st : accIn, accOut)
+        else
+          let subSeq = go ([], []) <$> tg.subtasks
+              (subAccIn, subAccOut) = L.unzip $ seqToList subSeq
+              tg' = tg {subtasks = listToSeq (join subAccOut)}
+           in (join subAccIn <> accIn, SomeTaskGroup tg' : accOut)
 
 -- | Looks up the TaskId in the Index.
 lookup :: TaskId -> Index -> Maybe SomeTask

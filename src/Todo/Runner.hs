@@ -65,7 +65,7 @@ withConfig ::
   Merged ->
   m ()
 withConfig mergedConfig = case mergedConfig.command of
-  CmdDelete taskId -> Todo.deleteTask index colorSwitch unicodeSwitch taskId
+  CmdDelete taskIds -> Todo.deleteTask index colorSwitch unicodeSwitch taskIds
   CmdInsert -> Todo.insertTask index colorSwitch unicodeSwitch
   CmdList mSortType ->
     Todo.listTasks index colorSwitch unicodeSwitch mSortType

@@ -211,7 +211,7 @@ indexPathParser =
     helpTxt = "Path to todo json index. Overrides --index-name."
 
 data Command
-  = CmdDelete TaskId
+  = CmdDelete (NESet TaskId)
   | CmdInsert
   | CmdList (Maybe SortType)
   deriving stock (Eq, Show)
@@ -230,7 +230,8 @@ commandParser =
     insertTxt = mkCmdDesc "Inserts a new task."
     listTxt = mkCmdDesc "Lists the todo index."
 
-    deleteParser = CmdDelete <$> taskIdParser
+    -- safe because some only returns non-empty.
+    deleteParser = CmdDelete . unsafeListToNESet <$> OA.some taskIdParser
     insertParser = pure CmdInsert
     listParser = CmdList <$> sortTypeParser
 

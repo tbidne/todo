@@ -1,4 +1,4 @@
-Found task:
+Found task(s):
 
 
 ✅ id: walk_dog
@@ -8,6 +8,8 @@ Found task:
 
 
 Are you sure you want to delete (y/n)? 
+
+Did not delete any tasks.
 
 
 ⛔ id: groceries
