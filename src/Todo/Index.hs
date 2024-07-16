@@ -8,7 +8,7 @@ module Todo.Index
     fromList,
 
     -- * Lookup
-    lookup,
+    Internal.lookup,
 
     -- * Membership
     member,
@@ -28,7 +28,7 @@ module Todo.Index
     toList,
 
     -- * Predicates
-    filter,
+    filterTopLevel,
     filterOnIds,
     partitionTaskIds,
     partition,
@@ -52,7 +52,6 @@ import Data.Foldable qualified as F
 import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
-import Data.Maybe (isJust)
 import Data.Sequence qualified as Seq
 import Data.Set qualified as Set
 import Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty)
@@ -63,12 +62,14 @@ import Todo.Data.Task
   ( SingleTask (status, taskId),
     SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (status, subtasks, taskId),
+    _SomeTaskGroup,
   )
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskStatus (TaskStatus (Blocked))
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Index.Internal (Index (UnsafeIndex))
+import Todo.Index.Internal qualified as Internal
 import Todo.Prelude hiding (filter, toList)
 
 pattern IndexNil :: OsPath -> Index
@@ -124,23 +125,16 @@ readTaskList path = do
 -- the id is not a duplicate i.e. this should only be used when the check has
 -- already been performed.
 reallyUnsafeInsert :: SomeTask -> Index -> Index
-reallyUnsafeInsert task (UnsafeIndex idx path) = UnsafeIndex (task : idx) path
+reallyUnsafeInsert task = over' #taskList (task :)
 
 -- | Inserts a new task t1 at the task id. Like 'reallyUnsafeInsert', this is
 -- unsafe in that t1's id is not verified for uniqueness, and the given
 -- task id may not exist in the index (in which case t1 will not be added).
 reallyUnsafeInsertAtTaskId :: TaskId -> SomeTask -> Index -> Index
-reallyUnsafeInsertAtTaskId taskId task (UnsafeIndex idx path) =
-  UnsafeIndex (foldr go [] idx) path
+reallyUnsafeInsertAtTaskId taskId task = over' tSubtasks (task :<|)
   where
-    go :: SomeTask -> List SomeTask -> List SomeTask
-    go st@(SomeTaskSingle _) acc = st : acc
-    go (SomeTaskGroup tg) acc =
-      if taskId == tg.taskId
-        then SomeTaskGroup (tg {subtasks = task :<| tg.subtasks}) : acc
-        else
-          let subtasks' = foldr go [] tg.subtasks
-           in SomeTaskGroup (tg {subtasks = Seq.fromList subtasks'}) : acc
+    tSubtasks :: AffineTraversal' Index (Seq SomeTask)
+    tSubtasks = ix taskId % _SomeTaskGroup % #subtasks
 
 -- | Returns a list representation of the index.
 toList :: Index -> (OsPath, List SomeTask)
@@ -170,7 +164,14 @@ type FromListAcc = Tuple2 IdSet IdRefMap
 
 -- | Parses a list into an Index. Throws errors for duplicate ids or id
 -- references that do not exist (i.e. Blocked status).
-fromList :: forall m. (HasCallStack, MonadThrow m) => OsPath -> List SomeTask -> m Index
+fromList ::
+  forall m.
+  ( HasCallStack,
+    MonadThrow m
+  ) =>
+  OsPath ->
+  List SomeTask ->
+  m Index
 fromList path xs = do
   (foundKeys, blockedKeys) <- mkMaps
 
@@ -250,23 +251,26 @@ fromList path xs = do
         then pure $ Set.insert val.taskId s
         else throwM $ MkDuplicateIdE val.taskId
 
--- | Filters the index on the task ids.
+-- | Filters the index on the task ids. Included tasks are those with an id
+-- in the set, or task groups who have children in the set.
 filterOnIds ::
   -- | Ids to take.
   Set TaskId ->
   -- | Index
   Index ->
   Index
-filterOnIds taskIds = filter go
+filterOnIds taskIds = filterTopLevel go
   where
     go :: SomeTask -> Bool
     go (SomeTaskSingle t) = Set.member t.taskId taskIds
     go (SomeTaskGroup tg) =
       Set.member tg.taskId taskIds || F.any go tg.subtasks
 
--- | Filters the index on some predicate.
-filter :: (SomeTask -> Bool) -> Index -> Index
-filter p (UnsafeIndex taskList path) = UnsafeIndex (L.filter p taskList) path
+-- | Filters the index on some predicate. Note this runs the predicate on
+-- the top-level tasks __only__. Thus if you need to filter on subtasks,
+-- the passed predicate will have todo this itself.
+filterTopLevel :: (SomeTask -> Bool) -> Index -> Index
+filterTopLevel p (UnsafeIndex taskList path) = UnsafeIndex (L.filter p taskList) path
 
 -- | Partitions the Index on the TaskId set. The left result is all tasks
 -- whose ids belong in the set __and__ tasks who have a some parent in the
@@ -321,22 +325,11 @@ partition taskPred index =
               tg' = tg {subtasks = listToSeq (join subAccOut)}
            in (join subAccIn <> accIn, SomeTaskGroup tg' : accOut)
 
--- | Looks up the TaskId in the Index.
-lookup :: TaskId -> Index -> Maybe SomeTask
-lookup taskId (UnsafeIndex taskList _) = foldMapAlt go taskList
-  where
-    go (SomeTaskSingle t) =
-      if t.taskId == taskId
-        then Just $ SomeTaskSingle t
-        else Nothing
-    go (SomeTaskGroup tg) =
-      if tg.taskId == taskId
-        then Just $ SomeTaskGroup tg
-        else foldMapAlt go tg.subtasks
-
 -- | Returns 'True' iff the TaskId exists in the index.
 member :: TaskId -> Index -> Bool
-member taskId = isJust . lookup taskId
+-- member taskId = isJust . Internal.lookup taskId
+-- member taskId = is _Just . preview (ix taskId)
+member taskId = is (ix taskId)
 
 -- | Operator alias for 'member'. U+2216.
 (∈) :: TaskId -> Index -> Bool

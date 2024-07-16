@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 module Todo.Data.Sorted.Internal
   ( SortedTasks (..),
   )
@@ -12,3 +14,10 @@ newtype SortedTasks = UnsafeSortedTasks (List SomeTask)
 
 instance HasField "unSortedTasks" SortedTasks (List SomeTask) where
   getField (UnsafeSortedTasks tl) = tl
+
+instance
+  (k ~ A_Getter, a ~ (List SomeTask), b ~ (List SomeTask)) =>
+  LabelOptic "unSortedTasks" k SortedTasks SortedTasks a b
+  where
+  labelOptic = to (\(UnsafeSortedTasks tl) -> tl)
+  {-# INLINE labelOptic #-}

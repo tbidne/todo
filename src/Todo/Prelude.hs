@@ -23,7 +23,11 @@ module Todo.Prelude
     foldMappersAlt,
     foldMappersAltA,
 
-    -- * List Conversions
+    -- * Collections
+    -- ** Lists
+    firstJust,
+    headMaybe,
+
     -- ** FromList
     listToSeq,
     unsafeListToNonEmpty,
@@ -32,6 +36,9 @@ module Todo.Prelude
 
     -- ** ToList
     seqToList,
+
+    -- * Optics
+    overPreview',
 
     -- * Develop
     todo,
@@ -47,6 +54,7 @@ module Todo.Prelude
     joinRefined,
     stripNulls,
     getTodoXdgConfig,
+    mToE,
     throwLeft,
     whileM,
     whileM_,
@@ -104,7 +112,8 @@ import Data.List as X (filter, (++))
 import Data.List.NonEmpty as X (NonEmpty ((:|)), (<|))
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict as X (Map)
-import Data.Maybe as X (Maybe (Just, Nothing), fromMaybe, maybe)
+import Data.Maybe as X (Maybe (Just, Nothing), catMaybes, fromMaybe, maybe)
+import Data.Maybe.Optics as X ((%?), _Just)
 import Data.Monoid as X (Monoid (mconcat, mempty))
 import Data.Ord as X (Ord (compare, (<=)), Ordering (EQ, GT, LT), max, min)
 import Data.Semigroup as X (Semigroup (sconcat, (<>)))
@@ -128,6 +137,8 @@ import Data.Tuple as X (snd)
 #if MIN_VERSION_base(4, 20, 0)
 import Data.Tuple.Experimental as X (Tuple2, Tuple3)
 #endif
+import Data.Tuple.Optics as X (_1, _2)
+import Data.Type.Equality as X (type (~))
 import Data.Word as X (Word16, Word8)
 import Effects.Exception as X
   ( Exception (displayException, fromException, toException),
@@ -165,6 +176,22 @@ import GHC.Num as X (Num ((*), (+), (-)))
 import GHC.Records as X (HasField (getField))
 import GHC.Show as X (Show (show))
 import GHC.Stack as X (HasCallStack)
+import Optics.AffineFold as X (An_AffineFold, preview)
+import Optics.AffineTraversal as X
+  ( AffineTraversal',
+    An_AffineTraversal,
+    atraversal,
+  )
+import Optics.At.Core as X (ix)
+import Optics.Core (Is, Optic)
+import Optics.Core.Extras as X (is)
+import Optics.Getter as X (A_Getter, Getter, to, view)
+import Optics.Indexed.Core as X ((%))
+import Optics.Label as X (LabelOptic (labelOptic))
+import Optics.Lens as X (A_Lens, Lens', lens, lensVL)
+import Optics.Operators as X ((^.), (^?))
+import Optics.Prism as X (Prism', prism)
+import Optics.Setter as X (A_Setter, over', set')
 import Refined (RefineException, type (&&))
 import Refined.Unsafe.Type (Refined (Refined))
 import System.IO as X (FilePath, IO)
@@ -388,3 +415,36 @@ throwLeft ::
   m a
 throwLeft (Right x) = pure x
 throwLeft (Left err) = throwM err
+
+firstJust :: List (Maybe a) -> Maybe a
+firstJust = headMaybe . catMaybes
+
+headMaybe :: List a -> Maybe a
+headMaybe (x : _) = Just x
+headMaybe [] = Nothing
+
+mToE :: e -> Maybe a -> Either e a
+mToE _ (Just x) = Right x
+mToE e Nothing = Left e
+
+-- | Like 'over'', except we run the 'set'' on the result of a 'preview'.
+-- This is intended for updates that can fail. For example, we want @Index@
+-- update to fail if we do not find a task with the desired id. The
+-- 'Ixed' class, however, provides an @AffineTraversal' s a@ i.e sets always
+-- succeed.
+--
+-- We therefore generalize to AffineFold and Setter, and run the set on the
+-- preview.
+overPreview' ::
+  forall k is s a.
+  ( Is k An_AffineFold,
+    Is k A_Setter
+  ) =>
+  Optic k is s s a a ->
+  (a -> a) ->
+  s ->
+  Maybe s
+overPreview' o f s = case preview o s of
+  Nothing -> Nothing
+  Just a' -> Just $ set' o (f a') s
+{-# INLINE overPreview' #-}

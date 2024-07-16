@@ -13,6 +13,8 @@ module Todo.Data.Task
     SomeTask (..),
     someTaskIsCompleted,
     traverseSomeTasks,
+    _SomeTaskSingle,
+    _SomeTaskGroup,
   )
 where
 
@@ -71,6 +73,71 @@ instance ToJSON SingleTask where
           "status" .= t.status
         ]
 
+instance
+  (k ~ A_Lens, a ~ Maybe Timestamp, b ~ Maybe Timestamp) =>
+  LabelOptic "deadline" k SingleTask SingleTask a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkSingleTask _deadline _description _priority _status _taskId) ->
+          fmap
+            (\deadline' -> MkSingleTask deadline' _description _priority _status _taskId)
+            (f _deadline)
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Lens, a ~ Maybe Text, b ~ Maybe Text) =>
+  LabelOptic "description" k SingleTask SingleTask a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkSingleTask _deadline _description _priority _status _taskId) ->
+          fmap
+            (\description' -> MkSingleTask _deadline description' _priority _status _taskId)
+            (f _description)
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Lens, a ~ TaskPriority, b ~ TaskPriority) =>
+  LabelOptic "priority" k SingleTask SingleTask a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkSingleTask _deadline _description _priority _status _taskId) ->
+          fmap
+            (\priority' -> MkSingleTask _deadline _description priority' _status _taskId)
+            (f _priority)
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Lens, a ~ TaskStatus, b ~ TaskStatus) =>
+  LabelOptic "status" k SingleTask SingleTask a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkSingleTask _deadline _description _priority _status _taskId) ->
+          fmap
+            (\status' -> MkSingleTask _deadline _description _priority status' _taskId)
+            (f _status)
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Lens, a ~ TaskId, b ~ TaskId) =>
+  LabelOptic "taskId" k SingleTask SingleTask a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkSingleTask _deadline _description _priority _status _taskId) ->
+          fmap
+            (MkSingleTask _deadline _description _priority _status)
+            (f _taskId)
+  {-# INLINE labelOptic #-}
+
 -- | Multiple tasks.
 data TaskGroup = MkTaskGroup
   { -- | Optional priority.
@@ -110,6 +177,58 @@ instance ToJSON TaskGroup where
           "status" .= t.status,
           "subtasks" .= t.subtasks
         ]
+
+instance
+  (k ~ A_Lens, a ~ Maybe TaskPriority, b ~ Maybe TaskPriority) =>
+  LabelOptic "priority" k TaskGroup TaskGroup a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkTaskGroup _priority _status _subtasks _taskId) ->
+          fmap
+            (\priority' -> MkTaskGroup priority' _status _subtasks _taskId)
+            (f _priority)
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Lens, a ~ Maybe TaskStatus, b ~ Maybe TaskStatus) =>
+  LabelOptic "status" k TaskGroup TaskGroup a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkTaskGroup _priority _status _subtasks _taskId) ->
+          fmap
+            (\status' -> MkTaskGroup _priority status' _subtasks _taskId)
+            (f _status)
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Lens, a ~ Seq SomeTask, b ~ Seq SomeTask) =>
+  LabelOptic "subtasks" k TaskGroup TaskGroup a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkTaskGroup _priority _status _subtasks _taskId) ->
+          fmap
+            (\subtasks' -> MkTaskGroup _priority _status subtasks' _taskId)
+            (f _subtasks)
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Lens, a ~ TaskId, b ~ TaskId) =>
+  LabelOptic "taskId" k TaskGroup TaskGroup a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkTaskGroup _priority _status _subtasks _taskId) ->
+          fmap
+            (MkTaskGroup _priority _status _subtasks)
+            (f _taskId)
+  {-# INLINE labelOptic #-}
 
 -- | Takes either the status (if it is set), or the greatest status of its
 -- subtasks.
@@ -195,6 +314,33 @@ instance HasField "taskId" SomeTask TaskId where
   getField (SomeTaskSingle t) = t.taskId
   getField (SomeTaskGroup tg) = tg.taskId
 
+instance
+  (k ~ A_Getter, a ~ TaskPriority, b ~ TaskPriority) =>
+  LabelOptic "priority" k SomeTask SomeTask a b
+  where
+  labelOptic = to $ \case
+    SomeTaskSingle t -> t.priority
+    SomeTaskGroup tg -> taskGroupPriority tg
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Getter, a ~ TaskStatus, b ~ TaskStatus) =>
+  LabelOptic "status" k SomeTask SomeTask a b
+  where
+  labelOptic = to $ \case
+    SomeTaskSingle t -> t.status
+    SomeTaskGroup tg -> taskGroupStatus tg
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Getter, a ~ TaskId, b ~ TaskId) =>
+  LabelOptic "taskId" k SomeTask SomeTask a b
+  where
+  labelOptic = to $ \case
+    SomeTaskSingle t -> t.taskId
+    SomeTaskGroup tg -> tg.taskId
+  {-# INLINE labelOptic #-}
+
 instance FromJSON SomeTask where
   parseJSON = Asn.withObject "SomeTask" $ \v -> do
     if KM.member "subtasks" v
@@ -227,3 +373,23 @@ traverseSomeTasks fromTask fromTaskGroup = (>>= go)
     go :: SomeTask -> List a
     go (SomeTaskSingle t) = [fromTask t]
     go (SomeTaskGroup t) = fromTaskGroup t : (toList t.subtasks >>= go)
+
+_SomeTaskSingle :: Prism' SomeTask SingleTask
+_SomeTaskSingle =
+  prism
+    SomeTaskSingle
+    ( \case
+        SomeTaskSingle t -> Right t
+        other -> Left other
+    )
+{-# INLINE _SomeTaskSingle #-}
+
+_SomeTaskGroup :: Prism' SomeTask TaskGroup
+_SomeTaskGroup =
+  prism
+    SomeTaskGroup
+    ( \case
+        SomeTaskGroup t -> Right t
+        other -> Left other
+    )
+{-# INLINE _SomeTaskGroup #-}

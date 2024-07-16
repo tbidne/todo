@@ -36,6 +36,7 @@ common common-lang
     MultiWayIf
     NoFieldSelectors
     NoImplicitPrelude
+    OverloadedLabels
     OverloadedRecordDot
     OverloadedStrings
     PatternSynonyms
@@ -97,6 +98,7 @@ library
     , haskeline             ^>=0.8.1.1
     , mtl                   >=2.2.1     && <2.4
     , nonempty-containers   >=0.3.4.2   && <0.4
+    , optics-core           ^>=0.4
     , optparse-applicative  >=0.15      && <0.19
     , pretty-terminal       ^>=0.1
     , refined               >=0.6       && <0.9

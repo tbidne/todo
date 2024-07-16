@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 module Todo.Data.TaskId.Internal
   ( TaskId (..),
     mkTaskId,
@@ -25,6 +27,13 @@ newtype TaskId = UnsafeTaskId Text
 
 instance HasField "unTaskId" TaskId Text where
   getField (UnsafeTaskId txt) = txt
+
+instance
+  (k ~ A_Getter, a ~ Text, b ~ Text) =>
+  LabelOptic "unTaskId" k TaskId TaskId a b
+  where
+  labelOptic = to (\(UnsafeTaskId txt) -> txt)
+  {-# INLINE labelOptic #-}
 
 instance IsString TaskId where
   fromString str = case mkTaskId (pack str) of
