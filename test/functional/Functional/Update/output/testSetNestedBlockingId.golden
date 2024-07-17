@@ -1,0 +1,26 @@
+Successfully updated task:
+
+
+❌ id: g1_t1'
+   status: not-started
+   priority: normal
+
+
+
+⛔ id: g2
+   status: blocked: <g1_t1'>
+   priority: normal
+
+  ⛔ id: g2_t2
+     status: blocked: <g1_t1'>
+     priority: normal
+
+❌ id: g1
+   status: not-started
+   priority: normal
+
+  ❌ id: g1_t1'
+     status: not-started
+     priority: normal
+
+

@@ -70,6 +70,7 @@ idTests testEnv =
     "Id"
     [ testSetId testEnv,
       testSetBlockingId testEnv,
+      testSetNestedBlockingId testEnv,
       testSetIdDuplicateFailure testEnv
     ]
 
@@ -86,6 +87,19 @@ testSetBlockingId =
     "Sets a blocking task id succeeds"
     [osp|testSetBlockingId|]
     ["set-id", "--task-id", "paycheck", "salary"]
+
+-- Tests that we correctly update a nested task that references an updated
+-- blocking id (i.e. that our traversal is not shallow).
+testSetNestedBlockingId :: IO TestEnv -> TestTree
+testSetNestedBlockingId =
+  testUpdateGoldenRunner
+    indexPath
+    runTodo
+    "Sets a nested blocking task id succeeds"
+    [osp|testSetNestedBlockingId|]
+    ["set-id", "--task-id", "g1_t1", "g1_t1'"]
+  where
+    indexPath = inputOsPath </> [osp|set_nested_blocking_id.json|]
 
 testSetIdDuplicateFailure :: IO TestEnv -> TestTree
 testSetIdDuplicateFailure =
@@ -200,6 +214,12 @@ testUpdateGoldenRunner indexPath runner desc name args testEnv =
 
 getTestDir' :: IO TestEnv -> OsPath -> IO OsPath
 getTestDir' testEnv name = getTestDir testEnv ([osp|update|] </> name)
+
+inputOsPath :: OsPath
+inputOsPath = unsafeEncodeFpToOs inputFilePath
+
+inputFilePath :: FilePath
+inputFilePath = "test" `cfp` "functional" `cfp` "Functional" `cfp` "Update" `cfp` "input"
 
 outputDir :: FilePath
 outputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "Update" `cfp` "output"

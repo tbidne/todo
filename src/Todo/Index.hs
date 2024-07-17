@@ -73,6 +73,7 @@ import Todo.Data.Task
     _SomeTaskGroup,
     _SomeTaskSingle,
   )
+import Todo.Data.Task qualified as Task
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskStatus (TaskStatus (Blocked))
@@ -502,13 +503,13 @@ setSomeTaskValueValidate ::
   m (Maybe (Index, SomeTask))
 setSomeTaskValueValidate = setSomeTaskValueMappedValidate identity
 
--- | Attempts to set a value for the corresponding task in the index.
--- We validate the result, since some updates can break invariants
--- (e.g. duplicate task ids, blocked id reference).
+-- | Like 'setSomeTaskValueValidate', except we run the index mapping
+-- function on the result before validation. The mapped index is returned.
 setSomeTaskValueMappedValidate ::
   forall m a.
   ( MonadThrow m
   ) =>
+  -- | Index mapper.
   (Index -> Index) ->
   -- | Lens for the task value we want to set.
   Lens' SomeTask a ->
@@ -532,18 +533,10 @@ setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetRe
 
 -- | Traversal for every task that satisfies the predicate.
 indexPredicateTraversal :: (SomeTask -> Bool) -> Traversal' Index SomeTask
-indexPredicateTraversal taskPred = traversalVL f
-  where
-    f :: forall f. (Applicative f) => (SomeTask -> f SomeTask) -> Index -> f Index
-    f g (UnsafeIndex taskList taskPath) =
-      (`UnsafeIndex` taskPath) <$> traverse goOne taskList
-      where
-        -- FIXME: Verify that this is right (visits subtasks?)
-        goOne :: SomeTask -> f SomeTask
-        goOne st =
-          if taskPred st
-            then g st
-            else pure st
+indexPredicateTraversal p =
+  #taskList
+    % Utils.listTraversal
+    % Task.someTaskPredTraversal p
 
 -- | Traversal across all tasks.
 indexTraversal :: Traversal' Index SomeTask

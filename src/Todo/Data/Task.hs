@@ -18,6 +18,8 @@ module Todo.Data.Task
     _SomeTaskSingle,
     _SomeTaskGroup,
     someTaskStatusATraversal,
+    someTaskTraversal,
+    someTaskPredTraversal,
   )
 where
 
@@ -424,3 +426,32 @@ someTaskStatusATraversal = atraversal getter setter
       Nothing -> Left st
 
     setter st status = set' #status status st
+
+-- | Traverses all tasks.
+someTaskTraversal :: Traversal' SomeTask SomeTask
+someTaskTraversal = someTaskPredTraversal (const True)
+
+-- | Traverses all tasks that satisfy the predicate.
+someTaskPredTraversal :: (SomeTask -> Bool) -> Traversal' SomeTask SomeTask
+someTaskPredTraversal pred = traversalVL f
+  where
+    f :: forall f. (Applicative f) => (SomeTask -> f SomeTask) -> SomeTask -> f SomeTask
+    f g = go
+      where
+        go :: SomeTask -> f SomeTask
+        go st@(SomeTaskSingle _) = appyIfPred st
+        go st@(SomeTaskGroup tg) =
+          -- Run the effectful fn over all subtasks and the group itself.
+          -- Then combine these together into the same
+          let stA = appyIfPred st
+              subtasksA = traverse appyIfPred tg.subtasks
+           in set' subtasksATraversal <$> subtasksA <*> stA
+
+        subtasksATraversal :: AffineTraversal' SomeTask (Seq SomeTask)
+        subtasksATraversal = _SomeTaskGroup % #subtasks
+
+        appyIfPred :: SomeTask -> f SomeTask
+        appyIfPred st =
+          if pred st
+            then g st
+            else pure st

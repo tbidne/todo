@@ -6,6 +6,9 @@ module Todo.Utils
     whileM_,
 
     -- * Optics
+    traversal,
+    listTraversal,
+    listPredTraversal,
     neSetTraversal,
 
     -- ** Preview + Over
@@ -199,6 +202,26 @@ data MatchResult s a
   | -- | Match completely succeeded.
     MatchSuccess s a
   deriving stock (Eq, Show)
+
+-- | Traversal for any Traversable.
+traversal :: (Traversable f) => Traversal' (f a) a
+traversal = traversalVL traverse
+
+listTraversal :: Traversal' (List a) a
+listTraversal = listPredTraversal (const True)
+
+listPredTraversal :: forall a. (a -> Bool) -> Traversal' (List a) a
+listPredTraversal pred = traversalVL f
+  where
+    --
+    f :: forall f. (Applicative f) => (a -> f a) -> List a -> f (List a)
+    f g = go
+      where
+        go [] = pure []
+        go (x : xs) =
+          if pred x
+            then (:) <$> g x <*> go xs
+            else go xs
 
 -- | Traverses an NESet.
 neSetTraversal :: forall a. (Ord a) => Traversal' (NESet a) a

@@ -95,6 +95,7 @@ setTaskId = setTaskValue updateId
         updateBlockers :: Index -> Index
         updateBlockers = over' indexBlockerIdTraversal g
           where
+            -- Targets all blocking ids
             indexBlockerIdTraversal :: Traversal' Index TaskId
             indexBlockerIdTraversal =
               Index.indexTraversal
