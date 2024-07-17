@@ -80,6 +80,8 @@ import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Index.Internal (Index (UnsafeIndex))
 import Todo.Index.Internal qualified as Internal
 import Todo.Prelude hiding (filter, toList)
+import Todo.Utils (MatchResult)
+import Todo.Utils qualified as Utils
 
 pattern IndexNil :: OsPath -> Index
 pattern IndexNil p <- UnsafeIndex [] p
@@ -456,7 +458,7 @@ reallyUnsafeSetSomeTaskValue ::
   Maybe (Index, SomeTask)
 reallyUnsafeSetSomeTaskValue taskLens taskId newA index = mSetResult
   where
-    mSetResult = setPreviewNode' (ix taskId) taskLens newA index
+    mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
 
 reallyUnsafeSetTaskValue ::
   forall a.
@@ -473,7 +475,12 @@ reallyUnsafeSetTaskValue ::
   MatchResult Index SomeTask
 reallyUnsafeSetTaskValue taskLens taskId newA index = mSetResult
   where
-    mSetResult = setPreviewPartialNode' (ix taskId) (_SomeTaskSingle % taskLens) newA index
+    mSetResult =
+      Utils.setPreviewPartialNode'
+        (ix taskId)
+        (_SomeTaskSingle % taskLens)
+        newA
+        index
 
 -- | Attempts to set a value for the corresponding task in the index.
 -- We validate the result, since some updates can break invariants
@@ -521,7 +528,7 @@ setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetRe
     validIndex <- fromList mappedIndex.path mappedIndex.taskList
     pure $ Just (validIndex, newTask)
   where
-    mSetResult = setPreviewNode' (ix taskId) taskLens newA index
+    mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
 
 -- | Traversal for every task that satisfies the predicate.
 indexPredicateTraversal :: (SomeTask -> Bool) -> Traversal' Index SomeTask

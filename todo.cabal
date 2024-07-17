@@ -82,6 +82,7 @@ library
     Todo.Render
     Todo.Render.Utils
     Todo.Runner
+    Todo.Utils
 
   build-depends:
     , aeson                 ^>=2.2.0.0

@@ -26,6 +26,8 @@ import Todo.Index (Index, TaskIdNotFoundE (MkTaskIdNotFoundE))
 import Todo.Index qualified as Index
 import Todo.Prelude
 import Todo.Render qualified as Render
+import Todo.Utils (MatchResult (MatchFailure, MatchPartial, MatchSuccess))
+import Todo.Utils qualified as Utils
 
 setTaskDeadline ::
   ( HasCallStack,
@@ -98,7 +100,7 @@ setTaskId = setTaskValue updateId
               Index.indexTraversal
                 % someTaskStatusATraversal
                 % _Blocked
-                % neSetTraversal
+                % Utils.neSetTraversal
                 % _BlockerId
 
             g tid =

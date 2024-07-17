@@ -59,6 +59,7 @@ import Todo.Index.Safe
 import Todo.Index.Safe qualified as Safe
 import Todo.Prelude
 import Todo.Render qualified as Render
+import Todo.Utils qualified as Utils
 
 -- | Inserts new task(s) into the file.
 insertTask ::
@@ -74,7 +75,8 @@ insertTask ::
   CoreConfigMerged ->
   m ()
 insertTask coreConfig = do
-  (newIndex, newTaskIds) <- whileApplySetM index getMoreTasksAns mkSomeTask
+  (newIndex, newTaskIds) <-
+    Utils.whileApplySetM index getMoreTasksAns mkSomeTask
 
   Index.writeIndex newIndex
 
