@@ -6,7 +6,6 @@ module Todo.Configuration.Args
 where
 
 import Data.List qualified as L
-import Data.String (IsString (fromString))
 import Data.Version (Version (versionBranch))
 import Effects.Optparse (MonadOptparse (execParser), osPath)
 import Options.Applicative
@@ -48,6 +47,12 @@ import Todo.Data.Sorted
   )
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
+import Todo.Data.TaskPriority (TaskPriority)
+import Todo.Data.TaskPriority qualified as TaskPriority
+import Todo.Data.TaskStatus (TaskStatus)
+import Todo.Data.TaskStatus qualified as TaskStatus
+import Todo.Data.Timestamp (Timestamp)
+import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Prelude
 import Todo.Render.Utils
   ( ColorSwitch (ColorOff, ColorOn),
@@ -214,37 +219,130 @@ data Command
   = CmdDelete (NESet TaskId)
   | CmdInsert
   | CmdList (Maybe SortType)
+  | CmdSetDeadline TaskId Timestamp
+  | CmdSetDescription TaskId Text
+  | CmdSetId TaskId TaskId
+  | CmdSetPriority TaskId TaskPriority
+  | CmdSetStatus TaskId TaskStatus
   deriving stock (Eq, Show)
 
 commandParser :: Parser Command
 commandParser =
   OA.hsubparser
     ( mconcat
-        [ mkCommand "delete" deleteParser deleteTxt,
-          mkCommand "insert" insertParser insertTxt,
-          mkCommand "list" listParser listTxt
+        [ mkCommand "list" listParser listTxt,
+          OA.commandGroup "Information Commands"
         ]
     )
+    <|> OA.hsubparser
+      ( mconcat
+          [ mkCommand "delete" deleteParser deleteTxt,
+            mkCommand "insert" insertParser insertTxt,
+            OA.commandGroup "Add/Remove Commands"
+          ]
+      )
+    <|> OA.hsubparser
+      ( mconcat
+          [ mkCommand "set-deadline" setDeadlineParser setDeadlineTxt,
+            mkCommand "set-description" setDescParser setDescTxt,
+            mkCommand "set-id" setIdParser setIdTxt,
+            mkCommand "set-priority" setPriorityParser setPriorityTxt,
+            mkCommand "set-status" setStatusParser setStatusTxt,
+            OA.commandGroup "Update commands"
+          ]
+      )
   where
     deleteTxt = mkCmdDesc "Deletes a task."
     insertTxt = mkCmdDesc "Inserts a new task."
     listTxt = mkCmdDesc "Lists the todo index."
+    setDeadlineTxt = mkCmdDesc "Updates a single task deadline."
+    setDescTxt = mkCmdDesc "Updates a single task description."
+    setIdTxt = mkCmdDesc "Updates a task id."
+    setStatusTxt = mkCmdDesc "Updates a task status."
+    setPriorityTxt = mkCmdDesc "Updates a task priority."
 
     -- safe because some only returns non-empty.
-    deleteParser = CmdDelete . unsafeListToNESet <$> OA.some taskIdParser
+    deleteParser =
+      CmdDelete
+        . unsafeListToNESet
+        <$> OA.some (taskIdArgParser "TASK_IDs..." "Task id(s) to delete.")
     insertParser = pure CmdInsert
     listParser = CmdList <$> sortTypeParser
+    setDeadlineParser =
+      CmdSetDeadline
+        <$> setTaskIdParser
+        <*> taskDeadlineParser
+    setDescParser =
+      CmdSetDescription
+        <$> setTaskIdParser
+        <*> taskDescParser
+    setIdParser =
+      CmdSetId
+        <$> setTaskIdParser
+        <*> taskIdArgParser "TASK_ID" "New task id."
+    setPriorityParser =
+      CmdSetPriority
+        <$> setTaskIdParser
+        <*> taskPriorityParser
+    setStatusParser =
+      CmdSetStatus
+        <$> setTaskIdParser
+        <*> taskStatusParser
 
-taskIdParser :: Parser TaskId
-taskIdParser =
+taskIdArgParser :: String -> String -> Parser TaskId
+taskIdArgParser meta help =
   OA.argument
     (OA.str >>= TaskId.parseTaskId)
     $ mconcat
-      [ OA.metavar "TASK_ID",
-        mkHelp helpTxt
+      [ OA.metavar meta,
+        mkHelp help
       ]
-  where
-    helpTxt = "Task id to delete."
+
+setTaskIdParser :: Parser TaskId
+setTaskIdParser =
+  OA.option
+    (OA.str >>= TaskId.parseTaskId)
+    $ mconcat
+      [ OA.long "task-id",
+        OA.metavar "TASK_ID",
+        mkHelp "Task id to update."
+      ]
+
+taskDeadlineParser :: Parser Timestamp
+taskDeadlineParser =
+  OA.argument
+    (OA.str >>= Timestamp.parseTimestamp)
+    $ mconcat
+      [ OA.metavar Timestamp.metavar,
+        mkHelp "Deadline timestamp."
+      ]
+
+taskDescParser :: Parser Text
+taskDescParser =
+  OA.argument
+    OA.str
+    $ mconcat
+      [ OA.metavar "STR",
+        mkHelp "Task description."
+      ]
+
+taskPriorityParser :: Parser TaskPriority
+taskPriorityParser =
+  OA.argument
+    (OA.str >>= TaskPriority.parseTaskPriority)
+    $ mconcat
+      [ OA.metavar TaskPriority.metavar,
+        mkHelp "Task priority."
+      ]
+
+taskStatusParser :: Parser TaskStatus
+taskStatusParser =
+  OA.argument
+    (OA.str >>= TaskStatus.parseTaskStatus)
+    $ mconcat
+      [ OA.metavar TaskStatus.metavar,
+        mkHelp "Task status."
+      ]
 
 sortTypeParser :: Parser (Maybe SortType)
 sortTypeParser =

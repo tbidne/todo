@@ -2,20 +2,33 @@
 {-# OPTIONS_GHC -Wno-deprecations #-}
 
 module Todo.Data.TaskStatus
-  ( TaskStatus (..),
+  ( -- * Status
+    TaskStatus (..),
     parseTaskStatus,
     filterBlockingIds,
     isCompleted,
     render,
+    metavar,
+
+    -- ** Optics
+    _Completed,
+    _NotStarted,
+    _InProgress,
+    _Blocked,
+
+    -- * Blocker
     Blocker (..),
     parseBlockedTarget,
+
+    -- ** Optics
+    _BlockerId,
+    _BlockerText,
   )
 where
 
 import Data.Aeson qualified as Asn
 import Data.Set qualified as Set
 import Data.Set.NonEmpty qualified as NESet
-import Data.String (IsString, fromString)
 import Data.Text qualified as T
 import System.Console.Pretty qualified as Pretty
 import Todo.Data.TaskId (TaskId)
@@ -189,3 +202,66 @@ mapBlockedCustom onText onTaskId =
 -- e.g. using optics' Iso to represent to/from Text with angle brackets.
 angleBracket :: (IsString a, Semigroup a) => a -> a
 angleBracket t = "<" <> t <> ">"
+
+metavar :: (IsString a) => a
+metavar = "(blocked: <blockers> | completed | in-progress | not-started)"
+
+_Completed :: Prism' TaskStatus ()
+_Completed =
+  prism
+    (const Completed)
+    ( \case
+        Completed -> Right ()
+        other -> Left other
+    )
+{-# INLINE _Completed #-}
+
+_NotStarted :: Prism' TaskStatus ()
+_NotStarted =
+  prism
+    (const NotStarted)
+    ( \case
+        NotStarted -> Right ()
+        other -> Left other
+    )
+{-# INLINE _NotStarted #-}
+
+_InProgress :: Prism' TaskStatus ()
+_InProgress =
+  prism
+    (const InProgress)
+    ( \case
+        InProgress -> Right ()
+        other -> Left other
+    )
+{-# INLINE _InProgress #-}
+
+_Blocked :: Prism' TaskStatus (NESet Blocker)
+_Blocked =
+  prism
+    Blocked
+    ( \case
+        Blocked blockers -> Right blockers
+        other -> Left other
+    )
+{-# INLINE _Blocked #-}
+
+_BlockerId :: Prism' Blocker TaskId
+_BlockerId =
+  prism
+    BlockerId
+    ( \case
+        BlockerId taskId -> Right taskId
+        other -> Left other
+    )
+{-# INLINE _BlockerId #-}
+
+_BlockerText :: Prism' Blocker Text
+_BlockerText =
+  prism
+    BlockerText
+    ( \case
+        BlockerText txt -> Right txt
+        other -> Left other
+    )
+{-# INLINE _BlockerText #-}

@@ -2,6 +2,7 @@ module Todo.Data.TaskPriority
   ( TaskPriority (..),
     parseTaskPriority,
     render,
+    metavar,
   )
 where
 
@@ -45,3 +46,6 @@ render ColorOff High = "high"
 render ColorOn Low = Render.Utils.colorBuilder Pretty.Yellow "low"
 render ColorOn Normal = Render.Utils.colorBuilder Pretty.Cyan "normal"
 render ColorOn High = Render.Utils.colorBuilder Pretty.Red "high"
+
+metavar :: (IsString a) => a
+metavar = "(low | normal | high)"

@@ -8,6 +8,7 @@ import Functional.Delete qualified as Delete
 import Functional.Insert qualified as Insert
 import Functional.List qualified as List
 import Functional.Prelude
+import Functional.Update qualified as Update
 import System.Environment.Guard (ExpectEnv (ExpectEnvSet), guardOrElse')
 import Test.Tasty qualified as Tasty
 import Test.Tasty.Golden (DeleteOutputFile (OnPass))
@@ -22,7 +23,8 @@ main =
         "Functional Tests"
         [ Delete.tests env,
           Insert.tests env,
-          List.tests env
+          List.tests env,
+          Update.tests env
         ]
 
 setup :: IO TestEnv

@@ -13,8 +13,11 @@ module Todo.Data.Task
     SomeTask (..),
     someTaskIsCompleted,
     traverseSomeTasks,
+
+    -- ** Optics
     _SomeTaskSingle,
     _SomeTaskGroup,
+    someTaskStatusATraversal,
   )
 where
 
@@ -315,30 +318,48 @@ instance HasField "taskId" SomeTask TaskId where
   getField (SomeTaskGroup tg) = tg.taskId
 
 instance
-  (k ~ A_Getter, a ~ TaskPriority, b ~ TaskPriority) =>
+  (k ~ A_Lens, a ~ TaskPriority, b ~ TaskPriority) =>
   LabelOptic "priority" k SomeTask SomeTask a b
   where
-  labelOptic = to $ \case
-    SomeTaskSingle t -> t.priority
-    SomeTaskGroup tg -> taskGroupPriority tg
+  labelOptic = lens getter setter
+    where
+      getter (SomeTaskSingle t) = t.priority
+      getter (SomeTaskGroup tg) = taskGroupPriority tg
+
+      setter (SomeTaskSingle t) newPriority =
+        SomeTaskSingle $ set' #priority newPriority t
+      setter (SomeTaskGroup tg) newPriority =
+        SomeTaskGroup $ set' #priority (Just newPriority) tg
   {-# INLINE labelOptic #-}
 
 instance
-  (k ~ A_Getter, a ~ TaskStatus, b ~ TaskStatus) =>
+  (k ~ A_Lens, a ~ TaskStatus, b ~ TaskStatus) =>
   LabelOptic "status" k SomeTask SomeTask a b
   where
-  labelOptic = to $ \case
-    SomeTaskSingle t -> t.status
-    SomeTaskGroup tg -> taskGroupStatus tg
+  labelOptic = lens getter setter
+    where
+      getter (SomeTaskSingle t) = t.status
+      getter (SomeTaskGroup tg) = taskGroupStatus tg
+
+      setter (SomeTaskSingle t) newStatus =
+        SomeTaskSingle $ set' #status newStatus t
+      setter (SomeTaskGroup tg) newStatus =
+        SomeTaskGroup $ set' #status (Just newStatus) tg
   {-# INLINE labelOptic #-}
 
 instance
-  (k ~ A_Getter, a ~ TaskId, b ~ TaskId) =>
+  (k ~ A_Lens, a ~ TaskId, b ~ TaskId) =>
   LabelOptic "taskId" k SomeTask SomeTask a b
   where
-  labelOptic = to $ \case
-    SomeTaskSingle t -> t.taskId
-    SomeTaskGroup tg -> tg.taskId
+  labelOptic = lens getter setter
+    where
+      getter (SomeTaskSingle t) = t.taskId
+      getter (SomeTaskGroup tg) = tg.taskId
+
+      setter (SomeTaskSingle t) newTaskId =
+        SomeTaskSingle $ set' #taskId newTaskId t
+      setter (SomeTaskGroup tg) newTaskId =
+        SomeTaskGroup $ set' #taskId newTaskId tg
   {-# INLINE labelOptic #-}
 
 instance FromJSON SomeTask where
@@ -393,3 +414,13 @@ _SomeTaskGroup =
         other -> Left other
     )
 {-# INLINE _SomeTaskGroup #-}
+
+someTaskStatusATraversal :: AffineTraversal' SomeTask TaskStatus
+someTaskStatusATraversal = atraversal getter setter
+  where
+    getter (SomeTaskSingle t) = Right t.status
+    getter st@(SomeTaskGroup tg) = case tg.status of
+      Just s -> Right s
+      Nothing -> Left st
+
+    setter st status = set' #status status st

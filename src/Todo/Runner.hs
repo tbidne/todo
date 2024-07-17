@@ -11,7 +11,16 @@ where
 import Todo qualified
 import Todo.Configuration.Args
   ( Args (tomlPath),
-    Command (CmdDelete, CmdInsert, CmdList),
+    Command
+      ( CmdDelete,
+        CmdInsert,
+        CmdList,
+        CmdSetDeadline,
+        CmdSetDescription,
+        CmdSetId,
+        CmdSetPriority,
+        CmdSetStatus
+      ),
     getArgs,
   )
 import Todo.Configuration.Merged (Merged (coreConfig))
@@ -66,3 +75,13 @@ withConfig mergedConfig = case mergedConfig.command of
   CmdInsert -> Todo.insertTask mergedConfig.coreConfig
   CmdList mSortType ->
     Todo.listTasks mergedConfig.coreConfig mSortType
+  CmdSetDescription taskId taskDesc ->
+    Todo.setTaskDescription mergedConfig.coreConfig taskId taskDesc
+  CmdSetDeadline taskId taskDeadline ->
+    Todo.setTaskDeadline mergedConfig.coreConfig taskId taskDeadline
+  CmdSetId taskId newTaskId ->
+    Todo.setTaskId mergedConfig.coreConfig taskId newTaskId
+  CmdSetPriority taskId taskPriority ->
+    Todo.setTaskPriority mergedConfig.coreConfig taskId taskPriority
+  CmdSetStatus taskId taskStatus ->
+    Todo.setTaskStatus mergedConfig.coreConfig taskId taskStatus

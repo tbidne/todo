@@ -3,6 +3,7 @@ module Todo.Data.Timestamp
     parseTimestamp,
     formatTimestamp,
     render,
+    metavar,
   )
 where
 
@@ -83,3 +84,6 @@ toZoned :: TimeZone -> Timestamp -> ZonedTime
 toZoned tz (Date day) = ZonedTime (LocalTime day LT.midnight) tz
 toZoned tz (Local lt) = ZonedTime lt tz
 toZoned _ (Zoned zt) = zt
+
+metavar :: (IsString a) => a
+metavar = "(YYYY-MM-DD [HH:MM:SS] [TZ])"

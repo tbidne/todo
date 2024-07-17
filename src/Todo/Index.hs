@@ -20,8 +20,12 @@ module Todo.Index
     reallyUnsafeInsert,
     reallyUnsafeInsertAtTaskId,
 
-    -- * Deletion
+    -- * Update
     delete,
+    reallyUnsafeSetSomeTaskValue,
+    setSomeTaskValueValidate,
+    setSomeTaskValueMappedValidate,
+    reallyUnsafeSetTaskValue,
 
     -- * Elimination
     writeIndex,
@@ -41,6 +45,10 @@ module Todo.Index
 
     -- * Misc
     getBlockingIds,
+
+    -- ** Optics
+    indexTraversal,
+    indexPredicateTraversal,
   )
 where
 
@@ -59,10 +67,11 @@ import Data.Set.NonEmpty qualified as NESet
 import Data.Tuple (uncurry)
 import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
 import Todo.Data.Task
-  ( SingleTask (status, taskId),
+  ( SingleTask (..),
     SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (status, subtasks, taskId),
     _SomeTaskGroup,
+    _SomeTaskSingle,
   )
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
@@ -211,6 +220,12 @@ fromList path xs = do
           -- check in concatAccs
           subtaskAccs <- traverse (`go` pure (Set.empty, Map.empty)) t.subtasks
 
+          let blockedKeys' = case t.status of
+                Just (Blocked blocking) -> case TaskStatus.filterBlockingIds blocking of
+                  IsEmpty -> blockedKeys
+                  IsNonEmpty tids -> Map.insert t.taskId tids blockedKeys
+                _ -> blockedKeys
+
           -- Add upstream maps to list
           acc <- macc
           let allAccs = acc :<| subtaskAccs
@@ -221,7 +236,7 @@ fromList path xs = do
           -- check duplicate keys
           foundKeysAccs' <- updateFoundKeys (SomeTaskGroup t) foundKeysAccs
 
-          pure (foundKeysAccs', blockedKeysAccs)
+          pure (foundKeysAccs', Map.union blockedKeysAccs blockedKeys')
 
     concatAccs :: (HasCallStack) => Seq FromListAcc -> m FromListAcc
     concatAccs = foldl' f (pure (Set.empty, Map.empty))
@@ -420,6 +435,112 @@ forWithKey = flip Map.traverseWithKey
 
 forWithKey_ :: (Applicative f) => Map k a -> (k -> a -> f b) -> f ()
 forWithKey_ mp = void . forWithKey mp
+
+-- | Attempts to set a value for the corresponding task in the index.
+-- This performs __no__ validation, so it must only be used with updates that
+-- cannot break internal invariants (e.g. updating the priority is safe).
+--
+-- For general updates, use 'setSomeTaskValueValidate'.
+reallyUnsafeSetSomeTaskValue ::
+  forall a.
+  -- | Lens for the task value we want to set.
+  Lens' SomeTask a ->
+  -- | Id for the task to set.
+  TaskId ->
+  -- | The new value.
+  a ->
+  -- | The index.
+  Index ->
+  -- | If successful (task id exists), returns the new index and modified
+  -- task.
+  Maybe (Index, SomeTask)
+reallyUnsafeSetSomeTaskValue taskLens taskId newA index = mSetResult
+  where
+    mSetResult = setPreviewNode' (ix taskId) taskLens newA index
+
+reallyUnsafeSetTaskValue ::
+  forall a.
+  -- | Lens for the task value we want to set.
+  Lens' SingleTask a ->
+  -- | Id for the task to set.
+  TaskId ->
+  -- | The new value.
+  a ->
+  -- | The index.
+  Index ->
+  -- | If successful (task id exists), returns the new index and modified
+  -- task.
+  MatchResult Index SomeTask
+reallyUnsafeSetTaskValue taskLens taskId newA index = mSetResult
+  where
+    mSetResult = setPreviewPartialNode' (ix taskId) (_SomeTaskSingle % taskLens) newA index
+
+-- | Attempts to set a value for the corresponding task in the index.
+-- We validate the result, since some updates can break invariants
+-- (e.g. duplicate task ids, blocked id reference).
+setSomeTaskValueValidate ::
+  forall m a.
+  ( MonadThrow m
+  ) =>
+  -- | Lens for the task value we want to set.
+  Lens' SomeTask a ->
+  -- | Id for the task to set.
+  TaskId ->
+  -- | The new value.
+  a ->
+  -- | The index.
+  Index ->
+  -- | If successful (task id exists), returns the new index and modified
+  -- task.
+  m (Maybe (Index, SomeTask))
+setSomeTaskValueValidate = setSomeTaskValueMappedValidate identity
+
+-- | Attempts to set a value for the corresponding task in the index.
+-- We validate the result, since some updates can break invariants
+-- (e.g. duplicate task ids, blocked id reference).
+setSomeTaskValueMappedValidate ::
+  forall m a.
+  ( MonadThrow m
+  ) =>
+  (Index -> Index) ->
+  -- | Lens for the task value we want to set.
+  Lens' SomeTask a ->
+  -- | Id for the task to set.
+  TaskId ->
+  -- | The new value.
+  a ->
+  -- | The index.
+  Index ->
+  -- | If successful (task id exists), returns the new index and modified
+  -- task.
+  m (Maybe (Index, SomeTask))
+setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetResult of
+  Nothing -> pure Nothing
+  Just (newIndex, newTask) -> do
+    let mappedIndex = mapIndex newIndex
+    validIndex <- fromList mappedIndex.path mappedIndex.taskList
+    pure $ Just (validIndex, newTask)
+  where
+    mSetResult = setPreviewNode' (ix taskId) taskLens newA index
+
+-- | Traversal for every task that satisfies the predicate.
+indexPredicateTraversal :: (SomeTask -> Bool) -> Traversal' Index SomeTask
+indexPredicateTraversal taskPred = traversalVL f
+  where
+    f :: forall f. (Applicative f) => (SomeTask -> f SomeTask) -> Index -> f Index
+    f g (UnsafeIndex taskList taskPath) =
+      (`UnsafeIndex` taskPath) <$> traverse goOne taskList
+      where
+        -- FIXME: Verify that this is right (visits subtasks?)
+        goOne :: SomeTask -> f SomeTask
+        goOne st =
+          if taskPred st
+            then g st
+            else pure st
+
+-- | Traversal across all tasks.
+indexTraversal :: Traversal' Index SomeTask
+indexTraversal = indexPredicateTraversal (const True)
 
 -- | Error for two tasks t1.name and t2.name having the same id.
 newtype DuplicateIdE = MkDuplicateIdE TaskId

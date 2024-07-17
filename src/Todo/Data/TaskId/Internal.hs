@@ -16,7 +16,6 @@ where
 
 import Data.Aeson qualified as Asn
 import Data.Set qualified as Set
-import Data.String (IsString (fromString))
 import Data.Text qualified as T
 import Todo.Prelude
 
