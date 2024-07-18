@@ -72,7 +72,7 @@ testXdg = testHedgehogOne "Reads Xdg" "testXdg" $ do
                     ),
                 unicodeSwitch = UnicodeOff
               },
-          command = CmdList Nothing
+          command = CmdList Nothing False
         }
 
 testExample :: TestTree
@@ -96,7 +96,7 @@ testExample = testHedgehogOne "Reads example config" "testExample" $ do
                     ([osp|examples|] </> [osp|index.json|]),
                 unicodeSwitch = UnicodeOff
               },
-          command = CmdList Nothing
+          command = CmdList Nothing False
         }
 
     expectedTaskList =
@@ -233,7 +233,7 @@ testCliOverridesToml = testHedgehogOne "CLI overrides TOML" "testCliOverridesTom
                     ([osp|examples|] </> [osp|index2.json|]),
                 unicodeSwitch = UnicodeOff
               },
-          command = CmdList Nothing
+          command = CmdList Nothing False
         }
 
 testTomlUsesMapName :: TestTree
@@ -255,7 +255,7 @@ testTomlUsesMapName = testHedgehogOne desc "testTomlUsesMapName" $ do
                 index = UnsafeIndex [] (tomlOsPath </> [osp|empty.json|]),
                 unicodeSwitch = UnicodeOn
               },
-          command = CmdList Nothing
+          command = CmdList Nothing False
         }
 
 testCliOverridesTomlMapName :: TestTree
@@ -283,5 +283,5 @@ testCliOverridesTomlMapName = testHedgehogOne desc "testCliOverridesTomlMapName"
                     (tomlOsPath </> [osp|one.json|]),
                 unicodeSwitch = UnicodeOn
               },
-          command = CmdList Nothing
+          command = CmdList Nothing False
         }

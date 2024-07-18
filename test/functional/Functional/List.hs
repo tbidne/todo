@@ -23,6 +23,7 @@ sortExampleTests =
   testGroup
     "Example sorts"
     [ testExample,
+      testExampleReverse,
       testExampleUnicode,
       testExamplePriority,
       testExamplePriorityUnicode,
@@ -41,6 +42,17 @@ testExample =
     "Default sort"
     Nothing
     [osp|example|]
+
+testExampleReverse :: TestTree
+testExampleReverse =
+  testGoldenRunnerParamsNoEnv params
+  where
+    args = ["list", "--reverse"]
+    params =
+      set'
+        #args
+        args
+        (mkGoldenParams "Default sort reversed" [osp|testExampleReverse|])
 
 testExampleUnicode :: TestTree
 testExampleUnicode =

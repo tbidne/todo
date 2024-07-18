@@ -79,7 +79,7 @@ runBench :: String -> OsPath -> Benchmark
 runBench desc path = bench desc $ nfIO $ runBenchIO $ do
   index <- Index.readIndex path
   let config = MkCoreConfig ColorOff index UnicodeOff
-  Todo.listTasks config Nothing
+  Todo.listTasks config Nothing False
 
 data BenchEnv = MkBenchEnv
   { benchDir :: OsPath,

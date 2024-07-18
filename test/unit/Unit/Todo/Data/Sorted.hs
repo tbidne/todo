@@ -2,6 +2,8 @@
 
 module Unit.Todo.Data.Sorted (tests) where
 
+import Data.List qualified as L
+import Data.Sequence qualified as Seq
 import Hedgehog.Gen qualified as G
 import Todo.Data.Sorted
   ( SortType
@@ -13,9 +15,10 @@ import Todo.Data.Sorted
     SortedTasks,
   )
 import Todo.Data.Sorted qualified as Sorted
+import Todo.Data.Sorted.Internal (SortedTasks (UnsafeSortedTasks))
 import Todo.Data.Task
   ( SingleTask (taskId),
-    SomeTask,
+    SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (taskId),
   )
 import Todo.Index qualified as Index
@@ -202,12 +205,33 @@ testSort
   expected = testPropertyNamed desc name $ property $ do
     xs <- liftIO getTasks
     ys <- forAll (G.shuffle xs)
-    let sorted = Sorted.sortTasks mSortType ys
-        ids = getIds sorted
+    let sorted = Sorted.sortTasks mSortType False ys
+        revSorted = Sorted.sortTasks mSortType True ys
+        sortedIds = getIds sorted
+        revSortedIds = getIds revSorted
 
-    annotateShow ids
+        -- Reversing the expected isn't completely trivial (L.reverse sortedIds)
+        -- since the task group ids are __not__ reversed w.r.t. their groups.
+        -- That is, the group id always precedes the subtasks. Thus we use
+        -- the following function, which reverses all tasks except the
+        -- groups.
+        revExpected = reverseSorted sorted
+        revExpectedIds = getIds revExpected
 
-    expected === ids
+    -- extra print here as the result is easier to copy/paste than
+    -- the (===) output, when we need to update the results
+    annotateShow sortedIds
+    annotateShow revSortedIds
+
+    expected === sortedIds
+    revExpectedIds === revSortedIds
+
+reverseSorted :: SortedTasks -> SortedTasks
+reverseSorted = UnsafeSortedTasks . (L.reverse . fmap go) . (.unSortedTasks)
+  where
+    go st@(SomeTaskSingle _) = st
+    go (SomeTaskGroup t) =
+      SomeTaskGroup $ over' #subtasks (Seq.reverse . fmap go) t
 
 getExampleList :: IO (List SomeTask)
 getExampleList = getList examplePath

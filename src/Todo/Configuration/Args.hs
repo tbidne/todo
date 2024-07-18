@@ -218,7 +218,7 @@ indexPathParser =
 data Command
   = CmdDelete (NESet TaskId)
   | CmdInsert
-  | CmdList (Maybe SortType)
+  | CmdList (Maybe SortType) Bool
   | CmdSetDeadline TaskId Timestamp
   | CmdSetDescription TaskId Text
   | CmdSetId TaskId TaskId
@@ -267,7 +267,10 @@ commandParser =
         . unsafeListToNESet
         <$> OA.some (taskIdArgParser "TASK_IDs..." "Task id(s) to delete.")
     insertParser = pure CmdInsert
-    listParser = CmdList <$> sortTypeParser
+    listParser =
+      CmdList
+        <$> sortTypeParser
+        <*> revSortParser
     setDeadlineParser =
       CmdSetDeadline
         <$> setTaskIdParser
@@ -288,6 +291,14 @@ commandParser =
       CmdSetStatus
         <$> setTaskIdParser
         <*> taskStatusParser
+
+revSortParser :: Parser Bool
+revSortParser =
+  OA.switch
+    $ mconcat
+      [ OA.long "reverse",
+        mkHelp "Reverses the sort."
+      ]
 
 taskIdArgParser :: String -> String -> Parser TaskId
 taskIdArgParser meta help =

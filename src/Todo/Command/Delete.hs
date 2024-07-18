@@ -76,5 +76,5 @@ deleteTask coreConfig taskIds = do
     index = coreConfig.index
     unicode = coreConfig.unicodeSwitch
 
-    sort = Sorted.sortTasks Nothing . (.taskList)
+    sort = Sorted.sortTasks Nothing False . (.taskList)
     render currTime = Render.renderSorted currTime color unicode

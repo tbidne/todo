@@ -29,10 +29,12 @@ listTasks ::
   CoreConfigMerged ->
   -- | The sort type.
   Maybe SortType ->
+  -- | Reverses the sort.
+  Bool ->
   m ()
-listTasks coreConfig msortType = do
+listTasks coreConfig msortType revSort = do
   let xs = snd $ Index.toList index
-      sorted = Sorted.sortTasks msortType xs
+      sorted = Sorted.sortTasks msortType revSort xs
 
   currTime <- getSystemZonedTime
 

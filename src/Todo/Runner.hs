@@ -73,8 +73,8 @@ withConfig ::
 withConfig mergedConfig = case mergedConfig.command of
   CmdDelete taskIds -> Todo.deleteTask mergedConfig.coreConfig taskIds
   CmdInsert -> Todo.insertTask mergedConfig.coreConfig
-  CmdList mSortType ->
-    Todo.listTasks mergedConfig.coreConfig mSortType
+  CmdList mSortType revSort ->
+    Todo.listTasks mergedConfig.coreConfig mSortType revSort
   CmdSetDescription taskId taskDesc ->
     Todo.setTaskDescription mergedConfig.coreConfig taskId taskDesc
   CmdSetDeadline taskId taskDeadline ->
