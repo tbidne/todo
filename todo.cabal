@@ -190,6 +190,7 @@ test-suite functional
     Functional.Insert
     Functional.List
     Functional.Prelude
+    Functional.Prelude.GoldenParams
     Functional.Update
 
   build-depends:

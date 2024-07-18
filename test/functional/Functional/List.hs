@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE QuasiQuotes #-}
 
@@ -9,12 +10,12 @@ import Data.Text qualified as T
 import Functional.Prelude
 import Todo.Index (BlockedIdRefE, DuplicateIdE)
 
-tests :: IO TestEnv -> TestTree
-tests testEnv =
+tests :: TestTree
+tests =
   testGroup
     "List"
     [ sortExampleTests,
-      failureTests testEnv
+      failureTests
     ]
 
 sortExampleTests :: TestTree
@@ -39,80 +40,81 @@ testExample =
   testGoldenExampleUnicodeOff
     "Default sort"
     Nothing
-    "example"
+    [osp|example|]
 
 testExampleUnicode :: TestTree
 testExampleUnicode =
   testGoldenExampleUnicodeOn
     "Default sort (unicode)"
     Nothing
-    "example_unicode"
+    [osp|example_unicode|]
 
 testExamplePriority :: TestTree
 testExamplePriority =
   testGoldenExampleUnicodeOff
     "Sorted by priority"
     (Just "priority")
-    "example_priority"
+    [osp|example_priority|]
 
 testExamplePriorityUnicode :: TestTree
 testExamplePriorityUnicode =
   testGoldenExampleUnicodeOn
     "Sorted by priority (unicode)"
     (Just "priority")
-    "example_priority_unicode"
+    [osp|example_priority_unicode|]
 
 testExampleStatus :: TestTree
 testExampleStatus =
   testGoldenExampleUnicodeOff
     "Sorted by status"
     (Just "status")
-    "example_status"
+    [osp|example_status|]
 
 testExampleStatusUnicode :: TestTree
 testExampleStatusUnicode =
   testGoldenExampleUnicodeOn
     "Sorted by status (unicode)"
     (Just "status")
-    "example_status_unicode"
+    [osp|example_status_unicode|]
 
 testExamplePriorityStatus :: TestTree
 testExamplePriorityStatus =
   testGoldenExampleUnicodeOff
     "Sorted by priority_status"
     (Just "priority_status")
-    "example_priority_status"
+    [osp|example_priority_status|]
 
 testExamplePriorityStatusUnicode :: TestTree
 testExamplePriorityStatusUnicode =
   testGoldenExampleUnicodeOn
     "Sorted by priority_status (unicode)"
     (Just "priority_status")
-    "example_priority_status_unicode"
+    [osp|example_priority_status_unicode|]
 
 testExampleStatusPriority :: TestTree
 testExampleStatusPriority =
   testGoldenExampleUnicodeOff
     "Sorted by status_priority"
     (Just "status_priority")
-    "example_status_priority"
+    [osp|example_status_priority|]
 
 testExampleStatusPriorityUnicode :: TestTree
 testExampleStatusPriorityUnicode =
   testGoldenExampleUnicodeOn
     "Sorted by status_priority (unicode)"
     (Just "status_priority")
-    "example_status_priority_unicode"
+    [osp|example_status_priority_unicode|]
 
 testNestedDefaultSort :: TestTree
 testNestedDefaultSort =
-  testGolden
-    runTodo
-    "Sorts nested by default"
-    "nested_sort"
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPath
+      [osp|nested_sort|]
+      "Sorts nested by default"
+      [osp|testNestedDefaultSort|]
 
-failureTests :: IO TestEnv -> TestTree
-failureTests testEnv =
+failureTests :: TestTree
+failureTests =
   testGroup
     "Failures"
     [ testIdDupsFails,
@@ -123,103 +125,100 @@ failureTests testEnv =
       testStatusBlockedEmptyFails,
       testStatusBlockedIdsEmptyFails,
       testStatusBlockedTextLAngleFails,
-      testNonExtantPathFails testEnv
+      testNonExtantPathFails
     ]
 
 testIdDupsFails :: TestTree
 testIdDupsFails =
-  testGolden
-    (runTodoException @DuplicateIdE)
-    "Duplicate id fails"
-    "id_dups"
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPathError @DuplicateIdE
+      [osp|id_dups|]
+      "Duplicate id fails"
+      [osp|testIdDupsFails|]
 
 testIdEmptyFails :: TestTree
 testIdEmptyFails =
-  testGolden
-    (runTodoException @AesonException)
-    "Empty id fails"
-    "id_empty"
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPathError @AesonException
+      [osp|id_empty|]
+      "Empty id fails"
+      [osp|testIdEmptyFails|]
 
 testIdCommaFails :: TestTree
 testIdCommaFails =
-  testGolden
-    (runTodoException @AesonException)
-    "Id with comma fails"
-    "id_comma"
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPathError @AesonException
+      [osp|id_comma|]
+      "Id with comma fails"
+      [osp|testIdCommaFails|]
 
 testStatusBlockedBadRefFails :: TestTree
 testStatusBlockedBadRefFails =
-  testGolden
-    (runTodoException @BlockedIdRefE)
-    "Status blocked non-extant id reference fails"
-    "status_blocked_bad_ref"
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPathError @BlockedIdRefE
+      [osp|status_blocked_bad_ref|]
+      "Status blocked non-extant id reference fails"
+      [osp|testStatusBlockedBadRefFails|]
 
 testStatusBadFails :: TestTree
 testStatusBadFails =
-  testGolden
-    (runTodoException @AesonException)
-    "Bad status fails"
-    "status_bad"
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPathError @AesonException
+      [osp|status_bad|]
+      "Bad status fails"
+      [osp|testStatusBadFails|]
 
 testStatusBlockedEmptyFails :: TestTree
 testStatusBlockedEmptyFails =
-  testGolden
-    (runTodoException @AesonException)
-    "Blocked empty status fails"
-    "status_blocked_empty"
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPathError @AesonException
+      [osp|status_blocked_empty|]
+      "Blocked empty status fails"
+      [osp|testStatusBlockedEmptyFails|]
 
 testStatusBlockedIdsEmptyFails :: TestTree
 testStatusBlockedIdsEmptyFails =
-  testGolden
-    (runTodoException @AesonException)
-    "Blocked ids empty status fails"
-    "status_blocked_ids_empty"
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPathError @AesonException
+      [osp|status_blocked_ids_empty|]
+      "Blocked ids empty status fails"
+      [osp|testStatusBlockedIdsEmptyFails|]
 
 testStatusBlockedTextLAngleFails :: TestTree
 testStatusBlockedTextLAngleFails =
-  testGolden
-    (runTodoException @AesonException)
-    "Blocked text with left angle bracket fails"
-    "status_blocked_text_langle"
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPathError @AesonException
+      [osp|status_blocked_text_langle|]
+      "Blocked text with left angle bracket fails"
+      [osp|testStatusBlockedTextLAngleFails|]
 
-testNonExtantPathFails :: IO TestEnv -> TestTree
-testNonExtantPathFails testEnv = goldenVsFile desc goldenPath actualPath $ do
-  testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|non-extant|] </> [osp|index.json|]
-      args =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "list"
-        ]
-
-  -- run list
-  result <- massagePath <$> runTodoException @IOException args
-
-  let expectedInfix =
-        mconcat
-          [ "todo/functional/list/testNonExtantPathFails/non-extant/",
-            "index.json: withFile: does not exist"
-          ]
-
-  -- Result includes a non-deterministic dir like:
-  --
-  --     /some/dirs/todo/functional/list/testNonExtantPathSucceeds/non-extant/index.json
-  --
-  -- We instead verify the infix expectation
-  let resultFixed =
-        if expectedInfix `T.isInfixOf` result
-          then "..." <> expectedInfix <> "..."
-          else result
-
-  writeActualFile actualPath resultFixed
+testNonExtantPathFails :: TestTree
+testNonExtantPathFails =
+  testGoldenRunnerParamsNoEnv params
   where
-    name = [osp|testNonExtantPathFails|]
-    desc = "Non-extant path fails"
-    path = outputDir `cfp` "testNonExtantPathFails"
-    goldenPath = path <> ".golden"
-    actualPath = path <> ".actual"
+    badIndex = [osp|non-extant|] </> [osp|index.json|]
+    params =
+      set' #runner (Just runner)
+        $ set' #indexPath (Just badIndex)
+        $ mkGoldenParams "Non-extant path fails" [osp|testNonExtantPathFails|]
 
-testGoldenExampleUnicodeOff :: TestName -> Maybe String -> FilePath -> TestTree
+    runner args = do
+      result <- massagePath <$> runTodoException @IOException args
+
+      let expectedInfix = "non-extant/index.json: withFile: does not exist"
+
+          -- Result includes a non-deterministic dir like:
+          --
+          --     /some/dirs/todo/functional/list/testNonExtantPathSucceeds/non-extant/index.json
+          --
+          -- We instead verify the infix expectation
+          resultFixed =
+            if expectedInfix `T.isInfixOf` result
+              then "..." <> expectedInfix <> "..."
+              else result
+      pure resultFixed
+
+testGoldenExampleUnicodeOff :: TestName -> Maybe String -> OsPath -> TestTree
 testGoldenExampleUnicodeOff = testGoldenExample extraArgs
   where
     extraArgs =
@@ -227,54 +226,49 @@ testGoldenExampleUnicodeOff = testGoldenExample extraArgs
         "off"
       ]
 
-testGoldenExampleUnicodeOn :: TestName -> Maybe String -> FilePath -> TestTree
+testGoldenExampleUnicodeOn :: TestName -> Maybe String -> OsPath -> TestTree
 testGoldenExampleUnicodeOn = testGoldenExample []
 
-testGoldenExample :: List String -> TestName -> Maybe String -> FilePath -> TestTree
-testGoldenExample extraArgs desc mSortArg goldenFilenName = goldenVsFile desc goldenPath actualPath $ do
-  result <- runTodo args
-  writeActualFile actualPath result
+testGoldenExample :: List String -> TestName -> Maybe String -> OsPath -> TestTree
+testGoldenExample extraArgs desc mSortArg testName =
+  testGoldenRunnerParamsNoEnv params
   where
-    args =
-      [ "--index-path",
-        "examples" `cfp` "index.json",
-        "--color",
-        "off"
-      ]
-        ++ extraArgs
-        ++ ["list"]
-        ++ sortArgs
     sortArgs = maybe [] (\a -> ["--sort", a]) mSortArg
 
-    actualPath = outputDir `cfp` goldenFilenName <> ".actual"
-    goldenPath = outputDir `cfp` goldenFilenName <> ".golden"
-
-testGolden :: (List String -> IO Text) -> TestName -> FilePath -> TestTree
-testGolden runner desc fileName = goldenVsFile desc goldenPath actualPath $ do
-  result <- runner args
-  writeActualFile actualPath result
-  where
     args =
-      [ "--index-path",
-        inputDir `cfp` fileName <> ".json",
-        "--color",
-        "off",
-        "--unicode",
-        "off",
-        "list"
-      ]
+      extraArgs
+        ++ ["list"]
+        ++ sortArgs
 
-    actualPath = outputDir `cfp` fileName <> ".actual"
-    goldenPath = outputDir `cfp` fileName <> ".golden"
+    params = set' #args args (mkGoldenParams desc testName)
 
-inputDir :: FilePath
-inputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "List" `cfp` "input"
+mkGoldenParamsIndexPathError :: forall e. (Exception e) => OsPath -> TestName -> OsPath -> GoldenParams
+mkGoldenParamsIndexPathError indexName testDesc =
+  set' #runner (Just $ runTodoException @e)
+    . mkGoldenParamsIndexPath indexName testDesc
 
-outputDir :: FilePath
-outputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "List" `cfp` "output"
+mkGoldenParamsIndexPath :: OsPath -> TestName -> OsPath -> GoldenParams
+mkGoldenParamsIndexPath indexName testDesc =
+  set' #indexPath (Just indexPath) . mkGoldenParams testDesc
+  where
+    indexPath = inputOsPath </> indexName <> [osp|.json|]
 
-getTestDir' :: IO TestEnv -> OsPath -> IO OsPath
-getTestDir' testEnv name = getTestDir testEnv ([osp|list|] </> name)
+mkGoldenParams :: TestName -> OsPath -> GoldenParams
+mkGoldenParams testDesc testDirName =
+  MkGoldenParams
+    { indexPath = Nothing,
+      runner = Nothing,
+      testDesc,
+      dataDir = [osp|List|],
+      testDirName,
+      args,
+      runList = False
+    }
+  where
+    args = ["list"]
+
+inputOsPath :: OsPath
+inputOsPath = mkInputDir [osp|List|]
 
 massagePath :: Text -> Text
 #if WINDOWS

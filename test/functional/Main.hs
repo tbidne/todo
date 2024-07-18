@@ -23,7 +23,7 @@ main =
         "Functional Tests"
         [ Delete.tests env,
           Insert.tests env,
-          List.tests env,
+          List.tests,
           Update.tests env
         ]
 

@@ -16,42 +16,13 @@ tests testEnv =
     ]
 
 testInsertOne :: IO TestEnv -> TestTree
-testInsertOne testEnv = goldenVsFile desc goldenPath actualPath $ do
-  testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|index.json|]
-      insertArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "insert"
-        ]
-
-  -- copy example to test dir
-  copyFileWithMetadata exampleJsonOsPath newPath
-
-  -- run insert
-  insertResult <- runTodoResponses responses insertArgs
-
-  let listArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "list"
-        ]
-
-  -- run list
-  listResult <- runTodo listArgs
-
-  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
+testInsertOne =
+  testGoldenRunnerParams
+    $ mkGoldenParams
+      "Inserts a single task"
+      [osp|testInsertOne|]
+      responses
   where
-    name = [osp|testInsertOne|]
-    desc = "Inserts a single task"
-    path = outputDir `cfp` "testInsertOne"
-    goldenPath = path <> ".golden"
-    actualPath = path <> ".actual"
-
     responses =
       [ "y",
         "",
@@ -65,42 +36,13 @@ testInsertOne testEnv = goldenVsFile desc goldenPath actualPath $ do
       ]
 
 testInsertGroup :: IO TestEnv -> TestTree
-testInsertGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
-  testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|index.json|]
-      insertArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "insert"
-        ]
-
-  -- copy example to test dir
-  copyFileWithMetadata exampleJsonOsPath newPath
-
-  -- run insert
-  insertResult <- runTodoResponses responses insertArgs
-
-  let listArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "list"
-        ]
-
-  -- run list
-  listResult <- runTodo listArgs
-
-  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
+testInsertGroup =
+  testGoldenRunnerParams
+    $ mkGoldenParams
+      "Inserts a task group"
+      [osp|testInsertGroup|]
+      responses
   where
-    name = [osp|testInsertGroup|]
-    desc = "Inserts a task group"
-    path = outputDir `cfp` "testInsertGroup"
-    goldenPath = path <> ".golden"
-    actualPath = path <> ".actual"
-
     responses =
       [ "y",
         "",
@@ -128,42 +70,13 @@ testInsertGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
       ]
 
 testInsertNestedGroup :: IO TestEnv -> TestTree
-testInsertNestedGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
-  testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|index.json|]
-      insertArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "insert"
-        ]
-
-  -- copy example to test dir
-  copyFileWithMetadata exampleJsonOsPath newPath
-
-  -- run insert
-  insertResult <- runTodoResponses responses insertArgs
-
-  let listArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "list"
-        ]
-
-  -- run list
-  listResult <- runTodo listArgs
-
-  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
+testInsertNestedGroup =
+  testGoldenRunnerParams
+    $ mkGoldenParams
+      "Inserts a nested task group"
+      [osp|testInsertNestedGroup|]
+      responses
   where
-    name = [osp|testInsertNestedGroup|]
-    desc = "Inserts a task group"
-    path = outputDir `cfp` "testInsertNestedGroup"
-    goldenPath = path <> ".golden"
-    actualPath = path <> ".actual"
-
     responses =
       [ "y",
         "equipment",
@@ -177,42 +90,13 @@ testInsertNestedGroup testEnv = goldenVsFile desc goldenPath actualPath $ do
       ]
 
 testInsertGroupFailureRetry :: IO TestEnv -> TestTree
-testInsertGroupFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ do
-  testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|index.json|]
-      insertArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "insert"
-        ]
-
-  -- copy example to test dir
-  copyFileWithMetadata exampleJsonOsPath newPath
-
-  -- run insert
-  insertResult <- runTodoResponses responses insertArgs
-
-  let listArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "list"
-        ]
-
-  -- run list
-  listResult <- runTodo listArgs
-
-  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
+testInsertGroupFailureRetry =
+  testGoldenRunnerParams
+    $ mkGoldenParams
+      "Inserts a single task into a group after group id errors"
+      [osp|testInsertGroupFailureRetry|]
+      responses
   where
-    name = [osp|testInsertGroupFailureRetry|]
-    desc = "Inserts a single task into a group after group id errors"
-    path = outputDir `cfp` "testInsertGroupFailureRetry"
-    goldenPath = path <> ".golden"
-    actualPath = path <> ".actual"
-
     responses =
       [ "y",
         "bad-group",
@@ -228,42 +112,13 @@ testInsertGroupFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ 
       ]
 
 testFailureRetry :: IO TestEnv -> TestTree
-testFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ do
-  testDir <- getTestDir' testEnv name
-  let newPath = testDir </> [osp|index.json|]
-      insertArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "insert"
-        ]
-
-  -- copy example to test dir
-  copyFileWithMetadata exampleJsonOsPath newPath
-
-  -- run insert
-  insertResult <- runTodoResponses responses insertArgs
-
-  let listArgs =
-        [ "--index-path",
-          unsafeDecodeOsToFp newPath,
-          "--color",
-          "off",
-          "list"
-        ]
-
-  -- run list
-  listResult <- runTodo listArgs
-
-  writeActualFile actualPath (insertResult <> "\n\n" <> listResult)
+testFailureRetry =
+  testGoldenRunnerParams
+    $ mkGoldenParams
+      "Failures invokes retries"
+      [osp|testFailureRetry|]
+      responses
   where
-    name = [osp|testFailureRetry|]
-    desc = "Failures invokes retries"
-    path = outputDir `cfp` "testFailureRetry"
-    goldenPath = path <> ".golden"
-    actualPath = path <> ".actual"
-
     responses =
       [ "y",
         "",
@@ -280,8 +135,16 @@ testFailureRetry testEnv = goldenVsFile desc goldenPath actualPath $ do
         "n"
       ]
 
-getTestDir' :: IO TestEnv -> OsPath -> IO OsPath
-getTestDir' testEnv name = getTestDir testEnv ([osp|insert|] </> name)
-
-outputDir :: FilePath
-outputDir = "test" `cfp` "functional" `cfp` "Functional" `cfp` "Insert" `cfp` "output"
+mkGoldenParams :: TestName -> OsPath -> List Text -> GoldenParams
+mkGoldenParams testDesc testDirName responses =
+  MkGoldenParams
+    { indexPath = Nothing,
+      runner = Just runner,
+      testDesc,
+      dataDir = [osp|Insert|],
+      testDirName,
+      args = ["insert"],
+      runList = True
+    }
+  where
+    runner = runTodoResponses responses
