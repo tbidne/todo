@@ -58,9 +58,7 @@ deleteTask coreConfig taskIds = do
 
   putTextLn "Found task(s):\n"
 
-  let sortedToSave = sort toSave
-      sortedToDelete = sort toDelete
-      renderedToSave = render currTime sortedToSave
+  let sortedToDelete = sort toDelete
       renderedToDelete = render currTime sortedToDelete
 
   putTextLn $ builderToTxt renderedToDelete
@@ -70,8 +68,7 @@ deleteTask coreConfig taskIds = do
   if ans
     then do
       Index.writeIndex toSave
-      putTextLn "Successfully deleted tasks(s). New index:\n"
-      putTextLn $ builderToTxt renderedToSave
+      putTextLn "Successfully deleted tasks(s)."
     else
       putTextLn "Did not delete any tasks."
   where

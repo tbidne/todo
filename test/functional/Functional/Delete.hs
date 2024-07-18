@@ -107,7 +107,7 @@ mkGoldenParams testDesc testDirName deleted =
       dataDir = [osp|Delete|],
       testDirName,
       args,
-      runList = False
+      runList = True
     }
   where
     args = "delete" : deleted
