@@ -50,7 +50,6 @@
       },
       {
         "id": "equipment",
-        "description": "Get equipment",
         "priority": "normal",
         "subtasks": [
           {

@@ -125,7 +125,8 @@ failureTests =
       testStatusBlockedEmptyFails,
       testStatusBlockedIdsEmptyFails,
       testStatusBlockedTextLAngleFails,
-      testNonExtantPathFails
+      testNonExtantPathFails,
+      testBadAesonKeyFails
     ]
 
 testIdDupsFails :: TestTree
@@ -217,6 +218,14 @@ testNonExtantPathFails =
               then "..." <> expectedInfix <> "..."
               else result
       pure resultFixed
+
+testBadAesonKeyFails :: TestTree
+testBadAesonKeyFails =
+  testGoldenRunnerParamsNoEnv
+    $ mkGoldenParamsIndexPathError @AesonException
+      [osp|bad_key|]
+      "Bad aeson key fails"
+      [osp|testBadAesonKeyFails|]
 
 testGoldenExampleUnicodeOff :: TestName -> Maybe String -> OsPath -> TestTree
 testGoldenExampleUnicodeOff = testGoldenExample extraArgs

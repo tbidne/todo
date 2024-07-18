@@ -19,12 +19,21 @@ module Todo.Utils
     MatchResult (..),
     overPreviewPartialNode',
     setPreviewPartialNode',
+
+    -- * Aeson
+    validateKeys,
   )
 where
 
+import Data.Aeson (Object)
+import Data.Aeson.Key qualified as K
+import Data.Aeson.KeyMap (Key)
+import Data.Aeson.KeyMap qualified as KM
+import Data.Aeson.Types (Parser)
 import Data.Bifunctor (Bifunctor (second))
 import Data.Set qualified as Set
 import Data.Set.NonEmpty qualified as NESet
+import Data.Text qualified as T
 import Todo.Prelude
 
 whileM :: (Monad m) => m Bool -> m a -> m (Seq a)
@@ -232,3 +241,23 @@ neSetTraversal = traversalVL f
       fmap NESet.fromList
         . traverse g
         . NESet.toList
+
+-- | Validates that the keys in the object are only those we expect i.e.
+-- fails if the Object contains unexpected keys.
+validateKeys :: Set Key -> Object -> Parser ()
+validateKeys expectedKeys o = do
+  case filter (`Set.notMember` expectedKeys) (KM.keys o) of
+    [] -> pure ()
+    ks@(_ : _) ->
+      fail
+        $ mconcat
+          [ "Found unexpected json key(s): ",
+            unpack $ displayKeys ks
+          ]
+  where
+    displayKeys ks =
+      T.intercalate
+        ", "
+        (quote . K.toText <$> ks)
+
+    quote k = "'" <> k <> "'"

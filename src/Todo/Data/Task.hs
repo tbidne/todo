@@ -27,11 +27,13 @@ import Data.Aeson ((.:), (.:?), (.=))
 import Data.Aeson qualified as Asn
 import Data.Aeson.KeyMap qualified as KM
 import Data.Aeson.Types (Object, Parser)
+import Data.Set qualified as Set
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskPriority (TaskPriority (Normal))
 import Todo.Data.TaskStatus (TaskStatus (Completed), isCompleted)
 import Todo.Data.Timestamp (Timestamp)
 import Todo.Prelude
+import Todo.Utils qualified as Utils
 
 -- | Task data.
 data SingleTask = MkSingleTask
@@ -58,6 +60,7 @@ parseTaskObj v = do
   taskId <- v .: "id"
   priority <- v .: "priority"
   status <- v .: "status"
+  validateTaskKeys v
   pure
     $ MkSingleTask
       { deadline,
@@ -66,6 +69,18 @@ parseTaskObj v = do
         status,
         taskId
       }
+
+validateTaskKeys :: Object -> Parser ()
+validateTaskKeys =
+  Utils.validateKeys
+    ( Set.fromList
+        [ "deadline",
+          "description",
+          "id",
+          "priority",
+          "status"
+        ]
+    )
 
 instance ToJSON SingleTask where
   toJSON t =
@@ -165,6 +180,7 @@ parseTaskGroupObj v = do
   priority <- v .:? "priority"
   status <- v .:? "status"
   subtasks <- v .: "subtasks"
+  validateTaskGroupKeys v
   pure
     $ MkTaskGroup
       { priority,
@@ -172,6 +188,17 @@ parseTaskGroupObj v = do
         subtasks,
         taskId
       }
+
+validateTaskGroupKeys :: Object -> Parser ()
+validateTaskGroupKeys =
+  Utils.validateKeys
+    ( Set.fromList
+        [ "id",
+          "priority",
+          "status",
+          "subtasks"
+        ]
+    )
 
 instance ToJSON TaskGroup where
   toJSON t =

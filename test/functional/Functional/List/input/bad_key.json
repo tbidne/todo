@@ -1,0 +1,9 @@
+[
+  {
+    "id": "t",
+    "status": "in-progress",
+    "priority": "normal",
+    "bad-key": 5,
+    "other-key": 2
+  }
+]
