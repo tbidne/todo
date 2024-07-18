@@ -1,8 +1,15 @@
 module Todo.Command.Utils
   ( -- * Get input
     askYesNoQ,
+    askParseQ,
+    askParseEmptyQ,
+
+    -- * Low level
     getStrippedLine,
     getStrippedLineEmpty,
+
+    -- * Misc
+    formatBadResponse,
   )
 where
 
@@ -37,6 +44,46 @@ askYesNoQ qsn = go
             putTextLn err
             go
 
+askParseQ ::
+  ( HasCallStack,
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
+  ) =>
+  Text ->
+  (Text -> EitherString a) ->
+  m a
+askParseQ qsn parser = go
+  where
+    go = do
+      txt <- getStrippedLine qsn
+      case parser txt of
+        EitherLeft err -> do
+          putTextLn $ formatBadResponse err
+          go
+        EitherRight x -> pure x
+
+askParseEmptyQ ::
+  ( HasCallStack,
+    MonadHaskeline m,
+    MonadTerminal m,
+    MonadThrow m
+  ) =>
+  Text ->
+  (Text -> EitherString a) ->
+  m (Maybe a)
+askParseEmptyQ qsn parser = go
+  where
+    go = do
+      getStrippedLineEmpty qsn >>= \case
+        Nothing -> pure Nothing
+        Just txt ->
+          case parser txt of
+            EitherLeft err -> do
+              putTextLn $ formatBadResponse err
+              go
+            EitherRight x -> pure $ Just x
+
 getStrippedLine ::
   ( HasCallStack,
     MonadHaskeline m,
@@ -61,3 +108,6 @@ getStrippedLineEmpty prompt =
     if T.null txt
       then Nothing
       else Just txt
+
+formatBadResponse :: String -> Text
+formatBadResponse = ("Bad Response: " <>) . pack

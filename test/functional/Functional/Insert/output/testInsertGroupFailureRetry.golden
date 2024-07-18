@@ -14,11 +14,11 @@ Task id for parent group (leave blank for no parent)?
 Create (empty) task group (y/n)? 
 
 
-Task id: 
+Id: 
 
-Task status (completed | in-progress | not-started | blocked: <ids>): 
+Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): 
 
-Task priority (low | normal | high): 
+Priority (low | normal | high) (leave blank for normal): 
 
 Description (leave blank for none): 
 

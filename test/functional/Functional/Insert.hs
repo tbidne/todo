@@ -12,7 +12,8 @@ tests testEnv =
       testInsertGroup testEnv,
       testInsertNestedGroup testEnv,
       testInsertGroupFailureRetry testEnv,
-      testFailureRetry testEnv
+      testFailureRetry testEnv,
+      testDefaultStatusPriority testEnv
     ]
 
 testInsertOne :: IO TestEnv -> TestTree
@@ -132,6 +133,26 @@ testFailureRetry =
         "",
         "bad_deadline",
         "2020-05-09",
+        "n"
+      ]
+
+testDefaultStatusPriority :: IO TestEnv -> TestTree
+testDefaultStatusPriority =
+  testGoldenRunnerParams
+    $ mkGoldenParams
+      "Sets default status and priority"
+      [osp|testDefaultStatusPriority|]
+      responses
+  where
+    responses =
+      [ "y",
+        "",
+        "n",
+        "test_id",
+        "",
+        "",
+        "",
+        "",
         "n"
       ]
 

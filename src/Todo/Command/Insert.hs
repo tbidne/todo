@@ -40,7 +40,9 @@ import Todo.Data.Task
   )
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
+import Todo.Data.TaskPriority (TaskPriority (Normal))
 import Todo.Data.TaskPriority qualified as TaskPriority
+import Todo.Data.TaskStatus (TaskStatus (NotStarted))
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Index (Index)
@@ -146,15 +148,22 @@ mkTaskGroup ::
 mkTaskGroup eIndexMaybeParentId = do
   eMkTask <- bitraverse mkTask mkTaskWithParentId eIndexMaybeParentId
 
-  status <-
-    askParseEmptyQ
-      "Task status (leave blank for none): "
-      TaskStatus.parseTaskStatus
+  let statusPrompt =
+        mconcat
+          [ "Status ",
+            TaskStatus.metavar,
+            " (leave blank for none): "
+          ]
+      priorityPrompt =
+        mconcat
+          [ "Priority ",
+            TaskPriority.metavar,
+            " (leave blank for none): "
+          ]
 
-  priority <-
-    askParseEmptyQ
-      "Task priority (leave blank for none): "
-      TaskPriority.parseTaskPriority
+  status <- CUtils.askParseEmptyQ statusPrompt TaskStatus.parseTaskStatus
+
+  priority <- CUtils.askParseEmptyQ priorityPrompt TaskPriority.parseTaskPriority
 
   -- see NOTE: [Redundant bimap]
   pure
@@ -164,7 +173,7 @@ mkTaskGroup eIndexMaybeParentId = do
       eMkTask
   where
     mkTask index =
-      indexToTask "Task group id: " index $ \(priority, status) tid ->
+      indexToTask "Group id: " index $ \(priority, status) tid ->
         SomeTaskGroup
           $ MkTaskGroup
             { priority,
@@ -198,20 +207,31 @@ mkOneTask ::
 mkOneTask eIndexMaybeParentId = do
   eMkTask <- bitraverse mkTask mkTaskWithParentId eIndexMaybeParentId
 
-  status <-
-    askParseQ
-      "Task status (completed | in-progress | not-started | blocked: <ids>): "
-      TaskStatus.parseTaskStatus
+  let statusPrompt =
+        mconcat
+          [ "Status ",
+            TaskStatus.metavar,
+            " (leave blank for not-started): "
+          ]
+      priorityPrompt =
+        mconcat
+          [ "Priority ",
+            TaskPriority.metavar,
+            " (leave blank for normal): "
+          ]
 
-  priority <-
-    askParseQ
-      "Task priority (low | normal | high): "
-      TaskPriority.parseTaskPriority
+  mStatus <- CUtils.askParseEmptyQ statusPrompt TaskStatus.parseTaskStatus
+
+  let status = fromMaybe NotStarted mStatus
+
+  mPriority <- CUtils.askParseEmptyQ priorityPrompt TaskPriority.parseTaskPriority
+
+  let priority = fromMaybe Normal mPriority
 
   description <- CUtils.getStrippedLineEmpty "Description (leave blank for none): "
 
   deadline <-
-    askParseEmptyQ
+    CUtils.askParseEmptyQ
       "Deadline (leave blank for none): "
       (Timestamp.parseTimestamp . unpack)
 
@@ -229,7 +249,7 @@ mkOneTask eIndexMaybeParentId = do
       eMkTask
   where
     mkTask index =
-      indexToTask "\nTask id: " index $ \(deadline, description, priority, status) tid ->
+      indexToTask "\nId: " index $ \(deadline, description, priority, status) tid ->
         SomeTaskSingle
           $ MkSingleTask
             { deadline,
@@ -278,7 +298,7 @@ indexGroupIdToTask ::
   (a -> TaskId -> SomeTask) ->
   m (a -> RIndexTaskParentId)
 indexGroupIdToTask indexParentId onTaskId = do
-  indexTaskIdParentId <- getTaskIdWithGroupId "\nTask id: " indexParentId
+  indexTaskIdParentId <- getTaskIdWithGroupId "\nId: " indexParentId
   pure $ \extraParams -> Safe.addTaskToIdAndGroupId indexTaskIdParentId (onTaskId extraParams)
 
 -- | Retrieves a TaskId guaranteed to be in the Index.
@@ -300,7 +320,7 @@ getTaskId qsn index = go
       idTxt <- CUtils.getStrippedLine qsn
       case TaskId.parseTaskId idTxt of
         EitherLeft err -> do
-          putTextLn $ formatBadResponse err
+          putTextLn $ CUtils.formatBadResponse err
           go
         EitherRight taskId -> do
           case R.refine (MkIndexWithData index (MkSingleTaskId taskId)) of
@@ -329,7 +349,7 @@ getTaskIdWithGroupId qsn indexParentId = go
       idTxt <- CUtils.getStrippedLine qsn
       case TaskId.parseTaskId idTxt of
         EitherLeft err -> do
-          putTextLn $ formatBadResponse err
+          putTextLn $ CUtils.formatBadResponse err
           go
         EitherRight taskId -> do
           -- withTaskId is the result of adding taskId to our RIndexParentId,
@@ -364,7 +384,7 @@ getExtantTaskGroupIdOrEmpty qsn index = go
         Just idTxt ->
           case TaskId.parseTaskId idTxt of
             EitherLeft err -> do
-              putTextLn $ formatBadResponse err
+              putTextLn $ CUtils.formatBadResponse err
               go
             EitherRight taskId -> do
               case R.refine @GroupIdMember (MkIndexWithData index (MkGroupTaskId taskId)) of
@@ -381,46 +401,3 @@ getMoreTasksAns ::
   ) =>
   m Bool
 getMoreTasksAns = CUtils.askYesNoQ "\nCreate a task (y/n)? "
-
-askParseQ ::
-  ( HasCallStack,
-    MonadHaskeline m,
-    MonadTerminal m,
-    MonadThrow m
-  ) =>
-  Text ->
-  (Text -> EitherString a) ->
-  m a
-askParseQ qsn parser = go
-  where
-    go = do
-      txt <- CUtils.getStrippedLine qsn
-      case parser txt of
-        EitherLeft err -> do
-          putTextLn $ formatBadResponse err
-          go
-        EitherRight x -> pure x
-
-askParseEmptyQ ::
-  ( HasCallStack,
-    MonadHaskeline m,
-    MonadTerminal m,
-    MonadThrow m
-  ) =>
-  Text ->
-  (Text -> EitherString a) ->
-  m (Maybe a)
-askParseEmptyQ qsn parser = go
-  where
-    go = do
-      CUtils.getStrippedLineEmpty qsn >>= \case
-        Nothing -> pure Nothing
-        Just txt ->
-          case parser txt of
-            EitherLeft err -> do
-              putTextLn $ formatBadResponse err
-              go
-            EitherRight x -> pure $ Just x
-
-formatBadResponse :: String -> Text
-formatBadResponse = ("Bad Response: " <>) . pack
