@@ -40,7 +40,6 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BSL
 import Data.IORef (IORef, modifyIORef', newIORef, readIORef, writeIORef)
 import Data.Proxy as X (Proxy (Proxy))
-import Data.Sequence qualified as Seq
 import Effects.Exception (tryCS)
 import Effects.FileSystem.HandleWriter (MonadHandleWriter)
 import Effects.FileSystem.PathWriter as X (copyFileWithMetadata)
@@ -257,8 +256,15 @@ getTestDir testEnv path = do
   PW.createDirectoryIfMissing True path'
   pure path'
 
+-- Do __not__ intersperse newlines here. The terminal is effectively doing
+-- that automatically via putStrLn. If we add newlines here, then every line
+-- is separated by an extra newline w.r.t. the actual output.
+--
+-- An alternative that is nearly identical is to implement putStrLn instead
+-- of putStr. This way we do not append a newline after every call
+-- (like the default impl of putStr), and then add the newlines here.
 concatSeq :: Seq Text -> Text
-concatSeq = fold . Seq.intersperse "\n"
+concatSeq = fold
 
 exampleJsonOsPath :: OsPath
 exampleJsonOsPath = [osp|examples|] </> [osp|index.json|]

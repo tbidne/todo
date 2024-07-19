@@ -1,6 +1,5 @@
 Found task(s):
 
-
 ❌ id: bananas
    status: not-started
    priority: high
@@ -14,9 +13,7 @@ Found task(s):
    status: not-started
    priority: low
 
-
 Are you sure you want to delete (y/n)? 
-
 Successfully deleted tasks(s).
 
 

@@ -1,38 +1,21 @@
 Found id(s):
 
-
 - apples
-
 - ball
-
 - bananas
-
 - cleats
-
 - empty_group
-
 - equipment
-
 - fix_car
-
 - groceries
-
 - haircut
-
 - pack_bananas
-
 - paycheck
-
 - soccer_match
-
 - walk_dog
 
-
-
 Enter task id(s) to delete: 
-
 Found task(s):
-
 
 ⛔ id: soccer_match
    status: blocked: <fix_car>, <groceries>
@@ -63,9 +46,7 @@ Found task(s):
    status: completed
    priority: normal
 
-
 Are you sure you want to delete (y/n)? 
-
 Successfully deleted tasks(s).
 
 

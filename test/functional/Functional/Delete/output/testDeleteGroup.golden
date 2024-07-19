@@ -1,6 +1,5 @@
 Found task(s):
 
-
 ⛔ id: soccer_match
    status: blocked: <fix_car>, <groceries>
    priority: low
@@ -22,9 +21,7 @@ Found task(s):
        priority: normal
        description: Get cleats
 
-
 Are you sure you want to delete (y/n)? 
-
 Successfully deleted tasks(s).
 
 

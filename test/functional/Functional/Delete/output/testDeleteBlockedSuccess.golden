@@ -1,6 +1,5 @@
 Found task(s):
 
-
 ⛔ id: g
    status: blocked: <t2>
    priority: normal
@@ -17,9 +16,7 @@ Found task(s):
    status: blocked: <s1>
    priority: normal
 
-
 Are you sure you want to delete (y/n)? 
-
 Successfully deleted tasks(s).
 
 

@@ -1,6 +1,5 @@
 Found task(s):
 
-
 🚧 id: g2
    status: in-progress
    priority: normal
@@ -29,9 +28,7 @@ Found task(s):
    status: not-started
    priority: normal
 
-
 Are you sure you want to delete (y/n)? 
-
 Successfully deleted tasks(s).
 
 

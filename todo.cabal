@@ -197,7 +197,6 @@ test-suite functional
     , aeson
     , base
     , bytestring
-    , containers
     , effects-env
     , effects-exceptions
     , effects-fs
