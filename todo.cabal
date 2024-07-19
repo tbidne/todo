@@ -75,6 +75,7 @@ library
     Todo.Data.TaskPriority
     Todo.Data.TaskStatus
     Todo.Data.Timestamp
+    Todo.Exception
     Todo.Index
     Todo.Index.Internal
     Todo.Index.Safe

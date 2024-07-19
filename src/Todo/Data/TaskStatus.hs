@@ -1,5 +1,4 @@
 {-# LANGUAGE ViewPatterns #-}
-{-# OPTIONS_GHC -Wno-deprecations #-}
 
 module Todo.Data.TaskStatus
   ( -- * Status

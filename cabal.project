@@ -16,6 +16,7 @@ package todo
     -Wunused-binds
     -Wunused-packages
     -Wunused-type-patterns
+    -Wno-deprecations
     -Wno-unticked-promoted-constructors
     -Wno-x-experimental
 

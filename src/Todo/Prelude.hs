@@ -2,7 +2,6 @@
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# OPTIONS_GHC -Wno-deprecations #-}
 
 {- ORMOLU_DISABLE -}
 

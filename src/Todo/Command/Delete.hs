@@ -22,6 +22,7 @@ import Todo.Configuration.Core
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
+import Todo.Exception qualified as E
 import Todo.Index
   ( DeleteE
       ( DeleteRefId,
@@ -92,7 +93,7 @@ deleteWithRetry coreConfig = go
 
       case eResult of
         Left ex -> do
-          putStrLn $ "\n" <> displayException ex
+          putStrLn $ "\n" <> E.displayExceptionSkipKnownCS ex
           putStrLn ""
           go
         Right _ -> pure ()
