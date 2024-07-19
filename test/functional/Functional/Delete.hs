@@ -9,6 +9,14 @@ tests :: IO TestEnv -> TestTree
 tests testEnv =
   testGroup
     "Delete"
+    [ testNonInteractive testEnv,
+      testInteractive testEnv
+    ]
+
+testNonInteractive :: IO TestEnv -> TestTree
+testNonInteractive testEnv =
+  testGroup
+    "Non-interactive"
     [ testDeleteNone testEnv,
       testDeleteOne testEnv,
       testDeleteGroup testEnv,
@@ -98,6 +106,59 @@ testDeleteTaskRepeatedly =
         [osp|testDeleteTaskRepeatedly|]
         ["g2", "s212", "t2"]
 
+testInteractive :: IO TestEnv -> TestTree
+testInteractive testEnv =
+  testGroup
+    "Interactive"
+    [ testInteractiveDelete testEnv,
+      testInteractiveDeleteRetry testEnv
+    ]
+
+testInteractiveDelete :: IO TestEnv -> TestTree
+testInteractiveDelete =
+  testGoldenRunnerParams
+    $ set' #args args
+    . set' #runner (Just runner)
+    $ params
+  where
+    params =
+      mkGoldenParams
+        "Deletes interactively"
+        [osp|testInteractiveDelete|]
+        []
+
+    args = ["delete"]
+
+    runner = runTodoResponses responses
+    responses =
+      [ "haircut empty_group soccer_match",
+        "y"
+      ]
+
+testInteractiveDeleteRetry :: IO TestEnv -> TestTree
+testInteractiveDeleteRetry =
+  testGoldenRunnerParams
+    $ set' #args args
+    . set' #runner (Just runner)
+    $ params
+  where
+    params =
+      mkGoldenParams
+        "Deletes interactively with retry"
+        [osp|testInteractiveDeleteRetry|]
+        []
+
+    args = ["delete"]
+
+    runner = runTodoResponses responses
+    responses =
+      [ "",
+        "bad",
+        "salary",
+        "haircut empty_group soccer_match",
+        "y"
+      ]
+
 mkGoldenParams :: TestName -> OsPath -> List String -> GoldenParams
 mkGoldenParams testDesc testDirName deleted =
   MkGoldenParams
@@ -110,7 +171,7 @@ mkGoldenParams testDesc testDirName deleted =
       runList = True
     }
   where
-    args = "delete" : deleted
+    args = "delete" : "--interactive" : "off" : deleted
 
 mkErrorGoldenParams :: TestName -> OsPath -> List String -> GoldenParams
 mkErrorGoldenParams testDesc testDirName deleted =

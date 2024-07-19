@@ -97,6 +97,7 @@ newtype AppT m a = MkAppT (m a)
     ( Applicative,
       Functor,
       Monad,
+      MonadCatch,
       MonadFail,
       MonadFileReader,
       MonadFileWriter,

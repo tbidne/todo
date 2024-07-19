@@ -30,6 +30,7 @@ module Todo.Prelude
 
     -- ** FromList
     listToSeq,
+    listToNESet,
     unsafeListToNonEmpty,
     unsafeListToNESeq,
     unsafeListToNESet,
@@ -42,6 +43,9 @@ module Todo.Prelude
     unimpl,
     traceFile,
     traceFileLine,
+
+    -- * Optics
+    strTxtIso,
 
     -- * Misc
     EitherString (..),
@@ -107,13 +111,19 @@ import Data.Map.Strict as X (Map)
 import Data.Maybe as X (Maybe (Just, Nothing), catMaybes, fromMaybe, maybe)
 import Data.Maybe.Optics as X ((%?), _Just)
 import Data.Monoid as X (Monoid (mconcat, mempty))
-import Data.Ord as X (Ord (compare, (<=)), Ordering (EQ, GT, LT), max, min)
+import Data.Ord as X
+  ( Ord (compare, (<=), (>), (>=)),
+    Ordering (EQ, GT, LT),
+    max,
+    min,
+  )
 import Data.Semigroup as X (Semigroup (sconcat, (<>)))
 import Data.Sequence as X (Seq (Empty, (:<|), (:|>)))
 import Data.Sequence qualified as Seq
 import Data.Sequence.NonEmpty as X (NESeq ((:<||), (:||>)))
 import Data.Sequence.NonEmpty qualified as NESeq
 import Data.Set as X (Set)
+import Data.Set qualified as Set
 import Data.Set.NonEmpty as X (NESet)
 import Data.Set.NonEmpty qualified as NESet
 import Data.String as X (IsString (fromString), String)
@@ -134,8 +144,11 @@ import Data.Word as X (Word16, Word8)
 import Effects.Exception as X
   ( Exception (displayException, fromException, toException),
     ExitCode (ExitSuccess),
+    MonadCatch,
     MonadThrow,
     throwM,
+    throwString,
+    tryAny,
   )
 import Effects.Exception qualified as Ex
 import Effects.FileSystem.FileReader as X (MonadFileReader)
@@ -176,12 +189,15 @@ import Optics.AffineTraversal as X
 import Optics.At.Core as X (ix)
 import Optics.Core as X (Is, Optic)
 import Optics.Core.Extras as X (is)
+import Optics.Fold as X (toListOf)
 import Optics.Getter as X (A_Getter, Getter, to, view)
 import Optics.Indexed.Core as X ((%))
+import Optics.Iso as X (Iso, Iso', iso)
 import Optics.Label as X (LabelOptic (labelOptic))
 import Optics.Lens as X (A_Lens, Lens', lens, lensVL)
 import Optics.Operators as X ((^.), (^?))
 import Optics.Prism as X (Prism', prism)
+import Optics.Re as X (re)
 import Optics.Setter as X (A_Setter, over', set')
 import Optics.Traversal as X (Traversal', traversalVL)
 import Refined (RefineException, type (&&))
@@ -257,6 +273,9 @@ unsafeListToNESeq = NESeq.fromList . unsafeListToNonEmpty
 
 unsafeListToNESet :: (HasCallStack, Ord a) => List a -> NESet a
 unsafeListToNESet = NESet.fromList . unsafeListToNonEmpty
+
+listToNESet :: (Ord a) => List a -> Maybe (NESet a)
+listToNESet = NESet.nonEmptySet . Set.fromList
 
 showt :: (Show a) => a -> Text
 showt = pack . show
@@ -372,3 +391,6 @@ headMaybe [] = Nothing
 mToE :: e -> Maybe a -> Either e a
 mToE _ (Just x) = Right x
 mToE e Nothing = Left e
+
+strTxtIso :: Iso' String Text
+strTxtIso = iso pack unpack

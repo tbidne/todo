@@ -469,10 +469,11 @@ someTaskPredTraversal pred = traversalVL f
         go st@(SomeTaskSingle _) = appyIfPred st
         go st@(SomeTaskGroup tg) =
           -- Run the effectful fn over all subtasks and the group itself.
-          -- Then combine these together into the same
           let stA = appyIfPred st
-              subtasksA = traverse appyIfPred tg.subtasks
-           in set' subtasksATraversal <$> subtasksA <*> stA
+              subtasksA = traverse go tg.subtasks
+           in -- NOTE: It is important that stA is traversed before subtasksA
+              -- to keep order intact.
+              flip (set' subtasksATraversal) <$> stA <*> subtasksA
 
         subtasksATraversal :: AffineTraversal' SomeTask (Seq SomeTask)
         subtasksATraversal = _SomeTaskGroup % #subtasks

@@ -44,17 +44,17 @@ render ColorOff = displayBuilder . (.unTaskId)
 render ColorOn = Render.Utils.colorBuilder Pretty.Blue . (.unTaskId)
 
 -- | taskIdsToTextCustom with no extra logic.
-taskIdsToText :: NESet TaskId -> Text
+taskIdsToText :: (Foldable f) => f TaskId -> Text
 taskIdsToText = taskIdsToTextCustom (.unTaskId)
 
 -- | taskIdsToTextCustom that single-quotes the text
-taskIdsToTextQuote :: NESet TaskId -> Text
+taskIdsToTextQuote :: (Foldable f) => f TaskId -> Text
 taskIdsToTextQuote = taskIdsToTextCustom (\t -> quote t.unTaskId)
   where
     quote t = "'" <> t <> "'"
 
 -- | Comma separates TaskIds together, using the provided function.
-taskIdsToTextCustom :: (TaskId -> Text) -> NESet TaskId -> Text
+taskIdsToTextCustom :: (Foldable f) => (TaskId -> Text) -> f TaskId -> Text
 taskIdsToTextCustom toText =
   T.intercalate ", "
     . fmap toText

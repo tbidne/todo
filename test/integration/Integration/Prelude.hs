@@ -31,7 +31,7 @@ module Integration.Prelude
 where
 
 import Control.Monad.Reader (MonadReader (ask), ReaderT, runReaderT)
-import Effects.Exception (throwString, tryCS)
+import Effects.Exception (tryCS)
 import Effects.FileSystem.PathReader
   ( MonadPathReader
       ( doesFileExist,

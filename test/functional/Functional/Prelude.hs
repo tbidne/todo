@@ -41,7 +41,7 @@ import Data.ByteString.Lazy qualified as BSL
 import Data.IORef (IORef, modifyIORef', newIORef, readIORef, writeIORef)
 import Data.Proxy as X (Proxy (Proxy))
 import Data.Sequence qualified as Seq
-import Effects.Exception (throwString, tryCS)
+import Effects.Exception (tryCS)
 import Effects.FileSystem.HandleWriter (MonadHandleWriter)
 import Effects.FileSystem.PathWriter as X (copyFileWithMetadata)
 import Effects.FileSystem.PathWriter qualified as PW
@@ -74,6 +74,7 @@ newtype FuncIO a = MkFuncIO (ReaderT FuncEnv IO a)
     ( Applicative,
       Functor,
       Monad,
+      MonadCatch,
       MonadEnv,
       MonadFail,
       MonadFileReader,

@@ -31,6 +31,7 @@ import Todo.Prelude
 -- | Runs todo app.
 runTodo ::
   ( HasCallStack,
+    MonadCatch m,
     MonadFail m,
     MonadFileReader m,
     MonadFileWriter m,
@@ -38,8 +39,7 @@ runTodo ::
     MonadOptparse m,
     MonadPathReader m,
     MonadTerminal m,
-    MonadTime m,
-    MonadThrow m
+    MonadTime m
   ) =>
   m ()
 runTodo = getConfig >>= withConfig
@@ -60,18 +60,19 @@ getConfig = do
 
 withConfig ::
   ( HasCallStack,
+    MonadCatch m,
     MonadFail m,
     MonadFileReader m,
     MonadFileWriter m,
     MonadHaskeline m,
     MonadTerminal m,
-    MonadTime m,
-    MonadThrow m
+    MonadTime m
   ) =>
   Merged ->
   m ()
 withConfig mergedConfig = case mergedConfig.command of
-  CmdDelete taskIds -> Todo.deleteTask mergedConfig.coreConfig taskIds
+  CmdDelete intMode mTaskIds ->
+    Todo.deleteTask mergedConfig.coreConfig intMode mTaskIds
   CmdInsert -> Todo.insertTask mergedConfig.coreConfig
   CmdList mSortType revSort ->
     Todo.listTasks mergedConfig.coreConfig mSortType revSort

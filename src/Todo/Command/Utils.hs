@@ -14,7 +14,6 @@ module Todo.Command.Utils
 where
 
 import Data.Text qualified as T
-import Effects.Exception (throwString)
 import Effects.Haskeline qualified as Haskeline
 import Todo.Prelude
 
@@ -110,4 +109,4 @@ getStrippedLineEmpty prompt =
       else Just txt
 
 formatBadResponse :: String -> Text
-formatBadResponse = ("Bad Response: " <>) . pack
+formatBadResponse = (\t -> "\nBad Response: " <> t <> "\n") . pack

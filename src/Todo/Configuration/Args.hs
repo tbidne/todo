@@ -1,6 +1,7 @@
 module Todo.Configuration.Args
   ( Args (..),
     Command (..),
+    InteractiveSwitch (..),
     getArgs,
   )
 where
@@ -216,7 +217,7 @@ indexPathParser =
     helpTxt = "Path to todo json index. Overrides --index-name."
 
 data Command
-  = CmdDelete (NESet TaskId)
+  = CmdDelete InteractiveSwitch (Maybe (NESet TaskId))
   | CmdInsert
   | CmdList (Maybe SortType) Bool
   | CmdSetDeadline TaskId Timestamp
@@ -263,9 +264,14 @@ commandParser =
 
     -- safe because some only returns non-empty.
     deleteParser =
-      CmdDelete
-        . unsafeListToNESet
-        <$> OA.some (taskIdArgParser "TASK_IDs..." "Task id(s) to delete.")
+      (\intMode taskIds -> CmdDelete intMode (listToNESet taskIds))
+        <$> interactiveDefOnParser
+          "Defaults to on. If on, --task-id is an error."
+        <*> OA.many
+          ( taskIdArgParser
+              "TASK_IDs..."
+              "Task id(s) to delete. Only available with --interactive off."
+          )
     insertParser = pure CmdInsert
     listParser =
       CmdList
@@ -291,6 +297,37 @@ commandParser =
       CmdSetStatus
         <$> setTaskIdParser
         <*> taskStatusParser
+
+data InteractiveSwitch
+  = InteractiveOff
+  | InteractiveOn
+  deriving stock (Eq, Show)
+
+interactiveDefOnParser :: String -> Parser InteractiveSwitch
+interactiveDefOnParser = interactiveParser InteractiveOn
+
+interactiveParser :: InteractiveSwitch -> String -> Parser InteractiveSwitch
+interactiveParser defValue helpTxt = do
+  p <&> \case
+    Just x -> x
+    Nothing -> defValue
+  where
+    p =
+      OA.optional
+        $ OA.option
+          readInteractive
+          ( mconcat
+              [ OA.short 'i',
+                OA.long "interactive",
+                OA.metavar "(off | on)",
+                mkHelp $ "Interactive mode. " ++ helpTxt
+              ]
+          )
+    readInteractive =
+      OA.str >>= \case
+        "on" -> pure InteractiveOn
+        "off" -> pure InteractiveOff
+        other -> fail $ "Expected (off | on), received: " <> other
 
 revSortParser :: Parser Bool
 revSortParser =

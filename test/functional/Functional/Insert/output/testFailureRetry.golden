@@ -15,13 +15,17 @@ Id:
 
 Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): 
 
+
 Bad Response: Unexpected status value: 'bad_status'
+
 
 Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): 
 
 Priority (low | normal | high) (leave blank for normal): 
 
+
 Bad Response: Unexpected priority value: bad_priority
+
 
 Priority (low | normal | high) (leave blank for normal): 
 
@@ -29,7 +33,9 @@ Description (leave blank for none):
 
 Deadline (leave blank for none): 
 
+
 Bad Response: Could not parse timestamp: bad_deadline
+
 
 Deadline (leave blank for none): 
 

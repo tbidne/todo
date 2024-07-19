@@ -28,6 +28,7 @@ import Todo.Data.Task
     SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
+import Todo.Data.Task qualified as Task
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority (TaskPriority (High, Low, Normal))
@@ -39,6 +40,7 @@ import Todo.Data.TaskStatus
         InProgress,
         NotStarted
       ),
+    _Completed,
   )
 import Todo.Data.Timestamp (Timestamp (Date, Local, Zoned))
 import Unit.Prelude
@@ -47,12 +49,13 @@ tests :: TestTree
 tests =
   testGroup
     "Todo.Data.Task"
-    [ taskGroupTasks,
-      jsonTests
+    [ taskGroupTests,
+      jsonTests,
+      opticsTests
     ]
 
-taskGroupTasks :: TestTree
-taskGroupTasks =
+taskGroupTests :: TestTree
+taskGroupTests =
   testGroup
     "TaskGroup"
     [ testTaskGroupUsesSetStatus tasks,
@@ -478,3 +481,45 @@ containsNull (Asn.Array _) = False
 containsNull (Asn.Bool _) = False
 containsNull (Asn.Number _) = False
 containsNull (Asn.String _) = False
+
+opticsTests :: TestTree
+opticsTests =
+  testGroup
+    "Optics"
+    [ testSomeTaskPredTraversal,
+      testSomeTaskTraversal
+    ]
+
+testSomeTaskPredTraversal :: TestTree
+testSomeTaskPredTraversal = testCase "someTaskPredTraversal targets predicate" $ do
+  let result = toListOf getIds g0
+
+  ["t12", "g1", "t21"] @=? result
+  where
+    g0 = SomeTaskGroup $ MkTaskGroup Nothing Nothing (g1 :<| g2 :<| Empty) "g0"
+
+    g1 = SomeTaskGroup $ MkTaskGroup Nothing Nothing (t11 :<| t12 :<| Empty) "g1"
+    t11 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low NotStarted "t11"
+    t12 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low Completed "t12"
+
+    g2 = SomeTaskGroup $ MkTaskGroup Nothing (Just Completed) (t21 :<| t22 :<| Empty) "g1"
+    t21 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low Completed "t21"
+    t22 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low InProgress "t22"
+
+    getIds =
+      Task.someTaskPredTraversal isCompleted % #taskId % #unTaskId
+
+    isCompleted :: SomeTask -> Bool
+    isCompleted = is (Task.someTaskStatusATraversal % _Completed)
+
+testSomeTaskTraversal :: TestTree
+testSomeTaskTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ property $ do
+  task <- forAll genSomeTask
+
+  let expected = Task.traverseSomeTasks (.taskId.unTaskId) (.taskId.unTaskId) [task]
+      result = toListOf getIds task
+
+  expected === result
+  where
+    desc = "someTaskTraversal targets all tasks"
+    getIds = Task.someTaskTraversal % #taskId % #unTaskId

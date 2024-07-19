@@ -1,0 +1,120 @@
+Found id(s):
+
+
+- apples
+
+- ball
+
+- bananas
+
+- cleats
+
+- empty_group
+
+- equipment
+
+- fix_car
+
+- groceries
+
+- haircut
+
+- pack_bananas
+
+- paycheck
+
+- soccer_match
+
+- walk_dog
+
+
+
+Enter task id(s) to delete: 
+
+
+Bad Response: Received empty task id: ''
+
+
+Enter task id(s) to delete: 
+
+
+Task id 'bad' not found in the index.
+
+
+
+Enter task id(s) to delete: 
+
+
+Task id 'salary' not found in the index.
+
+
+
+Enter task id(s) to delete: 
+
+Found task(s):
+
+
+⛔ id: soccer_match
+   status: blocked: <fix_car>, <groceries>
+   priority: low
+
+  ⛔ id: pack_bananas
+     status: blocked: <groceries>
+     priority: normal
+
+  ⛔ id: equipment
+     status: blocked: <fix_car>
+     priority: normal
+
+    ⛔ id: ball
+       status: blocked: <fix_car>
+       priority: normal
+
+    ⛔ id: cleats
+       status: blocked: <fix_car>
+       priority: normal
+       description: Get cleats
+
+❌ id: haircut
+   status: not-started
+   priority: low
+
+✅ id: empty_group
+   status: completed
+   priority: normal
+
+
+Are you sure you want to delete (y/n)? 
+
+Successfully deleted tasks(s).
+
+
+⛔ id: groceries
+   status: blocked: <fix_car>, <paycheck>, 'store closed'
+   priority: high
+
+  ❌ id: bananas
+     status: not-started
+     priority: high
+
+  ❌ id: apples
+     status: not-started
+     priority: normal
+
+🚧 id: paycheck
+   status: in-progress
+   priority: high
+   deadline: 2024-08-12 12:00:00
+
+❌ id: fix_car
+   status: not-started
+   priority: high
+   deadline: 2024-06-22 12:15:00 UTC
+   description: Car needs brakes fixed
+
+✅ id: walk_dog
+   status: completed
+   priority: normal
+   deadline: 2024-04-10
+
+

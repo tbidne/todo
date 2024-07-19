@@ -30,6 +30,7 @@ module Todo.Index
     -- * Elimination
     writeIndex,
     toList,
+    getAllIds,
 
     -- * Predicates
     filterTopLevel,
@@ -48,7 +49,7 @@ module Todo.Index
 
     -- ** Optics
     indexTraversal,
-    indexPredicateTraversal,
+    indexPredTraversal,
   )
 where
 
@@ -66,6 +67,7 @@ import Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty)
 import Data.Set.NonEmpty qualified as NESet
 import Data.Tuple (uncurry)
 import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
+import Optics.Core qualified as O
 import Todo.Data.Task
   ( SingleTask (..),
     SomeTask (SomeTaskGroup, SomeTaskSingle),
@@ -531,16 +533,20 @@ setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetRe
   where
     mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
 
+-- | Retrieves all ids.
+getAllIds :: Index -> List TaskId
+getAllIds = O.toListOf (indexTraversal % #taskId)
+
 -- | Traversal for every task that satisfies the predicate.
-indexPredicateTraversal :: (SomeTask -> Bool) -> Traversal' Index SomeTask
-indexPredicateTraversal p =
+indexPredTraversal :: (SomeTask -> Bool) -> Traversal' Index SomeTask
+indexPredTraversal p =
   #taskList
     % Utils.listTraversal
     % Task.someTaskPredTraversal p
 
 -- | Traversal across all tasks.
 indexTraversal :: Traversal' Index SomeTask
-indexTraversal = indexPredicateTraversal (const True)
+indexTraversal = indexPredTraversal (const True)
 
 -- | Error for two tasks t1.name and t2.name having the same id.
 newtype DuplicateIdE = MkDuplicateIdE TaskId
