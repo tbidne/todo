@@ -5,6 +5,7 @@ module Unit.Todo.Data.Sorted (tests) where
 import Data.List qualified as L
 import Data.Sequence qualified as Seq
 import Hedgehog.Gen qualified as G
+import Todo.Configuration.Data.RevSort (RevSort (RevSortOff, RevSortOn))
 import Todo.Data.Sorted
   ( SortType
       ( SortPriority,
@@ -205,8 +206,8 @@ testSort
   expected = testPropertyNamed desc name $ property $ do
     xs <- liftIO getTasks
     ys <- forAll (G.shuffle xs)
-    let sorted = Sorted.sortTasks mSortType False ys
-        revSorted = Sorted.sortTasks mSortType True ys
+    let sorted = Sorted.sortTasks mSortType RevSortOff ys
+        revSorted = Sorted.sortTasks mSortType RevSortOn ys
         sortedIds = getIds sorted
         revSortedIds = getIds revSorted
 

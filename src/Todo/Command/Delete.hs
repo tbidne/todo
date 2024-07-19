@@ -8,9 +8,6 @@ import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
 import Effects.Time (MonadTime (getSystemZonedTime))
 import Todo.Command.Utils qualified as CUtils
-import Todo.Configuration.Args
-  ( InteractiveSwitch (InteractiveOff, InteractiveOn),
-  )
 import Todo.Configuration.Core
   ( CoreConfig
       ( colorSwitch,
@@ -19,6 +16,10 @@ import Todo.Configuration.Core
       ),
     CoreConfigMerged,
   )
+import Todo.Configuration.Data.InteractiveSwitch
+  ( InteractiveSwitch (InteractiveOff, InteractiveOn),
+  )
+import Todo.Configuration.Default (Default (def))
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
@@ -154,5 +155,5 @@ deleteIds coreConfig taskIds = do
     index = coreConfig.index
     unicode = coreConfig.unicodeSwitch
 
-    sort = Sorted.sortTasks Nothing False . (.taskList)
+    sort = Sorted.sortTasks Nothing def . (.taskList)
     render currTime = Render.renderSorted currTime color unicode

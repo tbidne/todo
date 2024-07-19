@@ -19,6 +19,7 @@ import Test.Tasty.Bench
   )
 import Todo qualified
 import Todo.Configuration.Core (CoreConfig (MkCoreConfig))
+import Todo.Configuration.Default (Default (def))
 import Todo.Data.Task
   ( SingleTask
       ( MkSingleTask,
@@ -79,7 +80,7 @@ runBench :: String -> OsPath -> Benchmark
 runBench desc path = bench desc $ nfIO $ runBenchIO $ do
   index <- Index.readIndex path
   let config = MkCoreConfig ColorOff index UnicodeOff
-  Todo.listTasks config Nothing False
+  Todo.listTasks config Nothing def
 
 data BenchEnv = MkBenchEnv
   { benchDir :: OsPath,

@@ -65,7 +65,6 @@ import Data.Sequence qualified as Seq
 import Data.Set qualified as Set
 import Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty)
 import Data.Set.NonEmpty qualified as NESet
-import Data.Tuple (uncurry)
 import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
 import Optics.Core qualified as O
 import Todo.Data.Task

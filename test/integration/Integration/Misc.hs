@@ -5,7 +5,6 @@ module Integration.Misc (tests) where
 
 import Data.Set.NonEmpty qualified as NESet
 import Integration.Prelude
-import Todo.Configuration.Args (Command (CmdList))
 import Todo.Configuration.Core
   ( CoreConfig
       ( MkCoreConfig,
@@ -14,7 +13,12 @@ import Todo.Configuration.Core
         unicodeSwitch
       ),
   )
+import Todo.Configuration.Data.Command (Command (CmdList))
+import Todo.Configuration.Data.RevSort
+  ( RevSort (RevSortOff, RevSortOn),
+  )
 import Todo.Configuration.Merged (Merged (MkMerged, command, coreConfig))
+import Todo.Data.Sorted (SortType (SortPriorityStatus))
 import Todo.Data.Task
   ( SingleTask
       ( MkSingleTask,
@@ -45,7 +49,8 @@ tests =
       testExample,
       testCliOverridesToml,
       testTomlUsesMapName,
-      testCliOverridesTomlMapName
+      testCliOverridesTomlMapName,
+      testUsesTomlListConfig
     ]
 
 testXdg :: TestTree
@@ -72,7 +77,7 @@ testXdg = testHedgehogOne "Reads Xdg" "testXdg" $ do
                     ),
                 unicodeSwitch = UnicodeOff
               },
-          command = CmdList Nothing False
+          command = CmdList Nothing RevSortOff
         }
 
 testExample :: TestTree
@@ -96,7 +101,7 @@ testExample = testHedgehogOne "Reads example config" "testExample" $ do
                     ([osp|examples|] </> [osp|index.json|]),
                 unicodeSwitch = UnicodeOff
               },
-          command = CmdList Nothing False
+          command = CmdList Nothing RevSortOff
         }
 
     expectedTaskList =
@@ -233,7 +238,7 @@ testCliOverridesToml = testHedgehogOne "CLI overrides TOML" "testCliOverridesTom
                     ([osp|examples|] </> [osp|index2.json|]),
                 unicodeSwitch = UnicodeOff
               },
-          command = CmdList Nothing False
+          command = CmdList Nothing RevSortOff
         }
 
 testTomlUsesMapName :: TestTree
@@ -255,7 +260,7 @@ testTomlUsesMapName = testHedgehogOne desc "testTomlUsesMapName" $ do
                 index = UnsafeIndex [] (tomlOsPath </> [osp|empty.json|]),
                 unicodeSwitch = UnicodeOn
               },
-          command = CmdList Nothing False
+          command = CmdList Nothing RevSortOff
         }
 
 testCliOverridesTomlMapName :: TestTree
@@ -283,5 +288,27 @@ testCliOverridesTomlMapName = testHedgehogOne desc "testCliOverridesTomlMapName"
                     (tomlOsPath </> [osp|one.json|]),
                 unicodeSwitch = UnicodeOn
               },
-          command = CmdList Nothing False
+          command = CmdList Nothing RevSortOff
+        }
+
+testUsesTomlListConfig :: TestTree
+testUsesTomlListConfig = testHedgehogOne desc "testUsesTomlListConfig" $ do
+  result <- liftIO $ runGetConfig args
+  expected === result
+  where
+    desc = "Uses Toml List Config"
+    args =
+      [ "--config-path",
+        commandsConfigFilePath,
+        "list"
+      ]
+    expected =
+      MkMerged
+        { coreConfig =
+            MkCoreConfig
+              { colorSwitch = ColorOn,
+                index = UnsafeIndex [] (tomlOsPath </> [osp|empty.json|]),
+                unicodeSwitch = UnicodeOn
+              },
+          command = CmdList (Just SortPriorityStatus) RevSortOn
         }
