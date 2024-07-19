@@ -47,7 +47,7 @@ testExampleReverse :: TestTree
 testExampleReverse =
   testGoldenRunnerParamsNoEnv params
   where
-    args = ["list", "--reverse"]
+    args = ["list", "--reverse", "on"]
     params =
       set'
         #args

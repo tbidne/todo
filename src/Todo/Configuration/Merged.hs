@@ -16,7 +16,7 @@ import Data.Map.Strict qualified as Map
 import Effects.FileSystem.PathReader (doesFileExist)
 import Effects.FileSystem.Utils qualified as FsUtils
 import System.OsPath qualified as FP
-import Todo.Configuration.Args (Args (command, coreConfig), Command)
+import Todo.Configuration.Args (Args (command, coreConfig))
 import Todo.Configuration.ConfigPhase
   ( ConfigPhase (ConfigPhaseMerged),
   )
@@ -24,14 +24,22 @@ import Todo.Configuration.Core
   ( CoreConfig (MkCoreConfig, colorSwitch, index, unicodeSwitch),
     IndexConfig (name, path),
   )
+import Todo.Configuration.Data.Command
+  ( CommandArgs,
+    CommandMerged,
+    _CmdList,
+  )
+import Todo.Configuration.Data.Command qualified as Command
+import Todo.Configuration.Data.RevSort (RevSort)
 import Todo.Configuration.Default (fromDefault, (<.>))
 import Todo.Configuration.Toml (Toml (coreConfig, taskNamePathMap))
+import Todo.Data.Sorted (SortType)
 import Todo.Index qualified as Index
 import Todo.Prelude
 
 data Merged = MkMerged
   { coreConfig :: CoreConfig ConfigPhaseMerged,
-    command :: Command
+    command :: CommandMerged
   }
   deriving stock (Eq, Show)
 
@@ -63,7 +71,7 @@ mergeConfig args Nothing = do
               unicodeSwitch =
                 fromDefault args.coreConfig.unicodeSwitch
             },
-        command = args.command
+        command = Command.advancePhase args.command
       }
 mergeConfig args (Just (tomlPath, toml)) = do
   let mIndexName =
@@ -80,6 +88,8 @@ mergeConfig args (Just (tomlPath, toml)) = do
   indexPath <- getTasksPath tasksPathArgs
   index <- Index.readIndex indexPath
 
+  let command = updateCommand args.command toml
+
   pure
     $ MkMerged
       { coreConfig =
@@ -90,8 +100,19 @@ mergeConfig args (Just (tomlPath, toml)) = do
               unicodeSwitch =
                 args.coreConfig.unicodeSwitch <.> toml.coreConfig.unicodeSwitch
             },
-        command = args.command
+        command
       }
+
+updateCommand :: CommandArgs -> Toml -> CommandMerged
+updateCommand command toml = over' _CmdList updateList command
+  where
+    updateList ::
+      Tuple2 (Maybe SortType) (Maybe RevSort) ->
+      Tuple2 (Maybe SortType) RevSort
+    updateList (mSortType, mRevSort) =
+      ( mSortType <|> preview (#listToml %? #sortType % _Just) toml,
+        mRevSort <.> preview (#listToml %? #reverse % _Just) toml
+      )
 
 -- | Args for finding the index path.
 data TasksPathArgs

@@ -35,6 +35,7 @@ import Todo.Data.TaskId.Internal (TaskId (UnsafeTaskId))
 import Todo.Data.TaskPriority (TaskPriority (Low))
 import Todo.Data.TaskStatus (TaskStatus (NotStarted))
 import Todo.Index qualified as Index
+import Todo.Configuration.Default (Default (def))
 import Todo.Index.Internal (Index (UnsafeIndex))
 import Todo.Prelude hiding (IO)
 import Todo.Render.Utils (ColorSwitch (ColorOff), UnicodeSwitch (UnicodeOff))
@@ -79,7 +80,7 @@ runBench :: String -> OsPath -> Benchmark
 runBench desc path = bench desc $ nfIO $ runBenchIO $ do
   index <- Index.readIndex path
   let config = MkCoreConfig ColorOff index UnicodeOff
-  Todo.listTasks config Nothing False
+  Todo.listTasks config Nothing def
 
 data BenchEnv = MkBenchEnv
   { benchDir :: OsPath,

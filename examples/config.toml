@@ -22,3 +22,8 @@ index-legend = [
   { name = 'default', path = 'index.json' },
   { name = 'another', path = 'index2.json' }
 ]
+
+# Optional configuration for specific commands. Overridden by CLI.
+# [list]
+# reverse = true
+# sort-type = "priority_status"

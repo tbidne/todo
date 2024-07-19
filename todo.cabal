@@ -64,6 +64,10 @@ library
     Todo.Configuration.Args
     Todo.Configuration.ConfigPhase
     Todo.Configuration.Core
+    Todo.Configuration.Data.Command
+    Todo.Configuration.Data.InteractiveSwitch
+    Todo.Configuration.Data.RevSort
+    Todo.Configuration.Data.Utils
     Todo.Configuration.Default
     Todo.Configuration.Merged
     Todo.Configuration.Toml

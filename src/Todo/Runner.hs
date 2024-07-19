@@ -9,9 +9,9 @@ module Todo.Runner
 where
 
 import Todo qualified
-import Todo.Configuration.Args
-  ( Args (tomlPath),
-    Command
+import Todo.Configuration.Args (Args (tomlPath), getArgs)
+import Todo.Configuration.Data.Command
+  ( Command
       ( CmdDelete,
         CmdInsert,
         CmdList,
@@ -21,7 +21,6 @@ import Todo.Configuration.Args
         CmdSetPriority,
         CmdSetStatus
       ),
-    getArgs,
   )
 import Todo.Configuration.Merged (Merged (coreConfig))
 import Todo.Configuration.Merged qualified as Merged

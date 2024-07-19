@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Todo.Configuration.Toml
   ( -- * Primary
@@ -14,6 +15,7 @@ import Data.Map.Strict qualified as Map
 import Effects.FileSystem.FileReader qualified as FR
 import Effects.FileSystem.PathReader qualified as PR
 import Effects.FileSystem.Utils qualified as FsUtils
+import Optics.Core (review)
 import TOML (DecodeTOML (tomlDecoder), Decoder, getFieldOptWith, getFieldWith)
 import TOML qualified
 import Todo.Configuration.ConfigPhase
@@ -23,19 +25,79 @@ import Todo.Configuration.Core
   ( CoreConfig (MkCoreConfig, colorSwitch, index, unicodeSwitch),
     IndexConfig (MkIndexConfig, name, path),
   )
+import Todo.Configuration.Data.RevSort (RevSort)
+import Todo.Data.Sorted (SortType)
 import Todo.Prelude
 import Todo.Render.Utils (ColorSwitch, UnicodeSwitch)
 
 -- TODO:
--- - sort type
--- - timestamp color thresholw
+-- - timestamp color threshold
 -- - timezones, perhaps
+
+data ListToml = MkListToml
+  { reverse :: Maybe RevSort,
+    sortType :: Maybe SortType
+  }
+  deriving stock (Eq, Show)
+
+instance
+  (k ~ A_Lens, a ~ Maybe SortType, b ~ Maybe SortType) =>
+  LabelOptic "sortType" k ListToml ListToml a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkListToml _reverse _sortType) ->
+          fmap
+            (MkListToml _reverse)
+            (f _sortType)
+  {-# INLINE labelOptic #-}
+
+instance
+  (k ~ A_Lens, a ~ Maybe RevSort, b ~ Maybe RevSort) =>
+  LabelOptic "reverse" k ListToml ListToml a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkListToml _reverse _sortType) ->
+          fmap
+            (`MkListToml` _sortType)
+            (f _reverse)
+  {-# INLINE labelOptic #-}
+
+instance DecodeTOML ListToml where
+  tomlDecoder = do
+    reverse <- decodeReverse
+    sortType <- decodeSortType
+    pure
+      $ MkListToml
+        { reverse,
+          sortType
+        }
+    where
+      decodeReverse = getFieldOptWith (review #boolIso <$> tomlDecoder) "reverse"
+      decodeSortType = getFieldOptWith tomlDecoder "sort-type"
 
 data Toml = MkToml
   { coreConfig :: CoreConfig ConfigPhaseToml,
+    listToml :: Maybe ListToml,
     taskNamePathMap :: Map Text OsPath
   }
   deriving stock (Eq, Show)
+
+instance
+  (k ~ A_Lens, a ~ Maybe ListToml, b ~ Maybe ListToml) =>
+  LabelOptic "listToml" k Toml Toml a b
+  where
+  labelOptic =
+    lensVL
+      $ \f
+         (MkToml _coreConfig _listToml _taskNamePathMap) ->
+          fmap
+            (\listToml' -> MkToml _coreConfig listToml' _taskNamePathMap)
+            (f _listToml)
+  {-# INLINE labelOptic #-}
 
 instance DecodeTOML Toml where
   tomlDecoder = do
@@ -44,6 +106,7 @@ instance DecodeTOML Toml where
     unicodeSwitch <- decodeUnicodeSwitch
 
     taskNamePathMap <- decodeTaskNamePathMap
+    listToml <- getFieldOptWith tomlDecoder "list"
 
     pure
       $ MkToml
@@ -57,7 +120,8 @@ instance DecodeTOML Toml where
                     },
                 unicodeSwitch
               },
-          taskNamePathMap
+          taskNamePathMap,
+          listToml
         }
 
 decodeColorSwitch :: Decoder (Maybe ColorSwitch)

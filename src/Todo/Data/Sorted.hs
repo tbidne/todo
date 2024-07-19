@@ -6,12 +6,15 @@ module Todo.Data.Sorted
     -- * Functions
     sortTasks,
     traverseSorted,
+    parseSortType,
   )
 where
 
 import Data.List qualified as L
 import Data.Ord (Down (Down))
 import Data.Sequence qualified as Seq
+import TOML (DecodeTOML (tomlDecoder))
+import Todo.Configuration.Data.RevSort (RevSort)
 import Todo.Data.Sorted.Internal
   ( SortedTasks (UnsafeSortedTasks),
   )
@@ -36,6 +39,9 @@ data SortType
     SortStatusPriority
   deriving stock (Eq, Show)
 
+instance DecodeTOML SortType where
+  tomlDecoder = parseSortType tomlDecoder
+
 -- | Sorts tasks. Tasks are always sorted by id, so any given sort will
 -- take priority, using id as a tie-breaker.
 sortTasks ::
@@ -43,7 +49,7 @@ sortTasks ::
   -- all completed tasks appearing at the bottom.
   Maybe SortType ->
   -- | Reverses the sort.
-  Bool ->
+  RevSort ->
   -- | Tasks to sort.
   List SomeTask ->
   SortedTasks
@@ -54,7 +60,7 @@ sortTasks mSortType revSort xs =
     Just sortType -> UnsafeSortedTasks $ sortSomeTasks False revSort (toOrd' sortType) xs
   where
     (toOrd', defSort') =
-      if revSort
+      if revSort ^. #boolIso
         then (toOrdRev, defSortRev)
         else (toOrd, defSort)
 
@@ -84,7 +90,7 @@ sortSomeTasks ::
   -- | Partition completed tasks?
   Bool ->
   -- | Reverse?
-  Bool ->
+  RevSort ->
   -- | Comparison function.
   (SomeTask -> SomeTask -> Ordering) ->
   List SomeTask ->
@@ -92,7 +98,7 @@ sortSomeTasks ::
 sortSomeTasks partitionCompleted revSort c xs =
   if partitionCompleted
     then
-      if revSort
+      if revSort ^. #boolIso
         then sortFn completedTasks <> sortFn incompleteTasks
         else sortFn incompleteTasks <> sortFn completedTasks
     else sortFn xs
@@ -102,12 +108,12 @@ sortSomeTasks partitionCompleted revSort c xs =
 
     (completedTasks, incompleteTasks) = L.partition Task.someTaskIsCompleted xs
 
-sortSomeTaskSubtasks :: Bool -> Bool -> (SomeTask -> SomeTask -> Ordering) -> SomeTask -> SomeTask
+sortSomeTaskSubtasks :: Bool -> RevSort -> (SomeTask -> SomeTask -> Ordering) -> SomeTask -> SomeTask
 sortSomeTaskSubtasks _ _ _ t@(SomeTaskSingle _) = t
 sortSomeTaskSubtasks partitionCompleted revSort c (SomeTaskGroup t) =
   SomeTaskGroup $ sortTaskGroupSubtasks partitionCompleted revSort c t
 
-sortTaskGroupSubtasks :: Bool -> Bool -> (SomeTask -> SomeTask -> Ordering) -> TaskGroup -> TaskGroup
+sortTaskGroupSubtasks :: Bool -> RevSort -> (SomeTask -> SomeTask -> Ordering) -> TaskGroup -> TaskGroup
 sortTaskGroupSubtasks partitionCompleted revSort c t = t {subtasks = subtasks'}
   where
     -- TODO: Avoid the Seq <-> List conversion (Either replace a type or
@@ -120,3 +126,12 @@ cSomeTask f x y = f x `compare` f y
 
 traverseSorted :: (SingleTask -> a) -> (TaskGroup -> a) -> SortedTasks -> List a
 traverseSorted f g = traverseSomeTasks f g . (.unSortedTasks)
+
+parseSortType :: (MonadFail m) => m Text -> m SortType
+parseSortType mTxt =
+  mTxt >>= \case
+    "priority" -> pure SortPriority
+    "status" -> pure SortStatus
+    "priority_status" -> pure SortPriorityStatus
+    "status_priority" -> pure SortStatusPriority
+    other -> fail $ "Unexpected sort: " <> unpack other

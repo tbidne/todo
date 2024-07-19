@@ -25,6 +25,7 @@ import Todo.Configuration.Core
       ),
     CoreConfigMerged,
   )
+import Todo.Configuration.Default (Default (def))
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.Task
   ( SingleTask
@@ -85,7 +86,7 @@ insertTask coreConfig = do
   currTime <- getSystemZonedTime
 
   let indexDiff = Index.filterOnIds newTaskIds newIndex
-      sorted = Sorted.sortTasks Nothing False (snd $ Index.toList indexDiff)
+      sorted = Sorted.sortTasks Nothing def (snd $ Index.toList indexDiff)
 
   putTextLn "Successfully added task. Modified tasks:\n"
   putTextLn

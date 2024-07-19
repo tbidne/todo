@@ -14,6 +14,7 @@ import Todo.Configuration.Core
       ),
     CoreConfigMerged,
   )
+import Todo.Configuration.Data.RevSort (RevSort)
 import Todo.Data.Sorted (SortType)
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Index qualified as Index
@@ -30,7 +31,7 @@ listTasks ::
   -- | The sort type.
   Maybe SortType ->
   -- | Reverses the sort.
-  Bool ->
+  RevSort ->
   m ()
 listTasks coreConfig msortType revSort = do
   let xs = snd $ Index.toList index

@@ -1,0 +1,9 @@
+index-name = 'empty'
+
+index-legend = [
+  { name = 'empty', path = 'empty.json' }
+]
+
+[list]
+reverse = true
+sort-type = "priority_status"

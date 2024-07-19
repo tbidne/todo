@@ -19,6 +19,8 @@ module Integration.Prelude
     exampleConfigOsPath,
     noPathConfigFilePath,
     noPathConfigOsPath,
+    commandsConfigFilePath,
+    commandsConfigOsPath,
 
     -- * Misc
     cfp,
@@ -152,8 +154,17 @@ noPathConfigFilePath :: FilePath
 noPathConfigFilePath = FsUtils.unsafeDecodeOsToFp noPathConfigOsPath
 
 noPathConfigOsPath :: OsPath
-noPathConfigOsPath =
+noPathConfigOsPath = getIntTomlOsPath [osp|no-path.toml|]
+
+commandsConfigFilePath :: FilePath
+commandsConfigFilePath = FsUtils.unsafeDecodeOsToFp commandsConfigOsPath
+
+commandsConfigOsPath :: OsPath
+commandsConfigOsPath = getIntTomlOsPath [osp|commands.toml|]
+
+getIntTomlOsPath :: OsPath -> OsPath
+getIntTomlOsPath p =
   [osp|test|]
     </> [osp|integration|]
     </> [osp|toml|]
-    </> [osp|no-path.toml|]
+    </> p
