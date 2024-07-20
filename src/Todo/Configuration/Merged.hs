@@ -25,15 +25,13 @@ import Todo.Configuration.Core
     IndexConfig (name, path),
   )
 import Todo.Configuration.Data.Command
-  ( CommandArgs,
+  ( Command (CmdList),
+    CommandArgs,
     CommandMerged,
-    _CmdList,
   )
 import Todo.Configuration.Data.Command qualified as Command
-import Todo.Configuration.Data.RevSort (RevSort)
 import Todo.Configuration.Default (fromDefault, (<.>))
 import Todo.Configuration.Toml (Toml (coreConfig, taskNamePathMap))
-import Todo.Data.Sorted (SortType)
 import Todo.Index qualified as Index
 import Todo.Prelude
 
@@ -104,15 +102,12 @@ mergeConfig args (Just (tomlPath, toml)) = do
       }
 
 updateCommand :: CommandArgs -> Toml -> CommandMerged
-updateCommand command toml = over' _CmdList updateList command
-  where
-    updateList ::
-      Tuple2 (Maybe SortType) (Maybe RevSort) ->
-      Tuple2 (Maybe SortType) RevSort
-    updateList (mSortType, mRevSort) =
-      ( mSortType <|> preview (#listToml %? #sortType % _Just) toml,
-        mRevSort <.> preview (#listToml %? #reverse % _Just) toml
-      )
+updateCommand command toml = case command of
+  CmdList mSortType mRevSort ->
+    CmdList
+      (mSortType <|> preview (#listToml %? #sortType % _Just) toml)
+      (mRevSort <.> preview (#listToml %? #reverse % _Just) toml)
+  other -> Command.advancePhase other
 
 -- | Args for finding the index path.
 data TasksPathArgs
