@@ -9,6 +9,7 @@ tests testEnv =
   testGroup
     "Insert"
     [ testInsertOne testEnv,
+      testInsertNone testEnv,
       testInsertGroup testEnv,
       testInsertNestedGroup testEnv,
       testInsertGroupFailureRetry testEnv,
@@ -35,6 +36,16 @@ testInsertOne =
         "",
         "n"
       ]
+
+testInsertNone :: IO TestEnv -> TestTree
+testInsertNone =
+  testGoldenRunnerParams
+    $ mkGoldenParams
+      "Does not insert a task"
+      [osp|testInsertNone|]
+      responses
+  where
+    responses = [ "n" ]
 
 testInsertGroup :: IO TestEnv -> TestTree
 testInsertGroup =

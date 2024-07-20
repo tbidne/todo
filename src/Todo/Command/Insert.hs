@@ -81,18 +81,22 @@ insertTask coreConfig = do
   (newIndex, newTaskIds) <-
     Utils.whileApplySetM index getMoreTasksAns mkSomeTask
 
-  Index.writeIndex newIndex
+  if null newTaskIds
+    then
+      putTextLn "Did not add any tasks."
+    else do
+      Index.writeIndex newIndex
 
-  currTime <- getSystemZonedTime
+      currTime <- getSystemZonedTime
 
-  let indexDiff = Index.filterOnIds newTaskIds newIndex
-      sorted = Sorted.sortTasks Nothing def (snd $ Index.toList indexDiff)
+      let indexDiff = Index.filterOnIds newTaskIds newIndex
+          sorted = Sorted.sortTasks Nothing def (snd $ Index.toList indexDiff)
 
-  putTextLn "Successfully added task. Modified tasks:\n"
-  putTextLn
-    $ TL.toStrict
-    $ TLB.toLazyText
-    $ Render.renderSorted currTime color unicode sorted
+      putTextLn "Successfully added task. Modified tasks:\n"
+      putTextLn
+        $ TL.toStrict
+        $ TLB.toLazyText
+        $ Render.renderSorted currTime color unicode sorted
   where
     color = coreConfig.colorSwitch
     index = coreConfig.index
