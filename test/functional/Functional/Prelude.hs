@@ -112,15 +112,7 @@ runTodo ::
   -- | CLI args
   List String ->
   IO Text
-runTodo args = do
-  terminalResponsesRef <- newIORef []
-  terminalRef <- newIORef Empty
-
-  let funcEnv = MkFuncEnv terminalRef terminalResponsesRef
-
-  withArgs args (runFuncIO funcEnv Runner.runTodo)
-
-  concatSeq <$> readIORef terminalRef
+runTodo = runTodoResponses []
 
 -- | Runs todo with terminal responses.
 runTodoResponses ::
@@ -135,9 +127,11 @@ runTodoResponses responses args = do
 
   let funcEnv = MkFuncEnv terminalRef terminalResponsesRef
 
-  withArgs args (runFuncIO funcEnv Runner.runTodo)
+  withArgs args' (runFuncIO funcEnv Runner.runTodo)
 
   concatSeq <$> readIORef terminalRef
+  where
+    args' = "--no-config" : args
 
 -- | Runs todo, expecting an exception
 runTodoException ::
@@ -147,12 +141,7 @@ runTodoException ::
   List String ->
   IO Text
 runTodoException args = do
-  terminalResponsesRef <- newIORef []
-  terminalRef <- newIORef Empty
-
-  let funcEnv = MkFuncEnv terminalRef terminalResponsesRef
-
-  eResult <- tryCS @_ @e $ withArgs args (runFuncIO funcEnv Runner.runTodo)
+  eResult <- tryCS @_ @e $ runTodo args
 
   case eResult of
     Right _ -> throwString "Expected exception, received success"

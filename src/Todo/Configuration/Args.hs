@@ -51,7 +51,8 @@ data Args = MkArgs
     coreConfig :: CoreConfig ConfigPhaseArgs,
     -- | Command.
     command :: CommandArgs,
-    tomlPath :: Maybe OsPath
+    tomlPath :: Maybe OsPath,
+    noToml :: Bool
   }
   deriving stock (Eq, Show)
 
@@ -77,6 +78,7 @@ argsParser :: Parser Args
 argsParser = do
   colorSwitch <- colorParser
   tomlPath <- configPathParser
+  noToml <- noTomlParser
   indexName <- indexNameParser
   indexPath <- indexPathParser
   unicodeSwitch <- unicodeParser
@@ -96,7 +98,8 @@ argsParser = do
               unicodeSwitch
             },
         command,
-        tomlPath
+        tomlPath,
+        noToml
       }
 
 version :: Parser (a -> a)
@@ -163,6 +166,18 @@ configPathParser =
         [ "Path to toml config. If the path is not given, we look in the ",
           "XDG config directory e.g. ~/.config/todo/config.toml."
         ]
+
+noTomlParser :: Parser Bool
+noTomlParser =
+  OA.flag
+    False
+    True
+    ( mconcat
+        [ OA.long "no-config",
+          OA.hidden,
+          CDUtils.mkHelp "Disables --no-config."
+        ]
+    )
 
 indexNameParser :: Parser (Maybe Text)
 indexNameParser =

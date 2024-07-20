@@ -9,7 +9,7 @@ module Todo.Runner
 where
 
 import Todo qualified
-import Todo.Configuration.Args (Args (tomlPath), getArgs)
+import Todo.Configuration.Args (Args (noToml, tomlPath), getArgs)
 import Todo.Configuration.Data.Command
   ( Command
       ( CmdDelete,
@@ -53,7 +53,11 @@ getConfig ::
   m Merged
 getConfig = do
   args <- getArgs
-  mToml <- Toml.maybeReadToml args.tomlPath
+
+  mToml <-
+    if args.noToml
+      then pure Nothing
+      else Toml.maybeReadToml args.tomlPath
 
   Merged.mergeConfig args mToml
 
