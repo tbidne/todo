@@ -3,6 +3,7 @@ module Unit.Todo.Data.Task (tests) where
 import Data.Aeson qualified as Asn
 import Data.ByteString.Lazy qualified as BSL
 import Data.Foldable (any)
+import Data.List qualified as L
 import Data.Sequence qualified as Seq
 import Data.Set.NonEmpty qualified as NESet
 import Data.Text qualified as T
@@ -486,26 +487,19 @@ opticsTests :: TestTree
 opticsTests =
   testGroup
     "Optics"
-    [ testSomeTaskPredTraversal,
-      testSomeTaskTraversal
+    [ testSomeTaskPredTraversalExample,
+      testSomeTaskTraversal,
+      testTaskGroupTraversalExample,
+      testTaskGroupTraversal
     ]
 
-testSomeTaskPredTraversal :: TestTree
-testSomeTaskPredTraversal = testCase "someTaskPredTraversal targets predicate" $ do
-  let result = toListOf getIds g0
+testSomeTaskPredTraversalExample :: TestTree
+testSomeTaskPredTraversalExample = testCase desc $ do
+  let result = toListOf getIds exampleSomeTask
 
-  ["t12", "g1", "t21"] @=? result
+  ["t12", "g2", "t21"] @=? result
   where
-    g0 = SomeTaskGroup $ MkTaskGroup Nothing Nothing (g1 :<| g2 :<| Empty) "g0"
-
-    g1 = SomeTaskGroup $ MkTaskGroup Nothing Nothing (t11 :<| t12 :<| Empty) "g1"
-    t11 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low NotStarted "t11"
-    t12 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low Completed "t12"
-
-    g2 = SomeTaskGroup $ MkTaskGroup Nothing (Just Completed) (t21 :<| t22 :<| Empty) "g1"
-    t21 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low Completed "t21"
-    t22 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low InProgress "t22"
-
+    desc = "someTaskPredTraversal targets example predicate"
     getIds =
       Task.someTaskPredTraversal isCompleted % #taskId % #unTaskId
 
@@ -516,6 +510,7 @@ testSomeTaskTraversal :: TestTree
 testSomeTaskTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ property $ do
   task <- forAll genSomeTask
 
+  -- Test the optics' traversal in terms of the direct traverseSomeTasks.
   let expected = Task.traverseSomeTasks (.taskId.unTaskId) (.taskId.unTaskId) [task]
       result = toListOf getIds task
 
@@ -523,3 +518,41 @@ testSomeTaskTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ propert
   where
     desc = "someTaskTraversal targets all tasks"
     getIds = Task.someTaskTraversal % #taskId % #unTaskId
+
+testTaskGroupTraversalExample :: TestTree
+testTaskGroupTraversalExample = testCase desc $ do
+  let result = toListOf getIds exampleSomeTask
+
+  ["g0", "g1", "g11", "g2"] @=? result
+  where
+    desc = "taskGroupTraversal targets example groups"
+    getIds = Task.taskGroupTraversal % #taskId % #unTaskId
+
+testTaskGroupTraversal :: TestTree
+testTaskGroupTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ property $ do
+  task <- forAll genSomeTask
+
+  -- HACK: We want to test that the optic traversal only returns the
+  -- group ids. We do this by setting the single tasks ids to the empty string,
+  -- then filtering them out below. This relies on genSomeTask generating
+  -- non-empty ids.
+  let expected = Task.traverseSomeTasks (const "") (.taskId.unTaskId) [task]
+      result = toListOf getIds task
+
+  L.filter (not . T.null) expected === result
+  where
+    desc = "taskGroupTraversal targets groups"
+    getIds = Task.taskGroupTraversal % #taskId % #unTaskId
+
+exampleSomeTask :: SomeTask
+exampleSomeTask = SomeTaskGroup $ MkTaskGroup Nothing Nothing (g1 :<| g2 :<| Empty) "g0"
+  where
+    g1 = SomeTaskGroup $ MkTaskGroup Nothing Nothing (t11 :<| t12 :<| g11 :<| Empty) "g1"
+    t11 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low NotStarted "t11"
+    t12 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low Completed "t12"
+
+    g11 = SomeTaskGroup $ MkTaskGroup Nothing Nothing Empty "g11"
+
+    g2 = SomeTaskGroup $ MkTaskGroup Nothing (Just Completed) (t21 :<| t22 :<| Empty) "g2"
+    t21 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low Completed "t21"
+    t22 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low InProgress "t22"

@@ -39,6 +39,7 @@ import Todo.Data.Task
     SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
+import Todo.Data.Task qualified as Task
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority (TaskPriority (Normal))
@@ -62,6 +63,7 @@ import Todo.Index.Safe
 import Todo.Index.Safe qualified as Safe
 import Todo.Prelude
 import Todo.Render qualified as Render
+import Todo.Render.Utils (ColorSwitch)
 import Todo.Utils qualified as Utils
 
 -- | Inserts new task(s) into the file.
@@ -79,7 +81,7 @@ insertTask ::
   m ()
 insertTask coreConfig = do
   (newIndex, newTaskIds) <-
-    Utils.whileApplySetM index getMoreTasksAns mkSomeTask
+    Utils.whileApplySetM index getMoreTasksAns (mkSomeTask color)
 
   if null newTaskIds
     then
@@ -108,9 +110,24 @@ mkSomeTask ::
     MonadTerminal m,
     MonadThrow m
   ) =>
+  ColorSwitch ->
   Index ->
   m (Index, TaskId)
-mkSomeTask index = do
+mkSomeTask color index = do
+  let indexToGroupIds =
+        Index.indexTraversal
+          % Task.taskGroupTraversal
+          % #taskId
+
+      parentIds = toListOf indexToGroupIds index
+
+  putTextLn "Parent id(s):\n"
+
+  for_ parentIds $ \i -> do
+    let idRendered = TaskId.render color i
+    putTextLn $ "- " <> builderToTxt idRendered
+  putTextLn ""
+
   mIndexParentId <-
     getExtantTaskGroupIdOrEmpty
       "Task id for parent group (leave blank for no parent)? "

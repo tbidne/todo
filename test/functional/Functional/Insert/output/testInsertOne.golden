@@ -1,5 +1,13 @@
 
 Create a task (y/n)? 
+Parent id(s):
+
+- groceries
+- soccer_match
+- equipment
+- equipment
+- empty_group
+
 Task id for parent group (leave blank for no parent)? 
 Create (empty) task group (y/n)? 
 

@@ -45,7 +45,7 @@ testInsertNone =
       [osp|testInsertNone|]
       responses
   where
-    responses = [ "n" ]
+    responses = ["n"]
 
 testInsertGroup :: IO TestEnv -> TestTree
 testInsertGroup =

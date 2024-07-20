@@ -1,5 +1,13 @@
 
 Create a task (y/n)? 
+Parent id(s):
+
+- groceries
+- soccer_match
+- equipment
+- equipment
+- empty_group
+
 Task id for parent group (leave blank for no parent)? 
 Create (empty) task group (y/n)? 
 Group id: 
@@ -7,6 +15,15 @@ Status (blocked: <blockers> | completed | in-progress | not-started) (leave blan
 Priority (low | normal | high) (leave blank for none): 
 
 Create a task (y/n)? 
+Parent id(s):
+
+- group_id
+- groceries
+- soccer_match
+- equipment
+- equipment
+- empty_group
+
 Task id for parent group (leave blank for no parent)? 
 Create (empty) task group (y/n)? 
 
@@ -17,6 +34,15 @@ Description (leave blank for none):
 Deadline (leave blank for none): 
 
 Create a task (y/n)? 
+Parent id(s):
+
+- group_id
+- groceries
+- soccer_match
+- equipment
+- equipment
+- empty_group
+
 Task id for parent group (leave blank for no parent)? 
 Create (empty) task group (y/n)? 
 

@@ -20,6 +20,7 @@ module Todo.Data.Task
     someTaskStatusATraversal,
     someTaskTraversal,
     someTaskPredTraversal,
+    taskGroupTraversal,
   )
 where
 
@@ -462,6 +463,10 @@ someTaskStatusATraversal = atraversal getter setter
 -- | Traverses all tasks.
 someTaskTraversal :: Traversal' SomeTask SomeTask
 someTaskTraversal = someTaskPredTraversal (const True)
+
+-- | Traverses all task groups.
+taskGroupTraversal :: Traversal' SomeTask SomeTask
+taskGroupTraversal = someTaskPredTraversal (is _SomeTaskGroup)
 
 -- | Traverses all tasks that satisfy the predicate.
 someTaskPredTraversal :: (SomeTask -> Bool) -> Traversal' SomeTask SomeTask
