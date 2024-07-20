@@ -23,6 +23,7 @@ import Todo.Configuration.Default (Default (def))
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
+import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Exception qualified as E
 import Todo.Index
   ( DeleteE
@@ -60,9 +61,11 @@ deleteTask coreConfig intMode mTaskIds = do
 
       putTextLn "Found id(s):\n"
 
-      for_ allIds $ \i -> do
-        let r = builderToTxt $ TaskId.render coreConfig.colorSwitch i
-        putTextLn $ "- " <> r
+      for_ allIds $ \(i, status) -> do
+        let idRendered = TaskId.render coreConfig.colorSwitch i
+            statusRendered = TaskStatus.render coreConfig.colorSwitch status
+            pairRendered = idRendered <> ": " <> statusRendered
+        putTextLn $ "- " <> builderToTxt pairRendered
       putTextLn ""
 
       deleteWithRetry coreConfig

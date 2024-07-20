@@ -1,18 +1,18 @@
 Found id(s):
 
-- apples
-- ball
-- bananas
-- cleats
-- empty_group
-- equipment
-- fix_car
-- groceries
-- haircut
-- pack_bananas
-- paycheck
-- soccer_match
-- walk_dog
+- apples: not-started
+- ball: blocked: <fix_car>
+- bananas: not-started
+- cleats: blocked: <fix_car>
+- empty_group: completed
+- equipment: blocked: <fix_car>
+- fix_car: not-started
+- groceries: blocked: <fix_car>, <paycheck>, 'store closed'
+- haircut: not-started
+- pack_bananas: blocked: <groceries>
+- paycheck: in-progress
+- soccer_match: blocked: <fix_car>, <groceries>
+- walk_dog: completed
 
 Enter task id(s) to delete: 
 

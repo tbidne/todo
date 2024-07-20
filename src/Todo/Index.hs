@@ -533,8 +533,11 @@ setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetRe
     mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
 
 -- | Retrieves all ids.
-getAllIds :: Index -> List TaskId
-getAllIds = O.toListOf (indexTraversal % #taskId)
+getAllIds :: Index -> List (Tuple2 TaskId TaskStatus)
+getAllIds = O.toListOf (indexTraversal % idStatusGetter)
+  where
+    idStatusGetter :: Getter SomeTask (Tuple2 TaskId TaskStatus)
+    idStatusGetter = to $ \t -> (t ^. #taskId, t ^. #status)
 
 -- | Traversal for every task that satisfies the predicate.
 indexPredTraversal :: (SomeTask -> Bool) -> Traversal' Index SomeTask

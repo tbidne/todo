@@ -411,6 +411,11 @@ instance ToJSON SomeTask where
 someTaskIsCompleted :: SomeTask -> Bool
 someTaskIsCompleted st = isCompleted st.status
 
+-- FIXME: Try to write this:
+--
+-- foo :: Lens' SomeTask (TaskId, Status)
+-- should actually be easy, just write it manually with lensVL.
+
 -- | Traverses a list of 'SomeTask's.
 traverseSomeTasks ::
   forall a.
