@@ -1,8 +1,8 @@
+{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module Unit.Todo.Data.Sorted (tests) where
 
-import Data.List qualified as L
 import Data.Sequence qualified as Seq
 import Hedgehog.Gen qualified as G
 import Todo.Configuration.Data.RevSort (RevSort (RevSortOff, RevSortOn))
@@ -187,16 +187,16 @@ testExampleSort ::
   String ->
   PropertyName ->
   Maybe SortType ->
-  List Text ->
+  Seq Text ->
   TestTree
 testExampleSort = testSort getExampleList
 
 testSort ::
-  IO (List SomeTask) ->
+  IO (Seq SomeTask) ->
   String ->
   PropertyName ->
   Maybe SortType ->
-  List Text ->
+  Seq Text ->
   TestTree
 testSort
   getTasks
@@ -205,7 +205,7 @@ testSort
   mSortType
   expected = testPropertyNamed desc name $ property $ do
     xs <- liftIO getTasks
-    ys <- forAll (G.shuffle xs)
+    ys <- forAll (listToSeq <$> G.shuffle (seqToList xs))
     let sorted = Sorted.sortTasks mSortType RevSortOff ys
         revSorted = Sorted.sortTasks mSortType RevSortOn ys
         sortedIds = getIds sorted
@@ -228,17 +228,17 @@ testSort
     revExpectedIds === revSortedIds
 
 reverseSorted :: SortedTasks -> SortedTasks
-reverseSorted = UnsafeSortedTasks . (L.reverse . fmap go) . (.unSortedTasks)
+reverseSorted = UnsafeSortedTasks . (Seq.reverse . fmap go) . (.unSortedTasks)
   where
     go st@(SomeTaskSingle _) = st
     go (SomeTaskGroup t) =
       SomeTaskGroup $ over' #subtasks (Seq.reverse . fmap go) t
 
-getExampleList :: IO (List SomeTask)
+getExampleList :: IO (Seq SomeTask)
 getExampleList = getList examplePath
 
-getList :: OsPath -> IO (List SomeTask)
+getList :: OsPath -> IO (Seq SomeTask)
 getList path = (.taskList) <$> Index.readIndex path
 
-getIds :: SortedTasks -> List Text
+getIds :: SortedTasks -> Seq Text
 getIds = Sorted.traverseSorted (.taskId.unTaskId) (.taskId.unTaskId)

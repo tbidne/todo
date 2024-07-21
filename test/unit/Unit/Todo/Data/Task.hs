@@ -3,7 +3,6 @@ module Unit.Todo.Data.Task (tests) where
 import Data.Aeson qualified as Asn
 import Data.ByteString.Lazy qualified as BSL
 import Data.Foldable (any)
-import Data.List qualified as L
 import Data.Sequence qualified as Seq
 import Data.Set.NonEmpty qualified as NESet
 import Data.Text qualified as T
@@ -511,8 +510,8 @@ testSomeTaskTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ propert
   task <- forAll genSomeTask
 
   -- Test the optics' traversal in terms of the direct traverseSomeTasks.
-  let expected = Task.traverseSomeTasks (.taskId.unTaskId) (.taskId.unTaskId) [task]
-      result = toListOf getIds task
+  let expected = Task.traverseSomeTasks (.taskId.unTaskId) (.taskId.unTaskId) (Seq.singleton task)
+      result = toListLikeOf getIds task
 
   expected === result
   where
@@ -536,10 +535,10 @@ testTaskGroupTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ proper
   -- group ids. We do this by setting the single tasks ids to the empty string,
   -- then filtering them out below. This relies on genSomeTask generating
   -- non-empty ids.
-  let expected = Task.traverseSomeTasks (const "") (.taskId.unTaskId) [task]
-      result = toListOf getIds task
+  let expected = Task.traverseSomeTasks (const "") (.taskId.unTaskId) (Seq.singleton task)
+      result = toListLikeOf getIds task
 
-  L.filter (not . T.null) expected === result
+  Seq.filter (not . T.null) expected === result
   where
     desc = "taskGroupTraversal targets groups"
     getIds = Task.taskGroupTraversal % #taskId % #unTaskId

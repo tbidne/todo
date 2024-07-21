@@ -134,8 +134,8 @@ parseTaskStatus txt = do
               nonEmpties = filter (not . T.null) splitStrs
            in case nonEmpties of
                 (x : xs) -> do
-                  (y :<|| ys) <- traverse parseBlockedTarget (x :<|| listToSeq xs)
-                  pure $ Just $ Blocked (NESet.fromList (y :| toList ys))
+                  (y :| ys) <- traverse parseBlockedTarget (x :| xs)
+                  pure $ Just $ Blocked (NESet.fromList (y :| ys))
                 [] -> fail $ "Received no non-empty blockers for 'blocked' status: " <> quoteTxt rest
     parseBlocked _ = pure Nothing
 
