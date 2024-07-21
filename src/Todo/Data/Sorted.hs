@@ -10,7 +10,6 @@ module Todo.Data.Sorted
   )
 where
 
-import Data.List qualified as L
 import Data.Ord (Down (Down))
 import Data.Sequence qualified as Seq
 import TOML (DecodeTOML (tomlDecoder))
@@ -51,7 +50,7 @@ sortTasks ::
   -- | Reverses the sort.
   RevSort ->
   -- | Tasks to sort.
-  List SomeTask ->
+  Seq SomeTask ->
   SortedTasks
 sortTasks mSortType revSort xs =
   case mSortType of
@@ -93,8 +92,8 @@ sortSomeTasks ::
   RevSort ->
   -- | Comparison function.
   (SomeTask -> SomeTask -> Ordering) ->
-  List SomeTask ->
-  List SomeTask
+  Seq SomeTask ->
+  Seq SomeTask
 sortSomeTasks partitionCompleted revSort c xs =
   if partitionCompleted
     then
@@ -103,10 +102,10 @@ sortSomeTasks partitionCompleted revSort c xs =
         else sortFn incompleteTasks <> sortFn completedTasks
     else sortFn xs
   where
-    sortFn :: List SomeTask -> List SomeTask
-    sortFn = fmap (sortSomeTaskSubtasks partitionCompleted revSort c) . L.sortBy c
+    sortFn :: Seq SomeTask -> Seq SomeTask
+    sortFn = fmap (sortSomeTaskSubtasks partitionCompleted revSort c) . Seq.sortBy c
 
-    (completedTasks, incompleteTasks) = L.partition Task.someTaskIsCompleted xs
+    (completedTasks, incompleteTasks) = Seq.partition Task.someTaskIsCompleted xs
 
 sortSomeTaskSubtasks :: Bool -> RevSort -> (SomeTask -> SomeTask -> Ordering) -> SomeTask -> SomeTask
 sortSomeTaskSubtasks _ _ _ t@(SomeTaskSingle _) = t
@@ -119,12 +118,12 @@ sortTaskGroupSubtasks partitionCompleted revSort c t = t {subtasks = subtasks'}
     -- TODO: Avoid the Seq <-> List conversion (Either replace a type or
     -- use Foldable).
     subtasks' =
-      Seq.fromList $ sortSomeTasks partitionCompleted revSort c (toList t.subtasks)
+      sortSomeTasks partitionCompleted revSort c t.subtasks
 
 cSomeTask :: (Ord a) => (SomeTask -> a) -> SomeTask -> SomeTask -> Ordering
 cSomeTask f x y = f x `compare` f y
 
-traverseSorted :: (SingleTask -> a) -> (TaskGroup -> a) -> SortedTasks -> List a
+traverseSorted :: (SingleTask -> a) -> (TaskGroup -> a) -> SortedTasks -> Seq a
 traverseSorted f g = traverseSomeTasks f g . (.unSortedTasks)
 
 parseSortType :: (MonadFail m) => m Text -> m SortType

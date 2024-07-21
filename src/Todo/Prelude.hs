@@ -45,6 +45,7 @@ module Todo.Prelude
 
     -- * Optics
     strTxtIso,
+    toListLikeOf,
 
     -- * Misc
     EitherString (..),
@@ -174,6 +175,8 @@ import GHC.Base (RuntimeRep, TYPE, raise#, seq)
 import GHC.Enum as X (Bounded, Enum)
 import GHC.Err as X (error)
 import GHC.Exception (errorCallWithCallStackException)
+import GHC.Exts as X (IsList (Item))
+import GHC.Exts qualified as Exts
 import GHC.IO.Exception (ExitCode (ExitFailure))
 import GHC.Num as X (Num ((*), (+), (-)))
 import GHC.Records as X (HasField (getField))
@@ -186,11 +189,11 @@ import Optics.AffineTraversal as X
     atraversal,
   )
 import Optics.At.Core as X (ix)
-import Optics.Core as X (Is, Optic)
+import Optics.Core as X (Is, Optic, Optic')
 import Optics.Core.Extras as X (is)
 import Optics.Fold as X (toListOf)
 import Optics.Getter as X (A_Getter, Getter, to, view)
-import Optics.Indexed.Core as X ((%))
+import Optics.Indexed.Core as X (A_Fold, (%))
 import Optics.Iso as X (An_Iso, Iso, Iso', iso)
 import Optics.Label as X (LabelOptic (labelOptic))
 import Optics.Lens as X (A_Lens, Lens', lens, lensVL)
@@ -393,3 +396,12 @@ mToE e Nothing = Left e
 
 strTxtIso :: Iso' String Text
 strTxtIso = iso pack unpack
+
+toListLikeOf ::
+  ( IsList c,
+    Is k A_Fold
+  ) =>
+  Optic' k is a (Item c) ->
+  a ->
+  c
+toListLikeOf optic = Exts.fromList . toListOf optic

@@ -18,17 +18,17 @@ import Todo.Data.TaskId (TaskId)
 import Todo.Prelude
 
 -- | Todo index.
-data Index = UnsafeIndex (List SomeTask) OsPath
+data Index = UnsafeIndex (Seq SomeTask) OsPath
   deriving stock (Eq, Show)
 
-instance HasField "taskList" Index (List SomeTask) where
+instance HasField "taskList" Index (Seq SomeTask) where
   getField (UnsafeIndex tl _) = tl
 
 instance HasField "path" Index OsPath where
   getField (UnsafeIndex _ p) = p
 
 instance
-  (k ~ A_Lens, a ~ List SomeTask, b ~ List SomeTask) =>
+  (k ~ A_Lens, a ~ Seq SomeTask, b ~ Seq SomeTask) =>
   LabelOptic "taskList" k Index Index a b
   where
   labelOptic =
@@ -89,13 +89,13 @@ lookup taskId (UnsafeIndex taskList _) = foldMapAlt go taskList
 -- @taskId@ in @index@ with @newTask@.
 replaceAtId :: TaskId -> Index -> Maybe SomeTask -> Index
 replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
-  (`UnsafeIndex` path) $ foldr go [] taskList
+  (`UnsafeIndex` path) $ foldr go Empty taskList
   where
-    go :: SomeTask -> List SomeTask -> List SomeTask
+    go :: SomeTask -> Seq SomeTask -> Seq SomeTask
     go st@(SomeTaskSingle t) acc =
       if t.taskId == taskId
         then prependNewTask acc
-        else st : acc
+        else st :<| acc
     go (SomeTaskGroup tg) acc =
       if tg.taskId == taskId
         then prependNewTask acc
@@ -103,9 +103,9 @@ replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
           -- TODO: This will techincally replace all with the matching
           -- ids, though it should be fine as task ids should be unique.
           -- Maybe we could improve this.
-          let subtasks' = ((\xs -> listToSeq (go xs [])) =<< tg.subtasks)
-           in SomeTaskGroup (tg {subtasks = subtasks'}) : acc
+          let subtasks' = (`go` Empty) =<< tg.subtasks
+           in SomeTaskGroup (tg {subtasks = subtasks'}) :<| acc
 
     prependNewTask = case mNewTask of
-      Just newTask -> (newTask :)
+      Just newTask -> (newTask :<|)
       Nothing -> identity

@@ -129,7 +129,7 @@ setup = do
       numOsPath <- FS.encodeFpToOsThrowM (show numTasks)
       let tasks = mkTask . showt <$> [1 .. numTasks]
           path = benchDir </> name <> [osp|_|] <> numOsPath
-          idx = UnsafeIndex tasks path
+          idx = UnsafeIndex (listToSeq tasks) path
 
       Index.writeIndex idx
       pure path
@@ -141,7 +141,7 @@ setup = do
 
       tasks <- go depth counterRef
       let path = benchDir </> name <> [osp|_|] <> numOsPath
-          idx = UnsafeIndex [tasks] path
+          idx = UnsafeIndex (tasks :<| Empty) path
 
       Index.writeIndex idx
       pure path

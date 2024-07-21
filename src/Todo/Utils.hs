@@ -9,6 +9,8 @@ module Todo.Utils
     traversal,
     listTraversal,
     listPredTraversal,
+    seqTraversal,
+    seqPredTraversal,
     neSetTraversal,
 
     -- ** Preview + Over
@@ -230,6 +232,22 @@ listPredTraversal pred = traversalVL f
         go (x : xs) =
           if pred x
             then (:) <$> g x <*> go xs
+            else go xs
+
+seqTraversal :: Traversal' (Seq a) a
+seqTraversal = seqPredTraversal (const True)
+
+seqPredTraversal :: forall a. (a -> Bool) -> Traversal' (Seq a) a
+seqPredTraversal pred = traversalVL f
+  where
+    --
+    f :: forall f. (Applicative f) => (a -> f a) -> Seq a -> f (Seq a)
+    f g = go
+      where
+        go Empty = pure Empty
+        go (x :<| xs) =
+          if pred x
+            then (:<|) <$> g x <*> go xs
             else go xs
 
 -- | Traverses an NESet.

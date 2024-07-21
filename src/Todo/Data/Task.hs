@@ -417,13 +417,13 @@ traverseSomeTasks ::
   forall a.
   (SingleTask -> a) ->
   (TaskGroup -> a) ->
-  List SomeTask ->
-  List a
+  Seq SomeTask ->
+  Seq a
 traverseSomeTasks fromTask fromTaskGroup = (>>= go)
   where
-    go :: SomeTask -> List a
-    go (SomeTaskSingle t) = [fromTask t]
-    go (SomeTaskGroup t) = fromTaskGroup t : (toList t.subtasks >>= go)
+    go :: SomeTask -> Seq a
+    go (SomeTaskSingle t) = fromTask t :<| Empty
+    go (SomeTaskGroup t) = fromTaskGroup t :<| (t.subtasks >>= go)
 
 _SomeTaskSingle :: Prism' SomeTask SingleTask
 _SomeTaskSingle =

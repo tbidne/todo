@@ -1,6 +1,6 @@
 module Todo.Index
   ( -- * Types
-    Index (IndexNil, IndexCons),
+    Index,
 
     -- * Creation
     readIndex,
@@ -52,7 +52,6 @@ import Data.Aeson qualified as Asn
 import Data.Aeson.Encode.Pretty qualified as AsnPretty
 import Data.ByteString.Lazy qualified as BSL
 import Data.Foldable qualified as F
-import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
 import Data.Sequence qualified as Seq
@@ -84,18 +83,6 @@ import Todo.Prelude hiding (filter, toList)
 import Todo.Utils (MatchResult)
 import Todo.Utils qualified as Utils
 
-pattern IndexNil :: OsPath -> Index
-pattern IndexNil p <- UnsafeIndex [] p
-  where
-    IndexNil p = UnsafeIndex [] p
-
-pattern IndexCons :: SomeTask -> List SomeTask -> OsPath -> Index
-pattern IndexCons t ts p <- UnsafeIndex (t : ts) p
-  where
-    IndexCons t ts p = UnsafeIndex (t : ts) p
-
-{-# COMPLETE IndexNil, IndexCons #-}
-
 -- | Reads the file to an 'Index'.
 readIndex ::
   ( HasCallStack,
@@ -126,7 +113,7 @@ readTaskList ::
     MonadThrow m
   ) =>
   OsPath ->
-  m (Tuple2 OsPath (List SomeTask))
+  m (Tuple2 OsPath (Seq SomeTask))
 readTaskList path = do
   contents <- readBinaryFile path
   case Asn.eitherDecodeStrict contents of
@@ -137,7 +124,7 @@ readTaskList path = do
 -- the id is not a duplicate i.e. this should only be used when the check has
 -- already been performed.
 reallyUnsafeInsert :: SomeTask -> Index -> Index
-reallyUnsafeInsert task = over' #taskList (task :)
+reallyUnsafeInsert task = over' #taskList (task :<|)
 
 -- | Inserts a new task t1 at the task id. Like 'reallyUnsafeInsert', this is
 -- unsafe in that t1's id is not verified for uniqueness, and the given
@@ -149,7 +136,7 @@ reallyUnsafeInsertAtTaskId taskId task = over' tSubtasks (task :<|)
     tSubtasks = ix taskId % _SomeTaskGroup % #subtasks
 
 -- | Returns a list representation of the index.
-toList :: Index -> (OsPath, List SomeTask)
+toList :: Index -> (OsPath, Seq SomeTask)
 toList (UnsafeIndex taskList path) = (path, taskList)
 
 type IdSet = Set TaskId
@@ -182,7 +169,7 @@ fromList ::
     MonadThrow m
   ) =>
   OsPath ->
-  List SomeTask ->
+  Seq SomeTask ->
   m Index
 fromList path xs = do
   (foundKeys, blockedKeys) <- mkMaps
@@ -288,7 +275,7 @@ filterOnIds taskIds = filterTopLevel go
 -- the top-level tasks __only__. Thus if you need to filter on subtasks,
 -- the passed predicate will have todo this itself.
 filterTopLevel :: (SomeTask -> Bool) -> Index -> Index
-filterTopLevel p (UnsafeIndex taskList path) = UnsafeIndex (L.filter p taskList) path
+filterTopLevel p (UnsafeIndex taskList path) = UnsafeIndex (Seq.filter p taskList) path
 
 -- | Partitions the Index on the TaskId set. The left result is all tasks
 -- whose ids belong in the set __and__ tasks who have a some parent in the
@@ -306,7 +293,7 @@ partitionTaskIds taskIds = partition pred
   where
     pred = (`NESet.member` taskIds) . (.taskId)
 
-type PartitionAcc = Tuple2 (List SomeTask) (List SomeTask)
+type PartitionAcc = Tuple2 (Seq SomeTask) (Seq SomeTask)
 
 -- | Partitions the Index according to the predicate @p@. If @p t@ is true
 -- for some @t@ then @t@ is added to the left result, unchanged. This means
@@ -327,21 +314,21 @@ partition ::
 partition taskPred index =
   (UnsafeIndex tasksIn index.path, UnsafeIndex tasksOut index.path)
   where
-    (tasksIn, tasksOut) = foldl' go ([], []) index.taskList
+    (tasksIn, tasksOut) = foldl' go (Empty, Empty) index.taskList
 
     go :: PartitionAcc -> SomeTask -> PartitionAcc
     go (accIn, accOut) st@(SomeTaskSingle _) =
       if taskPred st
-        then (st : accIn, accOut)
-        else (accIn, st : accOut)
+        then (st :<| accIn, accOut)
+        else (accIn, st :<| accOut)
     go (accIn, accOut) st@(SomeTaskGroup tg) =
       if taskPred st
-        then (st : accIn, accOut)
+        then (st :<| accIn, accOut)
         else
-          let subSeq = go ([], []) <$> tg.subtasks
-              (subAccIn, subAccOut) = L.unzip $ seqToList subSeq
-              tg' = tg {subtasks = listToSeq (join subAccOut)}
-           in (join subAccIn <> accIn, SomeTaskGroup tg' : accOut)
+          let subSeq = go (Empty, Empty) <$> tg.subtasks
+              (subAccIn, subAccOut) = Seq.unzip subSeq
+              tg' = tg {subtasks = join subAccOut}
+           in (join subAccIn <> accIn, SomeTaskGroup tg' :<| accOut)
 
 -- | Returns 'True' iff the TaskId exists in the index.
 member :: TaskId -> Index -> Bool
@@ -367,7 +354,7 @@ infix 4 ∉
 
 type DeleteAcc =
   Tuple2
-    (List SomeTask)
+    (Seq SomeTask)
     (Maybe SomeTask)
 
 -- REVIEW: With all the different collections we are using (NESet, Seq, Map,
@@ -377,7 +364,7 @@ type DeleteAcc =
 -- | If the task id exists in the index, returns the corresponding task and
 -- the index with that task removed.
 delete :: TaskId -> Index -> Either DeleteE (Tuple2 Index SomeTask)
-delete taskId index@(UnsafeIndex idx path) = case foldr go ([], Nothing) idx of
+delete taskId index@(UnsafeIndex idx path) = case foldr go (Empty, Nothing) idx of
   (_, Nothing) -> Left $ DeleteTaskIdNotFound $ MkTaskIdNotFoundE taskId
   (newIdx, Just st) ->
     let blockingIds = getBlockingIds index
@@ -388,14 +375,14 @@ delete taskId index@(UnsafeIndex idx path) = case foldr go ([], Nothing) idx of
     go :: SomeTask -> DeleteAcc -> DeleteAcc
     go st@(SomeTaskSingle _) (tasks, mDeleted)
       | st.taskId == taskId = (tasks, Just st)
-      | otherwise = (st : tasks, mDeleted)
+      | otherwise = (st :<| tasks, mDeleted)
     go st@(SomeTaskGroup tg) (tasks, mDeleted)
       | tg.taskId == taskId = (tasks, Just st)
-      | otherwise = case foldr go ([], Nothing) tg.subtasks of
-          (_, Nothing) -> (st : tasks, mDeleted)
+      | otherwise = case foldr go (Empty, Nothing) tg.subtasks of
+          (_, Nothing) -> (st :<| tasks, mDeleted)
           (newSubtasks, Just deletedTask) ->
-            let newTaskGroup = tg {subtasks = Seq.fromList newSubtasks}
-             in (SomeTaskGroup newTaskGroup : tasks, Just deletedTask)
+            let newTaskGroup = tg {subtasks = newSubtasks}
+             in (SomeTaskGroup newTaskGroup :<| tasks, Just deletedTask)
 
 -- | Returns a map of all blocking ids to blockees. For instance, if tasks
 -- t1 and t2 are both blocked by t3, then there should be an entry:
@@ -542,7 +529,7 @@ getAllIds = O.toListOf (indexTraversal % idStatusGetter)
 indexPredTraversal :: (SomeTask -> Bool) -> Traversal' Index SomeTask
 indexPredTraversal p =
   #taskList
-    % Utils.listTraversal
+    % Utils.seqTraversal
     % Task.someTaskPredTraversal p
 
 -- | Traversal across all tasks.
