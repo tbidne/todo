@@ -23,6 +23,7 @@ deadlineTests testEnv =
   testGroup
     "Deadline"
     [ testSetDeadline testEnv,
+      testSetDeadlineInteractive testEnv,
       testSetDeadlineFailure testEnv
     ]
 
@@ -33,6 +34,28 @@ testSetDeadline =
       "Sets a task deadline"
       [osp|testSetDeadline|]
       ["set-deadline", "--task-id", "pack_bananas", "2020-10-15"]
+
+testSetDeadlineInteractive :: IO TestEnv -> TestTree
+testSetDeadlineInteractive =
+  testGoldenRunnerParams
+    $ set' #args args
+    . set' #runner (Just runner)
+    $ params
+  where
+    params =
+      mkGoldenParams
+        "Sets a task deadline interactively"
+        [osp|testSetDeadlineInteractive|]
+        []
+
+    args = ["set-deadline"]
+
+    runner = runTodoResponses responses
+    responses =
+      [ "pack_bananas",
+        "2020-10-15",
+        "y"
+      ]
 
 testSetDeadlineFailure :: IO TestEnv -> TestTree
 testSetDeadlineFailure =
@@ -50,6 +73,7 @@ descriptionTests testEnv =
   testGroup
     "Description"
     [ testSetDesc testEnv,
+      testSetDescInteractive testEnv,
       testSetDescGroupFailure testEnv
     ]
 
@@ -60,6 +84,28 @@ testSetDesc =
       "Sets a task description"
       [osp|testSetDesc|]
       ["set-description", "--task-id", "ball", "Acquire a ball."]
+
+testSetDescInteractive :: IO TestEnv -> TestTree
+testSetDescInteractive =
+  testGoldenRunnerParams
+    $ set' #args args
+    . set' #runner (Just runner)
+    $ params
+  where
+    params =
+      mkGoldenParams
+        "Sets a task description interactively"
+        [osp|testSetDescInteractive|]
+        []
+
+    args = ["set-description"]
+
+    runner = runTodoResponses responses
+    responses =
+      [ "ball",
+        "Acquire a ball.",
+        "y"
+      ]
 
 testSetDescGroupFailure :: IO TestEnv -> TestTree
 testSetDescGroupFailure =
@@ -77,6 +123,7 @@ idTests testEnv =
   testGroup
     "Id"
     [ testSetId testEnv,
+      testSetIdInteractive testEnv,
       testSetBlockingId testEnv,
       testSetNestedBlockingId testEnv,
       testSetIdDuplicateFailure testEnv
@@ -89,6 +136,28 @@ testSetId =
       "Sets a task id"
       [osp|testSetId|]
       ["set-id", "--task-id", "cleats", "boots"]
+
+testSetIdInteractive :: IO TestEnv -> TestTree
+testSetIdInteractive =
+  testGoldenRunnerParams
+    $ set' #args args
+    . set' #runner (Just runner)
+    $ params
+  where
+    params =
+      mkGoldenParams
+        "Sets a task id interactively"
+        [osp|testSetIdInteractive|]
+        []
+
+    args = ["set-id"]
+
+    runner = runTodoResponses responses
+    responses =
+      [ "cleats",
+        "boots",
+        "y"
+      ]
 
 testSetBlockingId :: IO TestEnv -> TestTree
 testSetBlockingId =
@@ -127,7 +196,8 @@ priorityTests :: IO TestEnv -> TestTree
 priorityTests testEnv =
   testGroup
     "Priority"
-    [ testSetPriority testEnv
+    [ testSetPriority testEnv,
+      testSetPriorityInteractive testEnv
     ]
 
 testSetPriority :: IO TestEnv -> TestTree
@@ -138,11 +208,34 @@ testSetPriority =
       [osp|testSetPriority|]
       ["set-priority", "--task-id", "soccer_match", "low"]
 
+testSetPriorityInteractive :: IO TestEnv -> TestTree
+testSetPriorityInteractive =
+  testGoldenRunnerParams
+    $ set' #args args
+    . set' #runner (Just runner)
+    $ params
+  where
+    params =
+      mkGoldenParams
+        "Sets a task id interactively"
+        [osp|testSetPriorityInteractive|]
+        []
+
+    args = ["set-priority"]
+
+    runner = runTodoResponses responses
+    responses =
+      [ "soccer_match",
+        "low",
+        "y"
+      ]
+
 statusTests :: IO TestEnv -> TestTree
 statusTests testEnv =
   testGroup
     "Status"
     [ testSetStatus testEnv,
+      testSetStatusInteractive testEnv,
       testSetStatusBlockedSuccess testEnv,
       testSetStatusBlockedFailure testEnv
     ]
@@ -154,6 +247,28 @@ testSetStatus =
       "Sets a task status"
       [osp|testSetStatus|]
       ["set-status", "--task-id", "apples", "completed"]
+
+testSetStatusInteractive :: IO TestEnv -> TestTree
+testSetStatusInteractive =
+  testGoldenRunnerParams
+    $ set' #args args
+    . set' #runner (Just runner)
+    $ params
+  where
+    params =
+      mkGoldenParams
+        "Sets a task status interactively"
+        [osp|testSetStatusInteractive|]
+        []
+
+    args = ["set-status"]
+
+    runner = runTodoResponses responses
+    responses =
+      [ "apples",
+        "completed",
+        "y"
+      ]
 
 testSetStatusBlockedSuccess :: IO TestEnv -> TestTree
 testSetStatusBlockedSuccess =
@@ -182,9 +297,11 @@ mkGoldenParams testDesc testDirName args =
       testDesc,
       dataDir = [osp|Update|],
       testDirName,
-      args,
+      args = args',
       runList = True
     }
+  where
+    args' = args ++ ["--interactive", "off"]
 
 inputOsPath :: OsPath
 inputOsPath = mkInputDir [osp|Update|]

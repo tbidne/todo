@@ -50,11 +50,11 @@ data Command p
   = CmdDelete InteractiveSwitch (Maybe (NESet TaskId))
   | CmdInsert
   | CmdList (Maybe SortType) (ConfigPhaseF p RevSort)
-  | CmdSetDeadline TaskId Timestamp
-  | CmdSetDescription TaskId Text
-  | CmdSetId TaskId TaskId
-  | CmdSetPriority TaskId TaskPriority
-  | CmdSetStatus TaskId TaskStatus
+  | CmdSetDeadline InteractiveSwitch (Maybe TaskId) (Maybe Timestamp)
+  | CmdSetDescription InteractiveSwitch (Maybe TaskId) (Maybe Text)
+  | CmdSetId InteractiveSwitch (Maybe TaskId) (Maybe TaskId)
+  | CmdSetPriority InteractiveSwitch (Maybe TaskId) (Maybe TaskPriority)
+  | CmdSetStatus InteractiveSwitch (Maybe TaskId) (Maybe TaskStatus)
 
 deriving stock instance (Eq (ConfigPhaseF p RevSort)) => Eq (Command p)
 
@@ -103,11 +103,10 @@ commandParser =
     deleteParser =
       (\intMode taskIds -> CmdDelete intMode (listToNESet taskIds))
         <$> interactiveDefOnParser
-          "Defaults to on. If on, --task-id is an error."
         <*> OA.many
           ( taskIdArgParser
               "TASK_IDs..."
-              "Task id(s) to delete. Only available with --interactive off."
+              "Task id(s) to delete."
           )
     insertParser = pure CmdInsert
     listParser =
@@ -116,27 +115,35 @@ commandParser =
         <*> revSortParser
     setDeadlineParser =
       CmdSetDeadline
-        <$> setTaskIdParser
-        <*> taskDeadlineParser
+        <$> interactiveDefOnParser
+        <*> OA.optional setTaskIdParser
+        <*> OA.optional taskDeadlineParser
     setDescParser =
       CmdSetDescription
-        <$> setTaskIdParser
-        <*> taskDescParser
+        <$> interactiveDefOnParser
+        <*> OA.optional setTaskIdParser
+        <*> OA.optional taskDescParser
     setIdParser =
       CmdSetId
-        <$> setTaskIdParser
-        <*> taskIdArgParser "TASK_ID" "New task id."
+        <$> interactiveDefOnParser
+        <*> OA.optional setTaskIdParser
+        <*> OA.optional (taskIdArgParser "TASK_ID" "New task id.")
     setPriorityParser =
       CmdSetPriority
-        <$> setTaskIdParser
-        <*> taskPriorityParser
+        <$> interactiveDefOnParser
+        <*> OA.optional setTaskIdParser
+        <*> OA.optional taskPriorityParser
     setStatusParser =
       CmdSetStatus
-        <$> setTaskIdParser
-        <*> taskStatusParser
+        <$> interactiveDefOnParser
+        <*> OA.optional setTaskIdParser
+        <*> OA.optional taskStatusParser
 
-interactiveDefOnParser :: String -> Parser InteractiveSwitch
-interactiveDefOnParser = InteractiveSwitch.interactiveParser InteractiveOn
+interactiveDefOnParser :: Parser InteractiveSwitch
+interactiveDefOnParser =
+  InteractiveSwitch.interactiveParser
+    InteractiveOn
+    "Defaults to on."
 
 revSortParser :: Parser (Maybe RevSort)
 revSortParser =
@@ -231,8 +238,8 @@ advancePhase :: CommandArgs -> CommandMerged
 advancePhase (CmdDelete a b) = CmdDelete a b
 advancePhase CmdInsert = CmdInsert
 advancePhase (CmdList a b) = CmdList a (D.fromDefault b)
-advancePhase (CmdSetDeadline a b) = CmdSetDeadline a b
-advancePhase (CmdSetDescription a b) = CmdSetDescription a b
-advancePhase (CmdSetId a b) = CmdSetId a b
-advancePhase (CmdSetPriority a b) = CmdSetPriority a b
-advancePhase (CmdSetStatus a b) = CmdSetStatus a b
+advancePhase (CmdSetDeadline a b c) = CmdSetDeadline a b c
+advancePhase (CmdSetDescription a b c) = CmdSetDescription a b c
+advancePhase (CmdSetId a b c) = CmdSetId a b c
+advancePhase (CmdSetPriority a b c) = CmdSetPriority a b c
+advancePhase (CmdSetStatus a b c) = CmdSetStatus a b c

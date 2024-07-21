@@ -1,9 +1,10 @@
-Successfully updated task:
+Updated task:
 
 ⛔ id: apples
    status: blocked: <ball>, <fix_car>, 'a blocker', 'another'
    priority: normal
 
+Successfully updated task
 
 
 ⛔ id: groceries

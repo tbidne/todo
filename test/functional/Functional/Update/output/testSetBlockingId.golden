@@ -1,10 +1,11 @@
-Successfully updated task:
+Updated task:
 
 🚧 id: salary
    status: in-progress
    priority: high
    deadline: 2024-08-12 12:00:00
 
+Successfully updated task
 
 
 ⛔ id: groceries

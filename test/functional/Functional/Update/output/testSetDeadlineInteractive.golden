@@ -1,10 +1,29 @@
+Found id(s):
+
+- apples: not-started
+- ball: blocked: <fix_car>
+- bananas: not-started
+- cleats: blocked: <fix_car>
+- empty_group: completed
+- equipment: blocked: <fix_car>
+- fix_car: not-started
+- groceries: blocked: <fix_car>, <paycheck>, 'store closed'
+- haircut: not-started
+- pack_bananas: blocked: <groceries>
+- paycheck: in-progress
+- soccer_match: blocked: <fix_car>, <groceries>
+- walk_dog: completed
+
+Enter task id to update: 
+Enter value: 
 Updated task:
 
-⛔ id: ball
-   status: blocked: <fix_car>
+⛔ id: pack_bananas
+   status: blocked: <groceries>
    priority: normal
-   description: Acquire a ball.
+   deadline: 2020-10-15
 
+Save value (y/n)? 
 Successfully updated task
 
 
@@ -38,6 +57,7 @@ Successfully updated task
   ⛔ id: pack_bananas
      status: blocked: <groceries>
      priority: normal
+     deadline: 2020-10-15
 
   ⛔ id: equipment
      status: blocked: <fix_car>
@@ -46,7 +66,6 @@ Successfully updated task
     ⛔ id: ball
        status: blocked: <fix_car>
        priority: normal
-       description: Acquire a ball.
 
     ⛔ id: cleats
        status: blocked: <fix_car>

@@ -1,10 +1,11 @@
-Successfully updated task:
+Updated task:
 
 ⛔ id: pack_bananas
    status: blocked: <groceries>
    priority: normal
    deadline: 2020-10-15
 
+Successfully updated task
 
 
 ⛔ id: groceries

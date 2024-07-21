@@ -79,13 +79,13 @@ withConfig mergedConfig = case mergedConfig.command of
   CmdInsert -> Todo.insertTask mergedConfig.coreConfig
   CmdList mSortType revSort ->
     Todo.listTasks mergedConfig.coreConfig mSortType revSort
-  CmdSetDescription taskId taskDesc ->
-    Todo.setTaskDescription mergedConfig.coreConfig taskId taskDesc
-  CmdSetDeadline taskId taskDeadline ->
-    Todo.setTaskDeadline mergedConfig.coreConfig taskId taskDeadline
-  CmdSetId taskId newTaskId ->
-    Todo.setTaskId mergedConfig.coreConfig taskId newTaskId
-  CmdSetPriority taskId taskPriority ->
-    Todo.setTaskPriority mergedConfig.coreConfig taskId taskPriority
-  CmdSetStatus taskId taskStatus ->
-    Todo.setTaskStatus mergedConfig.coreConfig taskId taskStatus
+  CmdSetDescription intMode taskId taskDesc ->
+    Todo.setTaskDescription mergedConfig.coreConfig intMode taskId taskDesc
+  CmdSetDeadline intMode taskId taskDeadline ->
+    Todo.setTaskDeadline mergedConfig.coreConfig intMode taskId taskDeadline
+  CmdSetId intMode taskId newTaskId ->
+    Todo.setTaskId mergedConfig.coreConfig intMode taskId newTaskId
+  CmdSetPriority intMode taskId taskPriority ->
+    Todo.setTaskPriority mergedConfig.coreConfig intMode taskId taskPriority
+  CmdSetStatus intMode taskId taskStatus ->
+    Todo.setTaskStatus mergedConfig.coreConfig intMode taskId taskStatus

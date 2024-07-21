@@ -28,7 +28,7 @@ interactiveParser defValue helpTxt = do
               [ OA.short 'i',
                 OA.long "interactive",
                 OA.metavar "(off | on)",
-                CDUtils.mkHelp $ "Interactive mode. " ++ helpTxt
+                CDUtils.mkHelp $ mainHelp ++ helpTxt
               ]
           )
     readInteractive =
@@ -36,3 +36,6 @@ interactiveParser defValue helpTxt = do
         "on" -> pure InteractiveOn
         "off" -> pure InteractiveOff
         other -> fail $ "Expected (off | on), received: " <> other
+
+    mainHelp =
+      "Interactive mode. If on, specifing other values is an error. "

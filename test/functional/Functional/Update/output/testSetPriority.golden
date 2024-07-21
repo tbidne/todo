@@ -1,4 +1,4 @@
-Successfully updated task:
+Updated task:
 
 ⛔ id: soccer_match
    status: blocked: <fix_car>, <groceries>
@@ -21,6 +21,7 @@ Successfully updated task:
        status: blocked: <fix_car>
        priority: normal
 
+Successfully updated task
 
 
 ⛔ id: groceries
