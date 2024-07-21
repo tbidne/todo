@@ -188,7 +188,7 @@ import Optics.AffineTraversal as X
 import Optics.At.Core as X (ix)
 import Optics.Core as X (Is, Optic, Optic')
 import Optics.Core.Extras as X (is)
-import Optics.Fold as X (toListOf)
+import Optics.Fold as X (Fold, toListOf)
 import Optics.Getter as X (A_Getter, Getter, to, view)
 import Optics.Indexed.Core as X (A_Fold, (%))
 import Optics.Iso as X (An_Iso, Iso, Iso', iso)

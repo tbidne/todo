@@ -21,7 +21,6 @@ module Todo.Index
     reallyUnsafeInsertAtTaskId,
 
     -- * Update
-    delete,
     reallyUnsafeSetSomeTaskValue,
     setSomeTaskValueValidate,
     setSomeTaskValueMappedValidate,
@@ -30,7 +29,6 @@ module Todo.Index
     -- * Elimination
     writeIndex,
     toList,
-    getAllIds,
 
     -- * Predicates
     filterTopLevel,
@@ -40,10 +38,6 @@ module Todo.Index
 
     -- * Misc
     getBlockingIds,
-
-    -- ** Optics
-    indexTraversal,
-    indexPredTraversal,
   )
 where
 
@@ -59,7 +53,6 @@ import Data.Set qualified as Set
 import Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty)
 import Data.Set.NonEmpty qualified as NESet
 import Effects.FileSystem.FileReader (MonadFileReader (readBinaryFile))
-import Optics.Core qualified as O
 import Todo.Data.Task
   ( SingleTask (..),
     SomeTask (SomeTaskGroup, SomeTaskSingle),
@@ -67,15 +60,12 @@ import Todo.Data.Task
     _SomeTaskGroup,
     _SomeTaskSingle,
   )
-import Todo.Data.Task qualified as Task
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskStatus (TaskStatus (Blocked))
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Exception
   ( BlockedIdRefE (MkBlockedIdRefE),
-    DeleteE (DeleteRefId, DeleteTaskIdNotFound),
     DuplicateIdE (MkDuplicateIdE),
-    TaskIdNotFoundE (MkTaskIdNotFoundE),
   )
 import Todo.Index.Internal (Index (UnsafeIndex))
 import Todo.Index.Internal qualified as Internal
@@ -92,6 +82,7 @@ readIndex ::
   OsPath ->
   m Index
 readIndex = readTaskList >=> uncurry fromList
+{-# INLINEABLE readIndex #-}
 
 -- | Writes the index to the path.
 writeIndex ::
@@ -105,6 +96,7 @@ writeIndex (UnsafeIndex taskList path) = writeBinaryFile path encoded
     encoded =
       BSL.toStrict
         $ AsnPretty.encodePretty' AsnPretty.defConfig taskList
+{-# INLINEABLE writeIndex #-}
 
 -- | Reads the file to a task list.
 readTaskList ::
@@ -119,6 +111,7 @@ readTaskList path = do
   case Asn.eitherDecodeStrict contents of
     Right xs -> pure (path, xs)
     Left err -> throwM $ AesonException err
+{-# INLINEABLE readTaskList #-}
 
 -- | Inserts a task into the index. Note that this does __not__ check that
 -- the id is not a duplicate i.e. this should only be used when the check has
@@ -227,6 +220,7 @@ fromList path xs = do
           foundKeysAccs' <- updateFoundKeys (SomeTaskGroup t) foundKeysAccs
 
           pure (foundKeysAccs', Map.union blockedKeysAccs blockedKeys')
+    {-# INLINEABLE go #-}
 
     concatAccs :: (HasCallStack) => Seq FromListAcc -> m FromListAcc
     concatAccs = foldl' f (pure (Set.empty, Map.empty))
@@ -245,6 +239,7 @@ fromList path xs = do
               foundKeys' = Set.union foundKeys foundKeysAcc
 
           pure (foundKeys', blockedKeys')
+    {-# INLINEABLE concatAccs #-}
 
     updateFoundKeys ::
       (HasCallStack) =>
@@ -255,6 +250,8 @@ fromList path xs = do
       if Set.notMember val.taskId s
         then pure $ Set.insert val.taskId s
         else throwM $ MkDuplicateIdE val.taskId
+    {-# INLINEABLE updateFoundKeys #-}
+{-# INLINEABLE fromList #-}
 
 -- | Filters the index on the task ids. Included tasks are those with an id
 -- in the set, or task groups who have children in the set.
@@ -351,34 +348,6 @@ notMember taskId = not . member taskId
 (∉) = notMember
 
 infix 4 ∉
-
-type DeleteAcc =
-  Tuple2
-    (Seq SomeTask)
-    (Maybe SomeTask)
-
--- | If the task id exists in the index, returns the corresponding task and
--- the index with that task removed.
-delete :: TaskId -> Index -> Either DeleteE (Tuple2 Index SomeTask)
-delete taskId index@(UnsafeIndex idx path) = case foldr go (Empty, Nothing) idx of
-  (_, Nothing) -> Left $ DeleteTaskIdNotFound $ MkTaskIdNotFoundE taskId
-  (newIdx, Just st) ->
-    let blockingIds = getBlockingIds index
-     in case Map.lookup taskId blockingIds of
-          Nothing -> Right (UnsafeIndex newIdx path, st)
-          Just blockedIds -> Left $ DeleteRefId taskId blockedIds
-  where
-    go :: SomeTask -> DeleteAcc -> DeleteAcc
-    go st@(SomeTaskSingle _) (tasks, mDeleted)
-      | st.taskId == taskId = (tasks, Just st)
-      | otherwise = (st :<| tasks, mDeleted)
-    go st@(SomeTaskGroup tg) (tasks, mDeleted)
-      | tg.taskId == taskId = (tasks, Just st)
-      | otherwise = case foldr go (Empty, Nothing) tg.subtasks of
-          (_, Nothing) -> (st :<| tasks, mDeleted)
-          (newSubtasks, Just deletedTask) ->
-            let newTaskGroup = tg {subtasks = newSubtasks}
-             in (SomeTaskGroup newTaskGroup :<| tasks, Just deletedTask)
 
 -- | Returns a map of all blocking ids to blockees. For instance, if tasks
 -- t1 and t2 are both blocked by t3, then there should be an entry:
@@ -485,6 +454,7 @@ setSomeTaskValueValidate ::
   -- task.
   m (Maybe (Index, SomeTask))
 setSomeTaskValueValidate = setSomeTaskValueMappedValidate identity
+{-# INLINEABLE setSomeTaskValueValidate #-}
 
 -- | Like 'setSomeTaskValueValidate', except we run the index mapping
 -- function on the result before validation. The mapped index is returned.
@@ -513,21 +483,4 @@ setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetRe
     pure $ Just (validIndex, newTask)
   where
     mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
-
--- | Retrieves all ids.
-getAllIds :: Index -> List (Tuple2 TaskId TaskStatus)
-getAllIds = O.toListOf (indexTraversal % idStatusGetter)
-  where
-    idStatusGetter :: Getter SomeTask (Tuple2 TaskId TaskStatus)
-    idStatusGetter = to $ \t -> (t ^. #taskId, t ^. #status)
-
--- | Traversal for every task that satisfies the predicate.
-indexPredTraversal :: (SomeTask -> Bool) -> Traversal' Index SomeTask
-indexPredTraversal p =
-  #taskList
-    % Utils.seqTraversal
-    % Task.someTaskPredTraversal p
-
--- | Traversal across all tasks.
-indexTraversal :: Traversal' Index SomeTask
-indexTraversal = indexPredTraversal (const True)
+{-# INLINEABLE setSomeTaskValueMappedValidate #-}

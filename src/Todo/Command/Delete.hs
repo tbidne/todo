@@ -34,6 +34,7 @@ import Todo.Exception
 import Todo.Exception qualified as E
 import Todo.Index ((∉))
 import Todo.Index qualified as Index
+import Todo.Index.Optics qualified as IndexO
 import Todo.Prelude
 import Todo.Render qualified as Render
 
@@ -57,7 +58,7 @@ deleteTask coreConfig intMode mTaskIds = do
       when (is _Just mTaskIds)
         $ throwString "--task-id incompatible with --interactive on. Please only specify one."
 
-      let allIds = L.sort $ Index.getAllIds index
+      let allIds = L.sort $ toListOf IndexO.indexIdStatusFold index
 
       putTextLn "Found id(s):\n"
 

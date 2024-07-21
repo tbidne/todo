@@ -5,6 +5,7 @@ import Data.Set.NonEmpty qualified as NESet
 import Todo.Data.Task (SomeTask)
 import Todo.Data.TaskPriority (TaskPriority (Normal))
 import Todo.Index qualified as Index
+import Todo.Index.Optics qualified as IndexO
 import Unit.Prelude
 
 tests :: TestTree
@@ -35,7 +36,7 @@ testIndexTraversal = testCase "indexTraversal retrieves all ids" $ do
   index <- Index.readIndex examplePath
   expected @=? indexToIds index
   where
-    indexToIds = toListOf (Index.indexTraversal % #taskId % #unTaskId)
+    indexToIds = toListOf (IndexO.indexTraversal % #taskId % #unTaskId)
     expected =
       [ "haircut",
         "walk_dog",
@@ -57,7 +58,7 @@ testIndexPredTraversal = testCase "indexTraversal retrieves targeted ids" $ do
   index <- Index.readIndex examplePath
   expected @=? indexToIds index
   where
-    indexToIds = toListOf (Index.indexPredTraversal p % #taskId % #unTaskId)
+    indexToIds = toListOf (IndexO.indexPredTraversal p % #taskId % #unTaskId)
 
     p :: SomeTask -> Bool
     p = (/= Normal) . view #priority

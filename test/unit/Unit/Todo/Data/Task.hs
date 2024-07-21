@@ -29,6 +29,7 @@ import Todo.Data.Task
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
 import Todo.Data.Task qualified as Task
+import Todo.Data.Task.Optics qualified as TaskO
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority (TaskPriority (High, Low, Normal))
@@ -500,10 +501,10 @@ testSomeTaskPredTraversalExample = testCase desc $ do
   where
     desc = "someTaskPredTraversal targets example predicate"
     getIds =
-      Task.someTaskPredTraversal isCompleted % #taskId % #unTaskId
+      TaskO.someTaskPredTraversal isCompleted % #taskId % #unTaskId
 
     isCompleted :: SomeTask -> Bool
-    isCompleted = is (Task.someTaskStatusATraversal % _Completed)
+    isCompleted = is (TaskO.someTaskStatusATraversal % _Completed)
 
 testSomeTaskTraversal :: TestTree
 testSomeTaskTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ property $ do
@@ -516,7 +517,7 @@ testSomeTaskTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ propert
   expected === result
   where
     desc = "someTaskTraversal targets all tasks"
-    getIds = Task.someTaskTraversal % #taskId % #unTaskId
+    getIds = TaskO.someTaskTraversal % #taskId % #unTaskId
 
 testTaskGroupTraversalExample :: TestTree
 testTaskGroupTraversalExample = testCase desc $ do
@@ -525,7 +526,7 @@ testTaskGroupTraversalExample = testCase desc $ do
   ["g0", "g1", "g11", "g2"] @=? result
   where
     desc = "taskGroupTraversal targets example groups"
-    getIds = Task.taskGroupTraversal % #taskId % #unTaskId
+    getIds = TaskO.taskGroupTraversal % #taskId % #unTaskId
 
 testTaskGroupTraversal :: TestTree
 testTaskGroupTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ property $ do
@@ -541,7 +542,7 @@ testTaskGroupTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ proper
   Seq.filter (not . T.null) expected === result
   where
     desc = "taskGroupTraversal targets groups"
-    getIds = Task.taskGroupTraversal % #taskId % #unTaskId
+    getIds = TaskO.taskGroupTraversal % #taskId % #unTaskId
 
 exampleSomeTask :: SomeTask
 exampleSomeTask = SomeTaskGroup $ MkTaskGroup Nothing Nothing (g1 :<| g2 :<| Empty) "g0"

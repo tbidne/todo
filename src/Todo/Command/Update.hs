@@ -22,7 +22,8 @@ import Todo.Configuration.Data.InteractiveSwitch
         InteractiveOn
       ),
   )
-import Todo.Data.Task (SomeTask, someTaskStatusATraversal)
+import Todo.Data.Task (SomeTask)
+import Todo.Data.Task.Optics qualified as TaskO
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority (TaskPriority)
@@ -38,6 +39,7 @@ import Todo.Exception
 import Todo.Exception qualified as E
 import Todo.Index (Index)
 import Todo.Index qualified as Index
+import Todo.Index.Optics qualified as IndexO
 import Todo.Prelude
 import Todo.Render qualified as Render
 import Todo.Utils (MatchResult (MatchFailure, MatchPartial, MatchSuccess))
@@ -126,8 +128,8 @@ setTaskId = setTaskValueInteractiveSwitch TaskId.parseTaskId updateId
             -- Targets all blocking ids
             indexBlockerIdTraversal :: Traversal' Index TaskId
             indexBlockerIdTraversal =
-              Index.indexTraversal
-                % someTaskStatusATraversal
+              IndexO.indexTraversal
+                % TaskO.someTaskStatusATraversal
                 % _Blocked
                 % Utils.neSetTraversal
                 % _BlockerId
@@ -223,7 +225,7 @@ setTaskValueInteractiveSwitch
           (_, Just _) ->
             throwString "Value is incompatible with --interactive on."
           (Nothing, Nothing) -> do
-            let allIds = L.sort $ Index.getAllIds index
+            let allIds = L.sort $ toListOf IndexO.indexIdStatusFold index
 
             putTextLn "Found id(s):\n"
 

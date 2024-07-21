@@ -74,6 +74,7 @@ library
     Todo.Data.Sorted
     Todo.Data.Sorted.Internal
     Todo.Data.Task
+    Todo.Data.Task.Optics
     Todo.Data.TaskId
     Todo.Data.TaskId.Internal
     Todo.Data.TaskPriority
@@ -82,6 +83,7 @@ library
     Todo.Exception
     Todo.Index
     Todo.Index.Internal
+    Todo.Index.Optics
     Todo.Index.Safe
     Todo.Prelude
     Todo.Render
