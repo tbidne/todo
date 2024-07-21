@@ -51,11 +51,11 @@ import Refined.Extras qualified as RE
 import Refined.Extras.Utils (pattern MkRefined)
 import Todo.Data.Task (SomeTask (SomeTaskGroup, SomeTaskSingle))
 import Todo.Data.TaskId (TaskId)
-import Todo.Index
+import Todo.Exception
   ( DuplicateIdE (MkDuplicateIdE),
-    Index,
     TaskIdNotFoundE (MkTaskIdNotFoundE),
   )
+import Todo.Index (Index)
 import Todo.Index qualified as Index
 import Todo.Prelude
 

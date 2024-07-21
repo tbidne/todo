@@ -6,8 +6,7 @@ module Integration.Failures (tests) where
 import Control.Exception (IOException)
 import Data.Text qualified as T
 import Integration.Prelude
-import Todo.Configuration.Merged (TaskNameLookupE, XdgIndexNotFoundE)
-import Todo.Configuration.Toml (ConfigNotFoundE)
+import Todo.Exception (ConfigNotFoundE, IndexNameLookupE, XdgIndexNotFoundE)
 
 tests :: TestTree
 tests =
@@ -51,7 +50,7 @@ testBadIndexPathFailure = testHedgehogOne desc "testBadIndexPathFailure" $ do
 
 testBadIndexNameFailure :: TestTree
 testBadIndexNameFailure = testHedgehogOne desc "testBadIndexNameFailure" $ do
-  result <- liftIO $ runGetConfigException @TaskNameLookupE args
+  result <- liftIO $ runGetConfigException @IndexNameLookupE args
   expected === displayException result
   where
     desc = "Bad index name fails"
@@ -64,7 +63,7 @@ testBadIndexNameFailure = testHedgehogOne desc "testBadIndexNameFailure" $ do
       ]
     expected =
       mconcat
-        [ "No task with name 'bad-name' found in task map: '",
+        [ "No index with name 'bad-name' found in index-legend: '",
           noPathConfigFilePath,
           "'"
         ]

@@ -38,12 +38,6 @@ module Todo.Index
     partitionTaskIds,
     partition,
 
-    -- * Exceptions,
-    BlockedIdRefE (..),
-    DuplicateIdE (..),
-    DeleteE (..),
-    TaskIdNotFoundE (..),
-
     -- * Misc
     getBlockingIds,
 
@@ -76,9 +70,14 @@ import Todo.Data.Task
   )
 import Todo.Data.Task qualified as Task
 import Todo.Data.TaskId (TaskId)
-import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskStatus (TaskStatus (Blocked))
 import Todo.Data.TaskStatus qualified as TaskStatus
+import Todo.Exception
+  ( BlockedIdRefE (MkBlockedIdRefE),
+    DeleteE (DeleteRefId, DeleteTaskIdNotFound),
+    DuplicateIdE (MkDuplicateIdE),
+    TaskIdNotFoundE (MkTaskIdNotFoundE),
+  )
 import Todo.Index.Internal (Index (UnsafeIndex))
 import Todo.Index.Internal qualified as Internal
 import Todo.Prelude hiding (filter, toList)
@@ -549,66 +548,3 @@ indexPredTraversal p =
 -- | Traversal across all tasks.
 indexTraversal :: Traversal' Index SomeTask
 indexTraversal = indexPredTraversal (const True)
-
--- | Error for two tasks t1.name and t2.name having the same id.
-newtype DuplicateIdE = MkDuplicateIdE TaskId
-  deriving stock (Eq, Show)
-
-instance Exception DuplicateIdE where
-  displayException (MkDuplicateIdE id) =
-    mconcat
-      [ "Found duplicate tasks with id '",
-        unpack id.unTaskId,
-        "'."
-      ]
-
--- | Error for not finding a task id in the index.
-newtype TaskIdNotFoundE = MkTaskIdNotFoundE TaskId
-  deriving stock (Eq, Show)
-
-instance Exception TaskIdNotFoundE where
-  displayException (MkTaskIdNotFoundE taskId) =
-    mconcat
-      [ "Task id '",
-        unpack taskId.unTaskId,
-        "' not found in the index."
-      ]
-
--- | Error for a task t1 referencing task ids that do not exist.
-data BlockedIdRefE
-  = MkBlockedIdRefE
-      -- | t1.id
-      TaskId
-      -- | t1.refIds
-      (NESet TaskId)
-  deriving stock (Eq, Show)
-
-instance Exception BlockedIdRefE where
-  displayException (MkBlockedIdRefE id refIds) =
-    mconcat
-      [ "Task with id '",
-        unpack id.unTaskId,
-        "' references non-extant id(s): ",
-        unpack displayIds,
-        "."
-      ]
-    where
-      displayIds = TaskId.taskIdsToTextQuote refIds
-
--- | Errors when deleting a task.
-data DeleteE
-  = -- | Attempted to delete an id that was not found
-    DeleteTaskIdNotFound TaskIdNotFoundE
-  | -- | Attempted to delete a task that is referenced by other tasks.
-    DeleteRefId TaskId (NESet TaskId)
-  deriving stock (Eq, Show)
-
-instance Exception DeleteE where
-  displayException (DeleteTaskIdNotFound err) = displayException err
-  displayException (DeleteRefId taskId ids) =
-    mconcat
-      [ "Task id '",
-        unpack taskId.unTaskId,
-        "' is referenced by other tasks, so it cannot be deleted: ",
-        unpack (TaskId.taskIdsToTextQuote ids)
-      ]

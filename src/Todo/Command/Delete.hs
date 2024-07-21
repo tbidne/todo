@@ -24,15 +24,15 @@ import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskStatus qualified as TaskStatus
-import Todo.Exception qualified as E
-import Todo.Index
+import Todo.Exception
   ( DeleteE
       ( DeleteRefId,
         DeleteTaskIdNotFound
       ),
     TaskIdNotFoundE (MkTaskIdNotFoundE),
-    (∉),
   )
+import Todo.Exception qualified as E
+import Todo.Index ((∉))
 import Todo.Index qualified as Index
 import Todo.Prelude
 import Todo.Render qualified as Render

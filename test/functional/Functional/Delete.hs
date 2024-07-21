@@ -3,7 +3,7 @@
 module Functional.Delete (tests) where
 
 import Functional.Prelude
-import Todo.Index (DeleteE)
+import Todo.Exception (DeleteE)
 
 tests :: IO TestEnv -> TestTree
 tests testEnv =

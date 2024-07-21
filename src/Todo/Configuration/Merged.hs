@@ -5,16 +5,11 @@
 module Todo.Configuration.Merged
   ( Merged (..),
     mergeConfig,
-
-    -- * Exceptions
-    TaskNameLookupE (..),
-    XdgIndexNotFoundE (..),
   )
 where
 
 import Data.Map.Strict qualified as Map
 import Effects.FileSystem.PathReader (doesFileExist)
-import Effects.FileSystem.Utils qualified as FsUtils
 import System.OsPath qualified as FP
 import Todo.Configuration.Args (Args (command, coreConfig))
 import Todo.Configuration.ConfigPhase
@@ -32,6 +27,10 @@ import Todo.Configuration.Data.Command
 import Todo.Configuration.Data.Command qualified as Command
 import Todo.Configuration.Default (fromDefault, (<.>))
 import Todo.Configuration.Toml (Toml (coreConfig, taskNamePathMap))
+import Todo.Exception
+  ( IndexNameLookupE (MkIndexNameLookupE),
+    XdgIndexNotFoundE (MkXdgIndexNotFoundE),
+  )
 import Todo.Index qualified as Index
 import Todo.Prelude
 
@@ -53,8 +52,8 @@ mergeConfig ::
 mergeConfig args Nothing = do
   let mIndexPath = args.coreConfig.index.path
       tasksPathArgs = case mIndexPath of
-        Just indexPath -> TasksPathArgsPath indexPath
-        Nothing -> TasksPathArgsXdg
+        Just indexPath -> IndexPathArgsPath indexPath
+        Nothing -> IndexPathArgsXdg
 
   indexPath <- getTasksPath tasksPathArgs
   index <- Index.readIndex indexPath
@@ -76,14 +75,14 @@ mergeConfig args (Just (tomlPath, toml)) = do
         args.coreConfig.index.name <|> toml.coreConfig.index.name
       mIndexPath = args.coreConfig.index.path
 
-      tasksPathArgs = case mIndexPath of
-        Just indexPath -> TasksPathArgsPath indexPath
+      indexPathArgs = case mIndexPath of
+        Just indexPath -> IndexPathArgsPath indexPath
         Nothing -> case mIndexName of
           Just indexName ->
-            TasksPathArgsMap indexName tomlPath toml.taskNamePathMap
-          Nothing -> TasksPathArgsXdg
+            IndexPathArgsMap indexName tomlPath toml.taskNamePathMap
+          Nothing -> IndexPathArgsXdg
 
-  indexPath <- getTasksPath tasksPathArgs
+  indexPath <- getTasksPath indexPathArgs
   index <- Index.readIndex indexPath
 
   let command = updateCommand args.command toml
@@ -110,15 +109,15 @@ updateCommand command toml = case command of
   other -> Command.advancePhase other
 
 -- | Args for finding the index path.
-data TasksPathArgs
+data IndexPathArgs
   = -- | Explicit index path given, use it.
-    TasksPathArgsPath OsPath
+    IndexPathArgsPath OsPath
   | -- | No explicit path given, but we do have index name. Look it up in the
     -- map (the other OsPath is the toml file's path, used for looking up
     -- relative paths).
-    TasksPathArgsMap Text OsPath (Map Text OsPath)
+    IndexPathArgsMap Text OsPath (Map Text OsPath)
   | -- | No path or index name given. Lookup Xdg.
-    TasksPathArgsXdg
+    IndexPathArgsXdg
 
 -- | Retrieves the path to the tasks json file based on the configuration.
 -- The semantics are:
@@ -134,10 +133,10 @@ getTasksPath ::
     MonadPathReader m,
     MonadThrow m
   ) =>
-  TasksPathArgs ->
+  IndexPathArgs ->
   m OsPath
-getTasksPath (TasksPathArgsPath p) = pure p
-getTasksPath (TasksPathArgsMap taskName tomlPath taskNamePathMap) =
+getTasksPath (IndexPathArgsPath p) = pure p
+getTasksPath (IndexPathArgsMap taskName tomlPath taskNamePathMap) =
   -- We support absolute path and paths relative to the toml file itself.
   -- No other relative paths are allowed (e.g. relative to current directory
   -- is not handled).
@@ -148,35 +147,11 @@ getTasksPath (TasksPathArgsMap taskName tomlPath taskNamePathMap) =
         else
           let dir = FP.takeDirectory tomlPath
            in pure $ dir </> path
-    Nothing -> throwM $ MkTaskNameLookupE tomlPath taskName
-getTasksPath TasksPathArgsXdg = do
+    Nothing -> throwM $ MkIndexNameLookupE tomlPath taskName
+getTasksPath IndexPathArgsXdg = do
   xdgConfigDir <- getTodoXdgConfig
   let tasksPath = xdgConfigDir </> [osp|index.json|]
   exists <- doesFileExist tasksPath
   if exists
     then pure tasksPath
     else throwM $ MkXdgIndexNotFoundE tasksPath
-
-data TaskNameLookupE = MkTaskNameLookupE OsPath Text
-  deriving stock (Eq, Show)
-
-instance Exception TaskNameLookupE where
-  displayException (MkTaskNameLookupE path name) =
-    mconcat
-      [ "No task with name '",
-        unpack name,
-        "' found in task map: '",
-        FsUtils.decodeOsToFpLenient path,
-        "'"
-      ]
-
-newtype XdgIndexNotFoundE = MkXdgIndexNotFoundE OsPath
-  deriving stock (Eq, Show)
-
-instance Exception XdgIndexNotFoundE where
-  displayException (MkXdgIndexNotFoundE p) =
-    mconcat
-      [ "No index name or path was given, so we fell back to XDG config '",
-        FsUtils.decodeOsToFpLenient p,
-        "', but none were found."
-      ]

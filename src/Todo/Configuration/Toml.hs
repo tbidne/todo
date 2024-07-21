@@ -5,9 +5,6 @@ module Todo.Configuration.Toml
   ( -- * Primary
     Toml (..),
     maybeReadToml,
-
-    -- * Exceptions
-    ConfigNotFoundE (..),
   )
 where
 
@@ -27,6 +24,7 @@ import Todo.Configuration.Core
   )
 import Todo.Configuration.Data.RevSort (RevSort)
 import Todo.Data.Sorted (SortType)
+import Todo.Exception (ConfigNotFoundE (MkConfigNotFoundE))
 import Todo.Prelude
 import Todo.Render.Utils (ColorSwitch, UnicodeSwitch)
 
@@ -184,14 +182,3 @@ decodeToml ::
   OsPath ->
   m Toml
 decodeToml = FR.readFileUtf8ThrowM >=> throwLeft . TOML.decode
-
-newtype ConfigNotFoundE = MkConfigNotFoundE OsPath
-  deriving stock (Eq, Show)
-
-instance Exception ConfigNotFoundE where
-  displayException (MkConfigNotFoundE p) =
-    mconcat
-      [ "Config file not found: '",
-        FsUtils.decodeOsToFpLenient p,
-        "'"
-      ]

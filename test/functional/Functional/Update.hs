@@ -4,8 +4,7 @@
 module Functional.Update (tests) where
 
 import Functional.Prelude
-import Todo.Command.Update (FoundGroupNotSingleE)
-import Todo.Index (BlockedIdRefE, DuplicateIdE)
+import Todo.Exception (BlockedIdRefE, DuplicateIdE, FoundGroupNotSingleE)
 
 tests :: IO TestEnv -> TestTree
 tests testEnv =

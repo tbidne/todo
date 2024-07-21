@@ -8,7 +8,7 @@ import Control.Exception (IOException)
 import Data.Aeson (AesonException)
 import Data.Text qualified as T
 import Functional.Prelude
-import Todo.Index (BlockedIdRefE, DuplicateIdE)
+import Todo.Exception (BlockedIdRefE, DuplicateIdE)
 
 tests :: TestTree
 tests =

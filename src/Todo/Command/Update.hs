@@ -5,9 +5,6 @@ module Todo.Command.Update
     setTaskId,
     setTaskPriority,
     setTaskStatus,
-
-    -- * Exceptions
-    FoundGroupNotSingleE (..),
   )
 where
 
@@ -34,8 +31,12 @@ import Todo.Data.TaskStatus (TaskStatus, _Blocked, _BlockerId)
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp (Timestamp)
 import Todo.Data.Timestamp qualified as Timestamp
+import Todo.Exception
+  ( FoundGroupNotSingleE (MkFoundGroupNotSingleE),
+    TaskIdNotFoundE (MkTaskIdNotFoundE),
+  )
 import Todo.Exception qualified as E
-import Todo.Index (Index, TaskIdNotFoundE (MkTaskIdNotFoundE))
+import Todo.Index (Index)
 import Todo.Index qualified as Index
 import Todo.Prelude
 import Todo.Render qualified as Render
@@ -346,14 +347,3 @@ liftMatchSuccessM :: (HasCallStack, MonadThrow m) => TaskId -> MatchResult s a -
 liftMatchSuccessM _ (MatchSuccess x y) = pure (x, y)
 liftMatchSuccessM taskId MatchFailure = throwM $ MkTaskIdNotFoundE taskId
 liftMatchSuccessM taskId (MatchPartial _) = throwM $ MkFoundGroupNotSingleE taskId
-
-newtype FoundGroupNotSingleE = MkFoundGroupNotSingleE TaskId
-  deriving stock (Eq, Show)
-
-instance Exception FoundGroupNotSingleE where
-  displayException (MkFoundGroupNotSingleE taskId) =
-    mconcat
-      [ "Found a group task with id '",
-        unpack taskId.unTaskId,
-        "', but wanted a single task."
-      ]
