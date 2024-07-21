@@ -4,7 +4,6 @@ import Data.Aeson qualified as Asn
 import Data.ByteString.Lazy qualified as BSL
 import Data.Foldable (any)
 import Data.List qualified as L
-import Data.Sequence qualified as Seq
 import Data.Set.NonEmpty qualified as NESet
 import Data.Text qualified as T
 import Data.Time.Calendar (Day (ModifiedJulianDay))
@@ -93,9 +92,10 @@ taskGroupTests =
           deadline = Nothing,
           description = Nothing
         }
-    tasks = SomeTaskSingle t1 :<| SomeTaskSingle t2 :<| SomeTaskSingle t3 :<| Empty
+    tasks =
+      [SomeTaskSingle t1, SomeTaskSingle t2, SomeTaskSingle t3]
 
-testTaskGroupUsesSetStatus :: Seq SomeTask -> TestTree
+testTaskGroupUsesSetStatus :: List SomeTask -> TestTree
 testTaskGroupUsesSetStatus subtasks = testCase "TaskGroup uses set status" $ do
   let result = taskGroup.status
   Completed @=? result
@@ -109,7 +109,7 @@ testTaskGroupUsesSetStatus subtasks = testCase "TaskGroup uses set status" $ do
             subtasks
           }
 
-testTaskGroupDerivesStatus :: Seq SomeTask -> TestTree
+testTaskGroupDerivesStatus :: List SomeTask -> TestTree
 testTaskGroupDerivesStatus subtasks = testCase "TaskGroup derives status" $ do
   let result = taskGroup.status
   InProgress @=? result
@@ -135,7 +135,7 @@ testTaskGroupEmptyDerivesCompleted = testCase "TaskGroup empty derives completed
           { taskId = TaskId.unsafeTaskId "tg",
             priority = Nothing,
             status = Nothing,
-            subtasks = Empty
+            subtasks = []
           }
 
 testTaskGroupDerivesNotStarted :: TestTree
@@ -149,7 +149,7 @@ testTaskGroupDerivesNotStarted = testCase "TaskGroup not-started derives not-sta
           { taskId = TaskId.unsafeTaskId "tg",
             priority = Nothing,
             status = Nothing,
-            subtasks = t1 :<| t2 :<| Empty
+            subtasks = [t1, t2]
           }
 
     t1 =
@@ -172,7 +172,7 @@ testTaskGroupDerivesNotStarted = testCase "TaskGroup not-started derives not-sta
             description = Nothing
           }
 
-testTaskGroupUsesSetPriority :: Seq SomeTask -> TestTree
+testTaskGroupUsesSetPriority :: List SomeTask -> TestTree
 testTaskGroupUsesSetPriority subtasks = testCase "TaskGroup uses set priority" $ do
   let result = taskGroup.priority
   Low @=? result
@@ -186,7 +186,7 @@ testTaskGroupUsesSetPriority subtasks = testCase "TaskGroup uses set priority" $
             subtasks
           }
 
-testTaskGroupDerivesPriority :: Seq SomeTask -> TestTree
+testTaskGroupDerivesPriority :: List SomeTask -> TestTree
 testTaskGroupDerivesPriority subtasks = testCase "TaskGroup derives priority" $ do
   let result = taskGroup.priority
   -- Normal because only High task is Completed
@@ -212,7 +212,7 @@ testTaskGroupDerivesHigh = testCase "TaskGroup derives priority high" $ do
           { taskId = TaskId.unsafeTaskId "tg",
             priority = Nothing,
             status = Nothing,
-            subtasks = t1 :<| t2 :<| t3 :<| Empty
+            subtasks = [t1, t2, t3]
           }
 
     t1 =
@@ -256,7 +256,7 @@ testTaskGroupDerivesLow = testCase "TaskGroup derives priority low" $ do
           { taskId = TaskId.unsafeTaskId "tg",
             priority = Nothing,
             status = Nothing,
-            subtasks = t1 :<| t2 :<| Empty
+            subtasks = [t1, t2]
           }
 
     t1 =
@@ -377,7 +377,7 @@ genTaskGroup = do
         taskId
       }
   where
-    genSubtasks = Seq.fromList <$> Gen.list (Range.linearFrom 0 3 3) genSomeTask
+    genSubtasks = Gen.list (Range.linearFrom 0 3 3) genSomeTask
 
 genTask :: Gen SingleTask
 genTask = do
@@ -545,14 +545,14 @@ testTaskGroupTraversal = testPropertyNamed desc "testSomeTaskTraversal" $ proper
     getIds = Task.taskGroupTraversal % #taskId % #unTaskId
 
 exampleSomeTask :: SomeTask
-exampleSomeTask = SomeTaskGroup $ MkTaskGroup Nothing Nothing (g1 :<| g2 :<| Empty) "g0"
+exampleSomeTask = SomeTaskGroup $ MkTaskGroup Nothing Nothing [g1, g2] "g0"
   where
-    g1 = SomeTaskGroup $ MkTaskGroup Nothing Nothing (t11 :<| t12 :<| g11 :<| Empty) "g1"
+    g1 = SomeTaskGroup $ MkTaskGroup Nothing Nothing [t11, t12, g11] "g1"
     t11 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low NotStarted "t11"
     t12 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low Completed "t12"
 
-    g11 = SomeTaskGroup $ MkTaskGroup Nothing Nothing Empty "g11"
+    g11 = SomeTaskGroup $ MkTaskGroup Nothing Nothing [] "g11"
 
-    g2 = SomeTaskGroup $ MkTaskGroup Nothing (Just Completed) (t21 :<| t22 :<| Empty) "g2"
+    g2 = SomeTaskGroup $ MkTaskGroup Nothing (Just Completed) [t21, t22] "g2"
     t21 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low Completed "t21"
     t22 = SomeTaskSingle $ MkSingleTask Nothing Nothing Low InProgress "t22"

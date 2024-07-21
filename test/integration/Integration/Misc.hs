@@ -208,7 +208,7 @@ testExample = testHedgehogOne "Reads example config" "testExample" $ do
           MkTaskGroup
             { priority = Nothing,
               status = Nothing,
-              subtasks = Empty,
+              subtasks = [],
               taskId = "empty_group"
             }
       ]

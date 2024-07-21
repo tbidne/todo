@@ -162,7 +162,7 @@ setup = do
               { taskId = UnsafeTaskId $ showt counter,
                 status = Nothing,
                 priority = Nothing,
-                subtasks = l :<| r :<| Empty
+                subtasks = [l, r]
               }
 
     mkTask :: Text -> SomeTask

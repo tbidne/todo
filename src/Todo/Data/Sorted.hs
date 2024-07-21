@@ -12,7 +12,6 @@ where
 
 import Data.List qualified as L
 import Data.Ord (Down (Down))
-import Data.Sequence qualified as Seq
 import TOML (DecodeTOML (tomlDecoder))
 import Todo.Configuration.Data.RevSort (RevSort)
 import Todo.Data.Sorted.Internal
@@ -119,7 +118,7 @@ sortTaskGroupSubtasks partitionCompleted revSort c t = t {subtasks = subtasks'}
     -- TODO: Avoid the Seq <-> List conversion (Either replace a type or
     -- use Foldable).
     subtasks' =
-      Seq.fromList $ sortSomeTasks partitionCompleted revSort c (toList t.subtasks)
+      sortSomeTasks partitionCompleted revSort c (toList t.subtasks)
 
 cSomeTask :: (Ord a) => (SomeTask -> a) -> SomeTask -> SomeTask -> Ordering
 cSomeTask f x y = f x `compare` f y

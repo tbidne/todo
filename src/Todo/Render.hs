@@ -110,8 +110,8 @@ renderTaskGroup currTime color unicode nestLvl tg =
     -- by vsepLine above. If we have actual groups, the we add another newline
     -- for an empty line separating the group from its subtasks.
     subtasksRendered = case tg.subtasks of
-      Empty -> ""
-      xs@(_ :<| _) ->
+      [] -> ""
+      xs@(_ : _) ->
         line <> vsep (renderSomeTask currTime color unicode (nestLvl + 1) <$> xs)
     (bullet, bulletIndent) = statusToBullet unicode (SomeTaskGroup tg)
 

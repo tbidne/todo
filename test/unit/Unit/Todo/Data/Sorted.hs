@@ -3,7 +3,6 @@
 module Unit.Todo.Data.Sorted (tests) where
 
 import Data.List qualified as L
-import Data.Sequence qualified as Seq
 import Hedgehog.Gen qualified as G
 import Todo.Configuration.Data.RevSort (RevSort (RevSortOff, RevSortOn))
 import Todo.Data.Sorted
@@ -232,7 +231,7 @@ reverseSorted = UnsafeSortedTasks . (L.reverse . fmap go) . (.unSortedTasks)
   where
     go st@(SomeTaskSingle _) = st
     go (SomeTaskGroup t) =
-      SomeTaskGroup $ over' #subtasks (Seq.reverse . fmap go) t
+      SomeTaskGroup $ over' #subtasks (L.reverse . fmap go) t
 
 getExampleList :: IO (List SomeTask)
 getExampleList = getList examplePath

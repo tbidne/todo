@@ -166,7 +166,7 @@ data TaskGroup = MkTaskGroup
     -- | Optional status.
     status :: Maybe TaskStatus,
     -- | List of subtasks.
-    subtasks :: Seq SomeTask,
+    subtasks :: List SomeTask,
     -- | Id.
     taskId :: TaskId
   }
@@ -238,7 +238,7 @@ instance
   {-# INLINE labelOptic #-}
 
 instance
-  (k ~ A_Lens, a ~ Seq SomeTask, b ~ Seq SomeTask) =>
+  (k ~ A_Lens, a ~ List SomeTask, b ~ List SomeTask) =>
   LabelOptic "subtasks" k TaskGroup TaskGroup a b
   where
   labelOptic =
@@ -270,9 +270,9 @@ taskGroupStatus tg = case tg.status of
   Just s -> s
   Nothing -> case tg.subtasks of
     -- Empty -> Completed
-    Empty -> Completed
+    [] -> Completed
     -- NonEmpty -> multiply together
-    (x :<| xs) -> deriveStatus x.status xs
+    (x : xs) -> deriveStatus x.status xs
     where
       -- NOTE: [Deriving empty status]
       --
@@ -297,9 +297,9 @@ taskGroupPriority tg = case tg.priority of
   Just p -> p
   Nothing -> case tg.subtasks of
     -- Empty -> Normal
-    Empty -> Normal
+    [] -> Normal
     -- NonEmpty -> multiply together
-    (x :<| xs) -> derivePriority x.priority xs
+    (x : xs) -> derivePriority x.priority xs
     where
       derivePriority y =
         sconcat
@@ -480,7 +480,7 @@ someTaskPredTraversal pred = traversalVL f
               -- to keep order intact.
               flip (set' subtasksATraversal) <$> stA <*> subtasksA
 
-        subtasksATraversal :: AffineTraversal' SomeTask (Seq SomeTask)
+        subtasksATraversal :: AffineTraversal' SomeTask (List SomeTask)
         subtasksATraversal = _SomeTaskGroup % #subtasks
 
         appyIfPred :: SomeTask -> f SomeTask

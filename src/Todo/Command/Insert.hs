@@ -201,7 +201,7 @@ mkTaskGroup eIndexMaybeParentId = do
             { priority,
               status,
               taskId = tid,
-              subtasks = Empty
+              subtasks = []
             }
     mkTaskWithParentId rIndexGroupId =
       indexGroupIdToTask @m rIndexGroupId $ \(priority, status) tid ->
@@ -210,7 +210,7 @@ mkTaskGroup eIndexMaybeParentId = do
             { priority,
               status,
               taskId = tid,
-              subtasks = Empty
+              subtasks = []
             }
 
 -- | Makes a single task. If the input is simply the index (i.e. we are

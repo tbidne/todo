@@ -103,7 +103,7 @@ replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
           -- TODO: This will techincally replace all with the matching
           -- ids, though it should be fine as task ids should be unique.
           -- Maybe we could improve this.
-          let subtasks' = ((\xs -> listToSeq (go xs [])) =<< tg.subtasks)
+          let subtasks' = (`go` []) =<< tg.subtasks
            in SomeTaskGroup (tg {subtasks = subtasks'}) : acc
 
     prependNewTask = case mNewTask of

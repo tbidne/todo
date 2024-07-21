@@ -55,7 +55,6 @@ import Data.Foldable qualified as F
 import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
-import Data.Sequence qualified as Seq
 import Data.Set qualified as Set
 import Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty)
 import Data.Set.NonEmpty qualified as NESet
@@ -143,9 +142,9 @@ reallyUnsafeInsert task = over' #taskList (task :)
 -- unsafe in that t1's id is not verified for uniqueness, and the given
 -- task id may not exist in the index (in which case t1 will not be added).
 reallyUnsafeInsertAtTaskId :: TaskId -> SomeTask -> Index -> Index
-reallyUnsafeInsertAtTaskId taskId task = over' tSubtasks (task :<|)
+reallyUnsafeInsertAtTaskId taskId task = over' tSubtasks (task :)
   where
-    tSubtasks :: AffineTraversal' Index (Seq SomeTask)
+    tSubtasks :: AffineTraversal' Index (List SomeTask)
     tSubtasks = ix taskId % _SomeTaskGroup % #subtasks
 
 -- | Returns a list representation of the index.
@@ -231,7 +230,7 @@ fromList path xs = do
 
           -- Add upstream maps to list
           acc <- macc
-          let allAccs = acc :<| subtaskAccs
+          let allAccs = acc : subtaskAccs
 
           -- combine accs stuff
           (foundKeysAccs, blockedKeysAccs) <- concatAccs allAccs
@@ -241,7 +240,7 @@ fromList path xs = do
 
           pure (foundKeysAccs', Map.union blockedKeysAccs blockedKeys')
 
-    concatAccs :: (HasCallStack) => Seq FromListAcc -> m FromListAcc
+    concatAccs :: (HasCallStack) => List FromListAcc -> m FromListAcc
     concatAccs = foldl' f (pure (Set.empty, Map.empty))
       where
         f :: m FromListAcc -> FromListAcc -> m FromListAcc
@@ -339,8 +338,8 @@ partition taskPred index =
         then (st : accIn, accOut)
         else
           let subSeq = go ([], []) <$> tg.subtasks
-              (subAccIn, subAccOut) = L.unzip $ seqToList subSeq
-              tg' = tg {subtasks = listToSeq (join subAccOut)}
+              (subAccIn, subAccOut) = L.unzip subSeq
+              tg' = tg {subtasks = join subAccOut}
            in (join subAccIn <> accIn, SomeTaskGroup tg' : accOut)
 
 -- | Returns 'True' iff the TaskId exists in the index.
@@ -394,7 +393,7 @@ delete taskId index@(UnsafeIndex idx path) = case foldr go ([], Nothing) idx of
       | otherwise = case foldr go ([], Nothing) tg.subtasks of
           (_, Nothing) -> (st : tasks, mDeleted)
           (newSubtasks, Just deletedTask) ->
-            let newTaskGroup = tg {subtasks = Seq.fromList newSubtasks}
+            let newTaskGroup = tg {subtasks = newSubtasks}
              in (SomeTaskGroup newTaskGroup : tasks, Just deletedTask)
 
 -- | Returns a map of all blocking ids to blockees. For instance, if tasks
@@ -414,24 +413,22 @@ getBlockingIds (UnsafeIndex idx _path) = foldl' go Map.empty idx
              in Map.unionsWith (<>) maps
       _ -> mp
     go mp (SomeTaskGroup tg) =
-      let subMaps :: Seq (Map TaskId (NESet TaskId))
+      let subMaps :: List (Map TaskId (NESet TaskId))
           subMaps = go Map.empty <$> tg.subtasks
 
-          groupMaps :: Seq (Map TaskId (NESet TaskId))
+          groupMaps :: List (Map TaskId (NESet TaskId))
           groupMaps = case tg.status of
             Just (Blocked blocking) ->
               case TaskStatus.filterBlockingIds blocking of
-                IsEmpty -> mp :<| Empty
-                IsNonEmpty ids -> mp :<| neToSeq (idsToMaps tg.taskId ids)
-            _ -> mp :<| Empty
+                IsEmpty -> [mp]
+                IsNonEmpty ids -> mp : NE.toList (idsToMaps tg.taskId ids)
+            _ -> [mp]
        in Map.unionsWith (<>) (groupMaps <> subMaps)
 
     idsToMaps :: TaskId -> NESet TaskId -> NonEmpty (Map TaskId (NESet TaskId))
     idsToMaps taskId ids =
       (\blockingId -> Map.singleton blockingId (NESet.singleton taskId))
         <$> NESet.toList ids
-
-    neToSeq = Seq.fromList . NE.toList
 
 forWithKey :: (Applicative f) => Map k a -> (k -> a -> f b) -> f (Map k b)
 forWithKey = flip Map.traverseWithKey
