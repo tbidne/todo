@@ -6,7 +6,6 @@ module Todo.Data.TaskStatus
     parseTaskStatus,
     filterBlockingIds,
     isCompleted,
-    render,
     metavar,
 
     -- ** Optics
@@ -29,12 +28,9 @@ import Data.Aeson qualified as Asn
 import Data.Set qualified as Set
 import Data.Set.NonEmpty qualified as NESet
 import Data.Text qualified as T
-import System.Console.Pretty qualified as Pretty
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Prelude
-import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
-import Todo.Render.Utils qualified as Render.Utils
 
 -- | Something that blocks another task.
 data Blocker
@@ -162,25 +158,6 @@ instance ToJSON TaskStatus where
 isCompleted :: TaskStatus -> Bool
 isCompleted Completed = True
 isCompleted _ = False
-
--- | Renders to Builder.
-render :: ColorSwitch -> TaskStatus -> Builder
-render ColorOff Completed = "completed"
-render ColorOff InProgress = "in-progress"
-render ColorOff (Blocked tids) =
-  displayBuilder $ "blocked: " <> renderBlockers tids
-render ColorOff NotStarted = "not-started"
-render ColorOn Completed = Render.Utils.colorBuilder Pretty.Green "completed"
-render ColorOn InProgress = Render.Utils.colorBuilder Pretty.Yellow "in-progress"
-render ColorOn (Blocked tids) =
-  Render.Utils.colorBuilder Pretty.Red $ "blocked: " <> renderBlockers tids
-render ColorOn NotStarted = Render.Utils.colorBuilder Pretty.Cyan "not-started"
-
--- | taskIdsToTextCustom that single-quotes the text
-renderBlockers :: NESet Blocker -> Text
-renderBlockers = mapBlockedCustom quote (angleBracket . (.unTaskId))
-  where
-    quote t = "'" <> t <> "'"
 
 -- | Comma separates TaskIds together, using the provided function.
 mapBlockedCustom ::

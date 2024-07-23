@@ -54,25 +54,10 @@ library
   other-modules:   Paths_todo
   autogen-modules: Paths_todo
   exposed-modules:
-    Todo
-    Todo.AppT
-    Todo.Command.Delete
-    Todo.Command.Insert
-    Todo.Command.List
-    Todo.Command.Update
-    Todo.Command.Utils
-    Todo.Configuration.Args
-    Todo.Configuration.ConfigPhase
-    Todo.Configuration.Core
-    Todo.Configuration.Data.Command
-    Todo.Configuration.Data.InteractiveSwitch
-    Todo.Configuration.Data.RevSort
-    Todo.Configuration.Data.Utils
     Todo.Configuration.Default
-    Todo.Configuration.Merged
-    Todo.Configuration.Toml
     Todo.Data.Sorted
     Todo.Data.Sorted.Internal
+    Todo.Data.Sorted.RevSort
     Todo.Data.Task
     Todo.Data.Task.Optics
     Todo.Data.TaskId
@@ -86,53 +71,31 @@ library
     Todo.Index.Optics
     Todo.Index.Safe
     Todo.Prelude
-    Todo.Render
-    Todo.Render.Utils
-    Todo.Runner
     Todo.Utils
 
   build-depends:
-    , aeson                 ^>=2.2.0.0
-    , aeson-pretty          ^>=0.8.9
-    , base                  >=4.19.0.0  && <4.21
-    , bytestring            >=0.10.12.0 && <0.13
-    , containers            >=0.6.2.1   && <0.8
-    , effects-exceptions    ^>=0.1
-    , effects-fs            ^>=0.1
-    , effects-haskeline     ^>=0.1
-    , effects-optparse      ^>=0.1
-    , effects-terminal      ^>=0.1
-    , effects-time          ^>=0.1
-    , filepath              >=1.4.100.1 && <1.6
-    , haskeline             ^>=0.8.1.1
-    , mtl                   >=2.2.1     && <2.4
-    , nonempty-containers   >=0.3.4.2   && <0.4
-    , optics-core           ^>=0.4
-    , optparse-applicative  >=0.15      && <0.19
-    , pretty-terminal       ^>=0.1
-    , refined               >=0.6       && <0.9
-    , refined-extras        ^>=0.1.0.0
-    , text                  >=2.0       && <2.2
-    , text-display          >=0.0.3.0   && <0.6
-    , time                  >=1.9.3     && <1.15
-    , toml-reader           >=0.2.0.0   && <0.3
+    , aeson                ^>=2.2.0.0
+    , aeson-pretty         ^>=0.8.9
+    , base                 >=4.19.0.0  && <4.21
+    , bytestring           >=0.10.12.0 && <0.13
+    , containers           >=0.6.2.1   && <0.8
+    , effects-exceptions   ^>=0.1
+    , effects-fs           ^>=0.1
+    , effects-time         ^>=0.1
+    , nonempty-containers  >=0.3.4.2   && <0.4
+    , optics-core          ^>=0.4
+    , refined              >=0.6       && <0.9
+    , refined-extras       ^>=0.1.0.0
+    , text                 >=2.0       && <2.2
+    , text-display         >=0.0.3.0   && <0.6
+    , time                 >=1.9.3     && <1.15
+    , toml-reader          >=0.2.0.0   && <0.3
 
   -- For tuple syntax
   if impl(ghc >=9.10.1)
     build-depends: ghc-experimental ^>=0.1.0.0
 
   hs-source-dirs:  src
-
-executable todo
-  import:         common-lang
-  main-is:        Main.hs
-  build-depends:
-    , base
-    , haskeline
-    , todo
-
-  hs-source-dirs: app
-  ghc-options:    -threaded -with-rtsopts=-N
 
 test-suite unit
   import:         common-lang
@@ -163,42 +126,98 @@ test-suite unit
   hs-source-dirs: test/unit
   ghc-options:    -threaded -with-rtsopts=-N
 
-test-suite integration
+library todo-cli
+  import:          common-lang
+  other-modules:   Paths_todo
+  autogen-modules: Paths_todo
+  exposed-modules:
+    Todo.Cli
+    Todo.Cli.AppT
+    Todo.Cli.Command.Delete
+    Todo.Cli.Command.Insert
+    Todo.Cli.Command.List
+    Todo.Cli.Command.Update
+    Todo.Cli.Command.Utils
+    Todo.Cli.Configuration.Args
+    Todo.Cli.Configuration.ConfigPhase
+    Todo.Cli.Configuration.Core
+    Todo.Cli.Configuration.Data.Command
+    Todo.Cli.Configuration.Data.InteractiveSwitch
+    Todo.Cli.Configuration.Data.Utils
+    Todo.Cli.Configuration.Merged
+    Todo.Cli.Configuration.Toml
+    Todo.Cli.Prelude
+    Todo.Cli.Render
+    Todo.Cli.Render.TaskId
+    Todo.Cli.Render.TaskPriority
+    Todo.Cli.Render.TaskStatus
+    Todo.Cli.Render.Timestamp
+    Todo.Cli.Render.Utils
+
+  build-depends:
+    , base
+    , containers
+    , effects-fs
+    , effects-haskeline     ^>=0.1
+    , effects-optparse      ^>=0.1
+    , effects-terminal      ^>=0.1
+    , effects-time          ^>=0.1
+    , filepath              >=1.4.100.1 && <1.6
+    , haskeline             ^>=0.8.1.1
+    , mtl                   >=2.2.1     && <2.4
+    , optics-core
+    , optparse-applicative  >=0.15      && <0.19
+    , pretty-terminal       ^>=0.1
+    , refined
+    , refined-extras
+    , text
+    , time
+    , todo
+    , toml-reader
+
+  -- For tuple syntax
+  if impl(ghc >=9.10.1)
+    build-depends: ghc-experimental ^>=0.1.0.0
+
+  hs-source-dirs:  lib/cli/src
+
+test-suite cli-config
   import:         common-lang
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
-    Integration.Failures
-    Integration.Misc
-    Integration.Prelude
+    Test.Cli.Config.Failures
+    Test.Cli.Config.Misc
+    Test.Cli.Config.Prelude
 
   build-depends:
     , base
     , effects-exceptions
     , effects-fs
     , hedgehog
-    , mtl                  >=2.2.1 && <2.4
+    , mtl
     , nonempty-containers
     , tasty
     , tasty-hedgehog
     , tasty-hunit
     , text
     , todo
+    , todo-cli
 
-  hs-source-dirs: test/integration
+  hs-source-dirs: lib/cli/test/config
   ghc-options:    -threaded
 
-test-suite functional
+test-suite cli-functional
   import:         common-lang
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
-    Functional.Delete
-    Functional.Insert
-    Functional.List
-    Functional.Prelude
-    Functional.Prelude.GoldenParams
-    Functional.Update
+    Test.Cli.Functional.Delete
+    Test.Cli.Functional.Insert
+    Test.Cli.Functional.List
+    Test.Cli.Functional.Prelude
+    Test.Cli.Functional.Prelude.GoldenParams
+    Test.Cli.Functional.Update
 
   build-depends:
     , aeson
@@ -211,12 +230,25 @@ test-suite functional
     , effects-terminal
     , env-guard           ^>=0.2
     , mtl
-    , tasty               >=1.1.0.3  && <1.6
+    , tasty
     , tasty-golden        ^>=2.3.1.1
     , text
     , todo
+    , todo-cli
 
-  hs-source-dirs: test/functional
+  hs-source-dirs: lib/cli/test/functional
+
+executable todo
+  import:         common-lang
+  main-is:        Main.hs
+  build-depends:
+    , base
+    , haskeline
+    , todo
+    , todo-cli
+
+  hs-source-dirs: app
+  ghc-options:    -threaded -with-rtsopts=-N
 
 benchmark benchmarks
   import:         common-lang
@@ -228,5 +260,6 @@ benchmark benchmarks
     , effects-fs
     , tasty-bench  ^>=0.3
     , todo
+    , todo-cli
 
   hs-source-dirs: benchmarks

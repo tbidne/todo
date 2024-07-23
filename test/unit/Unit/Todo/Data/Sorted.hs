@@ -5,7 +5,6 @@ module Unit.Todo.Data.Sorted (tests) where
 
 import Data.Sequence qualified as Seq
 import Hedgehog.Gen qualified as G
-import Todo.Configuration.Data.RevSort (RevSort (RevSortOff, RevSortOn))
 import Todo.Data.Sorted
   ( SortType
       ( SortPriority,
@@ -17,6 +16,7 @@ import Todo.Data.Sorted
   )
 import Todo.Data.Sorted qualified as Sorted
 import Todo.Data.Sorted.Internal (SortedTasks (UnsafeSortedTasks))
+import Todo.Data.Sorted.RevSort (RevSort (RevSortOff, RevSortOn))
 import Todo.Data.Task
   ( SingleTask (taskId),
     SomeTask (SomeTaskGroup, SomeTaskSingle),

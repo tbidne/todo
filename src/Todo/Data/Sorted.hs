@@ -13,10 +13,10 @@ where
 import Data.Ord (Down (Down))
 import Data.Sequence qualified as Seq
 import TOML (DecodeTOML (tomlDecoder))
-import Todo.Configuration.Data.RevSort (RevSort)
 import Todo.Data.Sorted.Internal
   ( SortedTasks (UnsafeSortedTasks),
   )
+import Todo.Data.Sorted.RevSort (RevSort)
 import Todo.Data.Task
   ( SingleTask,
     SomeTask (SomeTaskGroup, SomeTaskSingle),

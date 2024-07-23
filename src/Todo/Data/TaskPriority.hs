@@ -1,16 +1,12 @@
 module Todo.Data.TaskPriority
   ( TaskPriority (..),
     parseTaskPriority,
-    render,
     metavar,
   )
 where
 
 import Data.Aeson qualified as Asn
-import System.Console.Pretty qualified as Pretty
 import Todo.Prelude
-import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
-import Todo.Render.Utils qualified as Render.Utils
 
 -- | Task priority
 data TaskPriority
@@ -38,14 +34,6 @@ instance ToJSON TaskPriority where
   toJSON Low = "low"
   toJSON Normal = "normal"
   toJSON High = "high"
-
-render :: ColorSwitch -> TaskPriority -> Builder
-render ColorOff Low = "low"
-render ColorOff Normal = "normal"
-render ColorOff High = "high"
-render ColorOn Low = Render.Utils.colorBuilder Pretty.Yellow "low"
-render ColorOn Normal = Render.Utils.colorBuilder Pretty.Cyan "normal"
-render ColorOn High = Render.Utils.colorBuilder Pretty.Red "high"
 
 metavar :: (IsString a) => a
 metavar = "(low | normal | high)"

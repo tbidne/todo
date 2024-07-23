@@ -158,15 +158,6 @@ import Effects.FileSystem.PathReader qualified as PR
 import Effects.FileSystem.PathWriter as X (MonadPathWriter)
 import Effects.FileSystem.Utils as X (OsPath, encodeUtf8, osp, (</>))
 import Effects.FileSystem.Utils qualified as FsUtils
-import Effects.Haskeline as X (MonadHaskeline)
-import Effects.Optparse as X (MonadOptparse)
-import Effects.System.Terminal as X
-  ( MonadTerminal (putStrLn),
-    getLine,
-    print,
-    putText,
-    putTextLn,
-  )
 import Effects.Time as X (MonadTime)
 import GHC.Base (RuntimeRep, TYPE, raise#, seq)
 import GHC.Enum as X (Bounded, Enum)
@@ -202,6 +193,7 @@ import Optics.Traversal as X (Traversal', traversalVL)
 import Refined (RefineException, type (&&))
 import Refined.Unsafe.Type (Refined (Refined))
 import System.IO as X (FilePath, IO)
+import System.IO qualified as IO
 import System.IO.Unsafe (unsafePerformIO)
 
 #if !MIN_VERSION_base(4, 20, 0)
@@ -302,13 +294,13 @@ setUncaughtExceptionHandlerDisplay =
       Just ExitSuccess -> pure ()
       -- for command failures
       Just (ExitFailure _) -> pure ()
-      Nothing -> putStrLn $ displayException ex
+      Nothing -> IO.putStrLn $ displayException ex
 #else
     printExceptExitCode ex = case fromException ex of
       Just (Ex.MkExceptionCS ExitSuccess _) -> pure ()
       -- for command failures
       Just (Ex.MkExceptionCS (ExitFailure _) _) -> pure ()
-      Nothing -> putStrLn $ displayException ex
+      Nothing -> IO.putStrLn $ displayException ex
 #endif
 
 {- ORMOLU_ENABLE -}

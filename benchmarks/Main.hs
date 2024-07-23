@@ -17,8 +17,10 @@ import Test.Tasty.Bench
     defaultMain,
     nfIO,
   )
-import Todo qualified
-import Todo.Configuration.Core (CoreConfig (MkCoreConfig))
+import Todo.Cli.Command.List qualified as List
+import Todo.Cli.Configuration.Core (CoreConfig (MkCoreConfig))
+import Todo.Cli.Prelude hiding (IO)
+import Todo.Cli.Render.Utils (ColorSwitch (ColorOff), UnicodeSwitch (UnicodeOff))
 import Todo.Configuration.Default (Default (def))
 import Todo.Data.Task
   ( SingleTask
@@ -37,8 +39,6 @@ import Todo.Data.TaskPriority (TaskPriority (Low))
 import Todo.Data.TaskStatus (TaskStatus (NotStarted))
 import Todo.Index qualified as Index
 import Todo.Index.Internal (Index (UnsafeIndex))
-import Todo.Prelude hiding (IO)
-import Todo.Render.Utils (ColorSwitch (ColorOff), UnicodeSwitch (UnicodeOff))
 import Prelude (IO)
 
 main :: IO ()
@@ -80,7 +80,7 @@ runBench :: String -> OsPath -> Benchmark
 runBench desc path = bench desc $ nfIO $ runBenchIO $ do
   index <- Index.readIndex path
   let config = MkCoreConfig ColorOff index UnicodeOff
-  Todo.listTasks config Nothing def
+  List.listTasks config Nothing def
 
 data BenchEnv = MkBenchEnv
   { benchDir :: OsPath,

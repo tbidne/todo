@@ -5,9 +5,9 @@ module Main (main) where
 
 import System.Console.Haskeline qualified as H
 import System.IO (IO)
-import Todo.AppT (runAppIO)
+import Todo.Cli qualified
+import Todo.Cli.AppT (runAppIO)
 import Todo.Prelude hiding (IO)
-import Todo.Runner qualified as Runner
 
 -- | Executable entry-point.
 --
@@ -15,4 +15,4 @@ import Todo.Runner qualified as Runner
 main :: IO ()
 main = do
   setUncaughtExceptionHandlerDisplay
-  H.runInputT H.defaultSettings $ runAppIO Runner.runTodo
+  H.runInputT H.defaultSettings $ runAppIO Todo.Cli.runTodo

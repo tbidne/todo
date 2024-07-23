@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - split
 
   pull_request:
     branches:
@@ -35,27 +36,28 @@ jobs:
         run: cabal configure --enable-tests --ghc-options -Werror
 
       - name: Compile
-        run: cabal build
+        run: cabal build all
 
       - name: Unit tests
         run: cabal test unit --test-options '--hedgehog-tests 10000'
 
-      - name: Integration tests
-        run: cabal test integration
+      - name: CLI Config tests
+        run: cabal test cli-config
 
-      - name: Functional tests
-        id: functional
-        run: cabal test functional
+      - name: CLI Functional tests
+        id: cli-functional
+        run: cabal test cli-functional
 
       - uses: actions/upload-artifact@v3
-        name: Functional Tests Upload
-        if: ${{ failure() && steps.functional.conclusion == 'failure' }}
+        name: CLI Tests Upload
+        if: ${{ failure() && steps.cli-functional.conclusion == 'failure' }}
         with:
-          name: functional-artifacts
+          name: cli-tests-artifacts
           path: |
-            test/functional/Functional/Delete/output/*
-            test/functional/Functional/Insert/output/*
-            test/functional/Functional/List/output/*
+            lib/cli/test/Test/Cli/Functional/Delete/output/*
+            lib/cli/test/Test/Cli/Functional/Insert/output/*
+            lib/cli/test/Test/Cli/Functional/List/output/*
+            lib/cli/test/Test/Cli/Functional/Update/output/*
 
       - name: Benchmarks
         if: ${{ matrix.os == 'ubuntu-latest' }}

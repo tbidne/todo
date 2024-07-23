@@ -137,6 +137,9 @@ instance Exception ConfigNotFoundE where
         "'"
       ]
 
+-- TODO: For GHC 9.10+, consider replacing this mechanism with
+-- backtraceDesired _ = False in the Exception definition.
+
 -- | Display exception, skipping callstacks for known exceptions.
 displayExceptionSkipKnownCS :: (Exception e) => e -> String
 displayExceptionSkipKnownCS = skipKnownExceptions proxies

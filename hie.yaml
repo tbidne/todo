@@ -3,17 +3,20 @@ cradle:
     - path: "./src"
       component: "lib:todo"
 
-    - path: "./app/Main.hs"
-      component: "todo:exe:todo"
-
     - path: "./test/unit"
       component: "todo:test:unit"
 
-    - path: "./test/integration"
-      component: "todo:test:integration"
+    - path: "./lib/cli/src"
+      component: "todo:lib:todo-cli"
 
-    - path: "./test/functional"
-      component: "todo:test:functional"
+    - path: "./lib/cli/test/config"
+      component: "todo:test:cli-config"
+
+    - path: "./lib/cli/test/functional"
+      component: "todo:test:cli-functional"
+
+    - path: "./app/Main.hs"
+      component: "todo:exe:todo"
 
     - path: "./benchmarks/Main.hs"
       component: "todo:bench:benchmarks"

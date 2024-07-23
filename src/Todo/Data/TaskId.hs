@@ -11,7 +11,6 @@ module Todo.Data.TaskId
     Internal.validateText,
 
     -- * Rendering
-    render,
     taskIdsToText,
     taskIdsToTextQuote,
     taskIdsToTextCustom,
@@ -22,26 +21,18 @@ module Todo.Data.TaskId
 where
 
 import Data.Text qualified as T
-import System.Console.Pretty qualified as Pretty
 import Todo.Data.TaskId.Internal
   ( TaskId,
     ValidateResult (InvalidBadChar, InvalidEmpty, Valid),
   )
 import Todo.Data.TaskId.Internal qualified as Internal
 import Todo.Prelude
-import Todo.Render.Utils (ColorSwitch (ColorOff, ColorOn))
-import Todo.Render.Utils qualified as Render.Utils
 
 -- | Unsafe task id creation.
 unsafeTaskId :: (HasCallStack) => Text -> TaskId
 unsafeTaskId txt = case Internal.mkTaskId txt of
   Left err -> error err
   Right x -> x
-
--- | Renders a TaskId.
-render :: ColorSwitch -> TaskId -> Builder
-render ColorOff = displayBuilder . (.unTaskId)
-render ColorOn = Render.Utils.colorBuilder Pretty.Blue . (.unTaskId)
 
 -- | taskIdsToTextCustom with no extra logic.
 taskIdsToText :: (Foldable f) => f TaskId -> Text
