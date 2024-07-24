@@ -1,9 +1,9 @@
 cradle:
   cabal:
-    - path: "./src"
+    - path: "./lib/core/src"
       component: "lib:todo"
 
-    - path: "./test/unit"
+    - path: "./lib/core/test/unit"
       component: "todo:test:unit"
 
     - path: "./lib/cli/src"
@@ -15,7 +15,7 @@ cradle:
     - path: "./lib/cli/test/functional"
       component: "todo:test:cli-functional"
 
-    - path: "./app/Main.hs"
+    - path: "./app/cli/Main.hs"
       component: "todo:exe:todo"
 
     - path: "./benchmarks/Main.hs"

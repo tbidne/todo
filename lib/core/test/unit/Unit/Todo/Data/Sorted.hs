@@ -175,7 +175,9 @@ testNested =
     ]
   where
     path =
-      [osp|test|]
+      [osp|lib|]
+        </> [osp|core|]
+        </> [osp|test|]
         </> [osp|unit|]
         </> [osp|Unit|]
         </> [osp|Todo|]

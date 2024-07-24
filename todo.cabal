@@ -95,7 +95,7 @@ library
   if impl(ghc >=9.10.1)
     build-depends: ghc-experimental ^>=0.1.0.0
 
-  hs-source-dirs:  src
+  hs-source-dirs:  lib/core/src
 
 test-suite unit
   import:         common-lang
@@ -123,7 +123,7 @@ test-suite unit
     , time
     , todo
 
-  hs-source-dirs: test/unit
+  hs-source-dirs: lib/core/test/unit
   ghc-options:    -threaded -with-rtsopts=-N
 
 library todo-cli
@@ -247,7 +247,7 @@ executable todo
     , todo
     , todo-cli
 
-  hs-source-dirs: app
+  hs-source-dirs: app/cli
   ghc-options:    -threaded -with-rtsopts=-N
 
 benchmark benchmarks
