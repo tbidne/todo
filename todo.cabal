@@ -175,10 +175,6 @@ library todo-cli
     , todo
     , toml-reader
 
-  -- For tuple syntax
-  if impl(ghc >=9.10.1)
-    build-depends: ghc-experimental ^>=0.1.0.0
-
   hs-source-dirs:  lib/cli/src
 
 test-suite cli-config
