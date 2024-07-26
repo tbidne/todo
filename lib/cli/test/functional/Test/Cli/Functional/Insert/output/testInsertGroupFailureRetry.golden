@@ -1,5 +1,5 @@
 
-Create a task (y/n)? 
+Create a task (y/n)? y
 Parent id(s):
 
 - groceries
@@ -8,20 +8,20 @@ Parent id(s):
 - equipment
 - empty_group
 
-Task id for parent group (leave blank for no parent)? 
+Task id for parent group (leave blank for no parent)? bad-group
 The predicate (GroupIdMember) failed with the exception: Task id 'bad-group' not found in the index.
-Task id for parent group (leave blank for no parent)? 
+Task id for parent group (leave blank for no parent)? paycheck
 The predicate (GroupIdMember) failed with the message: The task id 'paycheck' exists in the index but is a single task id, not a group.
-Task id for parent group (leave blank for no parent)? 
-Create (empty) task group (y/n)? 
+Task id for parent group (leave blank for no parent)? equipment
+Create (empty) task group (y/n)? n
 
-Id: 
-Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): 
-Priority (low | normal | high) (leave blank for normal): 
+Id: water
+Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): not-started
+Priority (low | normal | high) (leave blank for normal): high
 Description (leave blank for none): 
 Deadline (leave blank for none): 
 
-Create a task (y/n)? 
+Create a task (y/n)? n
 Successfully added task. Modified tasks:
 
 ⛔ id: soccer_match

@@ -1,5 +1,5 @@
 
-Create a task (y/n)? 
+Create a task (y/n)? y
 Parent id(s):
 
 - groceries
@@ -9,15 +9,15 @@ Parent id(s):
 - empty_group
 
 Task id for parent group (leave blank for no parent)? 
-Create (empty) task group (y/n)? 
+Create (empty) task group (y/n)? n
 
-Id: 
-Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): 
-Priority (low | normal | high) (leave blank for normal): 
+Id: new_id
+Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): not-started
+Priority (low | normal | high) (leave blank for normal): normal
 Description (leave blank for none): 
 Deadline (leave blank for none): 
 
-Create a task (y/n)? 
+Create a task (y/n)? n
 Successfully added task. Modified tasks:
 
 ❌ id: new_id

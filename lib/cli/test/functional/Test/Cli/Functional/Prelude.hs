@@ -95,13 +95,17 @@ instance MonadTerminal FuncIO where
 
 instance MonadHaskeline FuncIO where
   getInputLine s = do
-    putStrLn s
+    -- no newline so we can print response after the prompt.
+    putStr s
     responsesRef <- asks (.terminalResponsesRef)
     responses <- liftIO . readIORef $ responsesRef
     case responses of
       [] -> error "getInputLine: Expected response but received empty"
       (r : rs) -> do
         liftIO $ writeIORef responsesRef rs
+        -- print response, simulating what the output looks like to an actual
+        -- user
+        putTextLn r
         pure $ Just $ unpack r
 
 runFuncIO :: FuncEnv -> FuncIO a -> IO a

@@ -18,15 +18,15 @@ Enter task id(s) to delete:
 
 Bad Response: Received empty task id: ''
 
-Enter task id(s) to delete: 
+Enter task id(s) to delete: bad
 
 Task id 'bad' not found in the index.
 
-Enter task id(s) to delete: 
+Enter task id(s) to delete: salary
 
 Task id 'salary' not found in the index.
 
-Enter task id(s) to delete: 
+Enter task id(s) to delete: haircut empty_group soccer_match
 Found task(s):
 
 ⛔ id: soccer_match
@@ -58,7 +58,7 @@ Found task(s):
    status: completed
    priority: normal
 
-Are you sure you want to delete (y/n)? 
+Are you sure you want to delete (y/n)? y
 Successfully deleted tasks(s).
 
 

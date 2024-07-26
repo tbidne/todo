@@ -14,8 +14,8 @@ Found id(s):
 - soccer_match: blocked: <fix_car>, <groceries>
 - walk_dog: completed
 
-Enter task id to update: 
-Enter value: 
+Enter task id to update: cleats
+Enter value: boots
 Updated task:
 
 ⛔ id: boots
@@ -23,7 +23,7 @@ Updated task:
    priority: normal
    description: Get cleats
 
-Save value (y/n)? 
+Save value (y/n)? y
 Successfully updated task
 
 

@@ -14,8 +14,8 @@ Found id(s):
 - soccer_match: blocked: <fix_car>, <groceries>
 - walk_dog: completed
 
-Enter task id to update: 
-Enter value: 
+Enter task id to update: pack_bananas
+Enter value: 2020-10-15
 Updated task:
 
 ⛔ id: pack_bananas
@@ -23,7 +23,7 @@ Updated task:
    priority: normal
    deadline: 2020-10-15
 
-Save value (y/n)? 
+Save value (y/n)? y
 Successfully updated task
 
 

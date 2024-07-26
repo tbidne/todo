@@ -1,5 +1,5 @@
 
-Create a task (y/n)? 
+Create a task (y/n)? y
 Parent id(s):
 
 - groceries
@@ -9,12 +9,12 @@ Parent id(s):
 - empty_group
 
 Task id for parent group (leave blank for no parent)? 
-Create (empty) task group (y/n)? 
-Group id: 
+Create (empty) task group (y/n)? y
+Group id: group_id
 Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for none): 
 Priority (low | normal | high) (leave blank for none): 
 
-Create a task (y/n)? 
+Create a task (y/n)? y
 Parent id(s):
 
 - group_id
@@ -24,16 +24,16 @@ Parent id(s):
 - equipment
 - empty_group
 
-Task id for parent group (leave blank for no parent)? 
-Create (empty) task group (y/n)? 
+Task id for parent group (leave blank for no parent)? group_id
+Create (empty) task group (y/n)? n
 
-Id: 
-Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): 
-Priority (low | normal | high) (leave blank for normal): 
-Description (leave blank for none): 
+Id: task_a
+Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): completed
+Priority (low | normal | high) (leave blank for normal): normal
+Description (leave blank for none): some description
 Deadline (leave blank for none): 
 
-Create a task (y/n)? 
+Create a task (y/n)? y
 Parent id(s):
 
 - group_id
@@ -43,16 +43,16 @@ Parent id(s):
 - equipment
 - empty_group
 
-Task id for parent group (leave blank for no parent)? 
-Create (empty) task group (y/n)? 
+Task id for parent group (leave blank for no parent)? group_id
+Create (empty) task group (y/n)? n
 
-Id: 
-Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): 
-Priority (low | normal | high) (leave blank for normal): 
+Id: task_b
+Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): in-progress
+Priority (low | normal | high) (leave blank for normal): high
 Description (leave blank for none): 
-Deadline (leave blank for none): 
+Deadline (leave blank for none): 2020-04-08
 
-Create a task (y/n)? 
+Create a task (y/n)? n
 Successfully added task. Modified tasks:
 
 🚧 id: group_id
