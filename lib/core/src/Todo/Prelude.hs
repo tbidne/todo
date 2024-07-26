@@ -123,7 +123,6 @@ import Data.Set.NonEmpty as X (NESet)
 import Data.Set.NonEmpty qualified as NESet
 import Data.String as X (IsString (fromString), String)
 import Data.Text as X (Text, pack, unpack)
-import Data.Text qualified as T
 import Data.Text.Display as X (Display (displayBuilder), display)
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder as X (Builder)
