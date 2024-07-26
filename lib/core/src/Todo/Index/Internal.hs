@@ -106,7 +106,7 @@ lookup taskId (UnsafeIndex taskList _) = foldMapAlt go taskList
 
 -- | @replaceAtId taskId index newTask@ replaces all tasks corresponding to
 -- @taskId@ in @index@ with @newTask@.
-replaceAtId :: TaskId -> (Index s) -> Maybe SomeTask -> (Index s)
+replaceAtId :: TaskId -> Index s -> Maybe SomeTask -> Index s
 replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
   (`UnsafeIndex` path) $ foldr go Empty taskList
   where
