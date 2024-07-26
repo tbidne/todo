@@ -8,14 +8,9 @@ module Todo.Cli.Command.Insert
   )
 where
 
-import Data.Bifunctor (Bifunctor (bimap))
-import Data.Bitraversable (bitraverse)
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder qualified as TLB
 import Effects.Time (MonadTime (getSystemZonedTime))
-import Refined (Refined)
-import Refined qualified as R
-import Refined.Extras qualified as RE
 import Todo.Cli.Command.Utils qualified as CUtils
 import Todo.Cli.Configuration.Core
   ( CoreConfig
@@ -51,21 +46,10 @@ import Todo.Data.TaskPriority qualified as TaskPriority
 import Todo.Data.TaskStatus (TaskStatus (NotStarted))
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
-import Todo.Index (Index)
+import Todo.Exception (DuplicateIdE (MkDuplicateIdE))
+import Todo.Index (GroupTaskId, Index, IndexUnverified, IndexVerified, (∈))
 import Todo.Index qualified as Index
 import Todo.Index.Optics qualified as IndexO
-import Todo.Index.Safe
-  ( GroupIdMember,
-    GroupTaskId (MkGroupTaskId),
-    IndexWithData (MkIndexWithData),
-    RIndexParentId,
-    RIndexTask,
-    RIndexTaskId,
-    RIndexTaskIdParentId,
-    RIndexTaskParentId,
-    SingleTaskId (MkSingleTaskId),
-  )
-import Todo.Index.Safe qualified as Safe
 import Todo.Utils qualified as Utils
 
 -- | Inserts new task(s) into the file.
@@ -82,14 +66,17 @@ insertTask ::
   CoreConfigMerged ->
   m ()
 insertTask coreConfig = do
+  let indexUnverified = Index.unverify index
   (newIndex, newTaskIds) <-
-    Utils.whileApplySetM index getMoreTasksAns (mkSomeTask color)
+    Utils.whileApplySetM indexUnverified getMoreTasksAns (mkSomeTask color)
+
+  indexVerified <- Index.verify newIndex
 
   if null newTaskIds
     then
       putTextLn "Did not add any tasks."
     else do
-      Index.writeIndex newIndex
+      Index.writeIndex indexVerified
 
       currTime <- getSystemZonedTime
 
@@ -103,6 +90,7 @@ insertTask coreConfig = do
         $ Render.renderSorted currTime color unicode sorted
   where
     color = coreConfig.colorSwitch
+    index :: IndexVerified
     index = coreConfig.index
     unicode = coreConfig.unicodeSwitch
 
@@ -113,8 +101,8 @@ mkSomeTask ::
     MonadThrow m
   ) =>
   ColorSwitch ->
-  Index ->
-  m (Index, TaskId)
+  Index s ->
+  m (IndexUnverified, TaskId)
 mkSomeTask color index = do
   let indexToGroupIds =
         IndexO.indexTraversal
@@ -130,47 +118,37 @@ mkSomeTask color index = do
     putTextLn $ "- " <> builderToTxt idRendered
   putTextLn ""
 
-  mIndexParentId <-
+  mParentId <-
     getExtantTaskGroupIdOrEmpty
       "Task id for parent group (leave blank for no parent)? "
       index
 
-  let eIndexMaybeParentId :: Either Index RIndexParentId
-      eIndexMaybeParentId = case mIndexParentId of
-        Nothing -> Left index
-        Just parentTaskId -> Right parentTaskId
-
   shouldMkTaskGroup <- CUtils.askYesNoQ "Create (empty) task group (y/n)? "
 
-  eIndexTaskMaybeParentId <-
+  newTask <-
     if shouldMkTaskGroup
-      then mkTaskGroup eIndexMaybeParentId
-      else mkOneTask eIndexMaybeParentId
+      then SomeTaskGroup <$> mkTaskGroup index
+      else SomeTaskSingle <$> mkOneTask index
 
-  let (newIndex, taskId) = case eIndexTaskMaybeParentId of
-        Left rIndexNewTask ->
-          ( Safe.insert rIndexNewTask,
-            (R.unrefine rIndexNewTask).taskId
-          )
-        Right rIndexNewTaskAndGroupId ->
-          ( Safe.insertAtGroupId rIndexNewTaskAndGroupId,
-            (R.unrefine rIndexNewTaskAndGroupId).taskId
-          )
+  let newIndex = case mParentId of
+        Nothing -> Index.reallyUnsafeInsert newTask index
+        Just parentId -> Index.reallyUnsafeInsertAtTaskId parentId newTask index
 
-  pure (newIndex, taskId)
+  pure (newIndex, newTask.taskId)
 
 -- | Like 'mkOneTask', except we create an empty task group.
 mkTaskGroup ::
-  forall m.
+  forall m s.
   ( HasCallStack,
     MonadHaskeline m,
     MonadTerminal m,
     MonadThrow m
   ) =>
-  Either Index RIndexParentId ->
-  m (Either RIndexTask RIndexTaskParentId)
-mkTaskGroup eIndexMaybeParentId = do
-  eMkTask <- bitraverse mkTask mkTaskWithParentId eIndexMaybeParentId
+  Index s ->
+  m TaskGroup
+mkTaskGroup index = do
+  -- see NOTE: [Id prefix newline]
+  taskId <- getTaskId "\nGroup id: " index
 
   let statusPrompt =
         mconcat
@@ -189,47 +167,40 @@ mkTaskGroup eIndexMaybeParentId = do
 
   priority <- CUtils.askParseEmptyQ priorityPrompt TaskPriority.parseTaskPriority
 
-  -- see NOTE: [Redundant bimap]
   pure
-    $ bimap
-      (\f -> f (priority, status))
-      (\f -> f (priority, status))
-      eMkTask
-  where
-    mkTask index =
-      indexToTask "Group id: " index $ \(priority, status) tid ->
-        SomeTaskGroup
-          $ MkTaskGroup
-            { priority,
-              status,
-              taskId = tid,
-              subtasks = Empty
-            }
-    mkTaskWithParentId rIndexGroupId =
-      indexGroupIdToTask @m rIndexGroupId $ \(priority, status) tid ->
-        SomeTaskGroup
-          $ MkTaskGroup
-            { priority,
-              status,
-              taskId = tid,
-              subtasks = Empty
-            }
+    $ MkTaskGroup
+      { priority,
+        status,
+        taskId = taskId,
+        subtasks = Empty
+      }
 
 -- | Makes a single task. If the input is simply the index (i.e. we are
 -- inserting a top-level task), returns simply the new task to be inserted
 -- (Left). If the input is the index + group TaskId, then we return
 -- new Task + group TaskId.
 mkOneTask ::
-  forall m.
+  forall m s.
   ( HasCallStack,
     MonadHaskeline m,
     MonadTerminal m,
     MonadThrow m
   ) =>
-  Either Index RIndexParentId ->
-  m (Either RIndexTask RIndexTaskParentId)
-mkOneTask eIndexMaybeParentId = do
-  eMkTask <- bitraverse mkTask mkTaskWithParentId eIndexMaybeParentId
+  Index s ->
+  m SingleTask
+mkOneTask index = do
+  -- NOTE: [Id prefix newline]
+  --
+  -- We prefix a newline here to start of the "task data" group i.e. separate
+  -- it from the previous question, which was "should we create an empty
+  -- task group".
+  --
+  -- We don't print the newline right after there so that if this fails
+  -- (thus triggering a retry), we get newlines inbetween attempts, which
+  -- makes for nicer reading.
+  --
+  -- It might be nicer to put the newline after the failed attempt, however.
+  taskId <- getTaskId "\nId: " index
 
   let statusPrompt =
         mconcat
@@ -259,73 +230,16 @@ mkOneTask eIndexMaybeParentId = do
       "Deadline (leave blank for none): "
       (Timestamp.parseTimestamp . unpack)
 
-  -- NOTE: [Redundant bimap]
-  --
-  -- For some reason, we cannot seem to write a single polymorphic
-  --
-  --     (\f -> f (deadline, description, priority, status))
-  --
-  -- that we can use for both.
   pure
-    $ bimap
-      (\f -> f (deadline, description, priority, status))
-      (\f -> f (deadline, description, priority, status))
-      eMkTask
-  where
-    mkTask index =
-      indexToTask "\nId: " index $ \(deadline, description, priority, status) tid ->
-        SomeTaskSingle
-          $ MkSingleTask
-            { deadline,
-              description,
-              priority,
-              status,
-              taskId = tid
-            }
-    mkTaskWithParentId rIndexGroupId =
-      indexGroupIdToTask rIndexGroupId $ \(deadline, description, priority, status) tid ->
-        SomeTaskSingle
-          $ MkSingleTask
-            { deadline,
-              description,
-              priority,
-              status,
-              taskId = tid
-            }
+    $ MkSingleTask
+      { deadline,
+        description,
+        priority,
+        status,
+        taskId = taskId
+      }
 
--- | Uses the index and the given map to SomeTask to create a refined
--- SomeTask.
-indexToTask ::
-  forall m a.
-  ( HasCallStack,
-    MonadHaskeline m,
-    MonadTerminal m,
-    MonadThrow m
-  ) =>
-  Text ->
-  Index ->
-  (a -> TaskId -> SomeTask) ->
-  m (a -> RIndexTask)
-indexToTask prompt index onTaskId = do
-  indexTaskId <- getTaskId prompt index
-  pure $ \extraParams -> Safe.addTaskToId indexTaskId (onTaskId extraParams)
-
--- | Like 'indexToTask', except we compose the refined SomeTask with the
--- given refined GroupTaskId.
-indexGroupIdToTask ::
-  ( HasCallStack,
-    MonadHaskeline m,
-    MonadTerminal m,
-    MonadThrow m
-  ) =>
-  RIndexParentId ->
-  (a -> TaskId -> SomeTask) ->
-  m (a -> RIndexTaskParentId)
-indexGroupIdToTask indexParentId onTaskId = do
-  indexTaskIdParentId <- getTaskIdWithGroupId "\nId: " indexParentId
-  pure $ \extraParams -> Safe.addTaskToIdAndGroupId indexTaskIdParentId (onTaskId extraParams)
-
--- | Retrieves a TaskId guaranteed to be in the Index.
+-- | Retrieves a TaskId guaranteed to not be in the Index.
 getTaskId ::
   ( HasCallStack,
     MonadHaskeline m,
@@ -335,9 +249,9 @@ getTaskId ::
   -- | Text prompt.
   Text ->
   -- | Index.
-  Index ->
-  -- | TaskId guaranteed to be in the index.
-  m RIndexTaskId
+  Index s ->
+  -- | TaskId guaranteed to not be in the index.
+  m TaskId
 getTaskId qsn index = go
   where
     go = do
@@ -346,45 +260,12 @@ getTaskId qsn index = go
         EitherLeft err -> do
           putTextLn $ CUtils.formatBadResponse err
           go
-        EitherRight taskId -> do
-          case R.refine (MkIndexWithData index (MkSingleTaskId taskId)) of
-            Left ex -> do
-              putTextLn $ displayRefineException' ex
+        EitherRight taskId ->
+          if taskId ∈ index
+            then do
+              putTextLn $ displayExceptiont $ MkDuplicateIdE taskId
               go
-            Right indexTaskId -> pure indexTaskId
-
--- | Like 'getTaskId', except it composed the refined TaskId with the refined
--- group TaskId.
-getTaskIdWithGroupId ::
-  ( HasCallStack,
-    MonadHaskeline m,
-    MonadTerminal m,
-    MonadThrow m
-  ) =>
-  -- | Text prompt.
-  Text ->
-  -- | Refined GroupTaskId.
-  RIndexParentId ->
-  -- | GroupTaskId g and TaskId t s.t. g is in the index and t is __not__ in the index.
-  m RIndexTaskIdParentId
-getTaskIdWithGroupId qsn indexParentId = go
-  where
-    go = do
-      idTxt <- CUtils.getStrippedLine qsn
-      case TaskId.parseTaskId idTxt of
-        EitherLeft err -> do
-          putTextLn $ CUtils.formatBadResponse err
-          go
-        EitherRight taskId -> do
-          -- withTaskId is the result of adding taskId to our RIndexParentId,
-          -- but before we refine it to an RIndexTaskIdParentId
-          let withTaskId :: Refined GroupIdMember (IndexWithData (SingleTaskId, GroupTaskId))
-              withTaskId = RE.reallyUnsafeLiftR (fmap (MkSingleTaskId taskId,)) indexParentId
-          case R.refine withTaskId of
-            Left ex -> do
-              putTextLn $ displayRefineException' ex
-              go
-            Right indexTaskIdParentId -> pure $ joinRefined indexTaskIdParentId
+            else pure taskId
 
 -- | Retrieves a group TaskId guaranteed to be in the Index, or Nothing.
 getExtantTaskGroupIdOrEmpty ::
@@ -396,9 +277,9 @@ getExtantTaskGroupIdOrEmpty ::
   -- | Text prompt
   Text ->
   -- | Index
-  Index ->
-  -- | Index and group TaskId in the Index, or Nothing.
-  m (Maybe RIndexParentId)
+  Index s ->
+  -- | The group task id, if the user asked for it.
+  m (Maybe GroupTaskId)
 getExtantTaskGroupIdOrEmpty qsn index = go
   where
     go = do
@@ -410,12 +291,10 @@ getExtantTaskGroupIdOrEmpty qsn index = go
             EitherLeft err -> do
               putTextLn $ CUtils.formatBadResponse err
               go
-            EitherRight taskId -> do
-              case R.refine @GroupIdMember (MkIndexWithData index (MkGroupTaskId taskId)) of
-                Right indexParentId -> pure $ Just indexParentId
-                Left ex -> do
-                  putTextLn $ displayRefineException' ex
-                  go
+            EitherRight taskId ->
+              case Index.findGroupTaskId taskId index of
+                Left err -> putTextLn err *> go
+                Right x -> pure $ Just x
 
 getMoreTasksAns ::
   ( HasCallStack,

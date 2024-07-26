@@ -41,7 +41,7 @@ import Todo.Exception
     TaskIdNotFoundE (MkTaskIdNotFoundE),
   )
 import Todo.Exception qualified as E
-import Todo.Index (Index)
+import Todo.Index (IndexVerified)
 import Todo.Index qualified as Index
 import Todo.Index.Optics qualified as IndexO
 import Todo.Utils (MatchResult (MatchFailure, MatchPartial, MatchSuccess))
@@ -124,11 +124,11 @@ setTaskId = setTaskValueInteractiveSwitch TaskId.parseTaskId updateId
           index
       liftJustM oldTaskId mSetResult
       where
-        updateBlockers :: Index -> Index
+        updateBlockers :: IndexVerified -> IndexVerified
         updateBlockers = over' indexBlockerIdTraversal g
           where
             -- Targets all blocking ids
-            indexBlockerIdTraversal :: Traversal' Index TaskId
+            indexBlockerIdTraversal :: Traversal' IndexVerified TaskId
             indexBlockerIdTraversal =
               IndexO.indexTraversal
                 % TaskO.someTaskStatusATraversal
@@ -204,7 +204,7 @@ setTaskValueInteractiveSwitch ::
     MonadTime m
   ) =>
   (Text -> EitherString a) ->
-  (TaskId -> a -> Index -> m (Index, SomeTask)) ->
+  (TaskId -> a -> IndexVerified -> m (IndexVerified, SomeTask)) ->
   CoreConfigMerged ->
   InteractiveSwitch ->
   -- | The task id.
@@ -260,7 +260,7 @@ setTaskValueWithRetry ::
     MonadTime m
   ) =>
   (Text -> EitherString a) ->
-  (TaskId -> a -> Index -> m (Index, SomeTask)) ->
+  (TaskId -> a -> IndexVerified -> m (IndexVerified, SomeTask)) ->
   CoreConfigMerged ->
   m ()
 setTaskValueWithRetry parser setIndexFn coreConfig = go
@@ -298,7 +298,7 @@ setTaskValue ::
     MonadTerminal m,
     MonadTime m
   ) =>
-  (TaskId -> a -> Index -> m (Index, SomeTask)) ->
+  (TaskId -> a -> IndexVerified -> m (IndexVerified, SomeTask)) ->
   CoreConfigMerged ->
   TaskId ->
   -- | The task value.
@@ -318,7 +318,7 @@ saveUpdated ::
     MonadFileWriter m,
     MonadTerminal m
   ) =>
-  Index ->
+  IndexVerified ->
   m ()
 saveUpdated newIndex = do
   Index.writeIndex newIndex

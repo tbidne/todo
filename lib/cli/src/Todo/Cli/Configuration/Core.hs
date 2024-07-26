@@ -25,7 +25,7 @@ import Todo.Cli.Configuration.ConfigPhase
   )
 import Todo.Cli.Prelude
 import Todo.Cli.Render.Utils (ColorSwitch, UnicodeSwitch)
-import Todo.Index (Index)
+import Todo.Index (IndexVerified)
 
 data IndexConfig p = MkIndexConfig
   { name :: Maybe Text,
@@ -45,7 +45,7 @@ type IndexF :: ConfigPhase -> Type
 type family IndexF p where
   IndexF ConfigPhaseArgs = IndexConfig ConfigPhaseArgs
   IndexF ConfigPhaseToml = IndexConfig ConfigPhaseToml
-  IndexF ConfigPhaseMerged = Index
+  IndexF ConfigPhaseMerged = IndexVerified
 
 type CoreConfig :: ConfigPhase -> Type
 data CoreConfig p = MkCoreConfig

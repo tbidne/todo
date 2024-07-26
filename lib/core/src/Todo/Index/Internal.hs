@@ -2,6 +2,9 @@
 
 module Todo.Index.Internal
   ( Index (..),
+    IndexState (..),
+    IndexUnverified,
+    IndexVerified,
     lookup,
     replaceAtId,
   )
@@ -17,19 +20,35 @@ import Todo.Data.Task
 import Todo.Data.TaskId (TaskId)
 import Todo.Prelude
 
--- | Todo index.
-data Index = UnsafeIndex (Seq SomeTask) OsPath
+-- | The possible verification states w.r.t internal invariants. These are:
+--
+-- 1. All task ids unique.
+-- 2. All id references exist.
+data IndexState
+  = -- | Invariants unverified.
+    IndexStateUnverified
+  | -- | Invariants verified.
+    IndexStateVerified
   deriving stock (Eq, Show)
 
-instance HasField "taskList" Index (Seq SomeTask) where
+type IndexUnverified = Index IndexStateUnverified
+
+type IndexVerified = Index IndexStateVerified
+
+-- | Todo index.
+type Index :: IndexState -> Type
+data Index s = UnsafeIndex (Seq SomeTask) OsPath
+  deriving stock (Eq, Show)
+
+instance HasField "taskList" (Index s) (Seq SomeTask) where
   getField (UnsafeIndex tl _) = tl
 
-instance HasField "path" Index OsPath where
+instance HasField "path" (Index s) OsPath where
   getField (UnsafeIndex _ p) = p
 
 instance
   (k ~ A_Lens, a ~ Seq SomeTask, b ~ Seq SomeTask) =>
-  LabelOptic "taskList" k Index Index a b
+  LabelOptic "taskList" k (Index s) (Index s) a b
   where
   labelOptic =
     lensVL
@@ -42,7 +61,7 @@ instance
 
 instance
   (k ~ A_Lens, a ~ OsPath, b ~ OsPath) =>
-  LabelOptic "path" k Index Index a b
+  LabelOptic "path" k (Index s) (Index s) a b
   where
   labelOptic =
     lensVL
@@ -53,27 +72,27 @@ instance
             (f _path)
   {-# INLINE labelOptic #-}
 
-type instance At.Index Index = TaskId
+type instance At.Index (Index _) = TaskId
 
-type instance IxValue Index = SomeTask
+type instance IxValue (Index _) = SomeTask
 
-instance Ixed Index where
-  type IxKind Index = An_AffineTraversal
+instance Ixed (Index s) where
+  type IxKind (Index s) = An_AffineTraversal
 
-  ix :: TaskId -> AffineTraversal' Index SomeTask
+  ix :: TaskId -> AffineTraversal' (Index s) SomeTask
   ix taskId =
     atraversal
       (\idx -> mToE idx $ lookup taskId idx)
       (\idx -> replaceAtId taskId idx . Just)
   {-# INLINE ix #-}
 
-instance At Index where
-  at :: TaskId -> Lens' Index (Maybe SomeTask)
+instance At (Index s) where
+  at :: TaskId -> Lens' (Index s) (Maybe SomeTask)
   at taskId = lens (lookup taskId) (replaceAtId taskId)
   {-# INLINE at #-}
 
 -- | Looks up the TaskId in the Index.
-lookup :: TaskId -> Index -> Maybe SomeTask
+lookup :: TaskId -> Index s -> Maybe SomeTask
 lookup taskId (UnsafeIndex taskList _) = foldMapAlt go taskList
   where
     go (SomeTaskSingle t) =
@@ -87,7 +106,7 @@ lookup taskId (UnsafeIndex taskList _) = foldMapAlt go taskList
 
 -- | @replaceAtId taskId index newTask@ replaces all tasks corresponding to
 -- @taskId@ in @index@ with @newTask@.
-replaceAtId :: TaskId -> Index -> Maybe SomeTask -> Index
+replaceAtId :: TaskId -> (Index s) -> Maybe SomeTask -> (Index s)
 replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
   (`UnsafeIndex` path) $ foldr go Empty taskList
   where
@@ -100,7 +119,7 @@ replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
       if tg.taskId == taskId
         then prependNewTask acc
         else
-          -- TODO: This will techincally replace all with the matching
+          -- TODO: This will technically replace all with the matching
           -- ids, though it should be fine as task ids should be unique.
           -- Maybe we could improve this.
           let subtasks' = (`go` Empty) =<< tg.subtasks

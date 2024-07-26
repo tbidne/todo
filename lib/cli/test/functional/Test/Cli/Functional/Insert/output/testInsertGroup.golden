@@ -10,6 +10,7 @@ Parent id(s):
 
 Task id for parent group (leave blank for no parent)? 
 Create (empty) task group (y/n)? y
+
 Group id: group_id
 Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for none): 
 Priority (low | normal | high) (leave blank for none): 
