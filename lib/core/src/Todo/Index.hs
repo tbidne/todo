@@ -512,6 +512,10 @@ setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetRe
     mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
 {-# INLINEABLE setSomeTaskValueMappedValidate #-}
 
+-- TODO: This module is pretty large, and could use some splitting /
+-- reorganization. Start with the validator functions for updates,
+-- see FIXME: [Update Index verification].
+
 unverify :: Index s -> IndexUnverified
 unverify = coerce
 
