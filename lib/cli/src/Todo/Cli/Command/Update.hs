@@ -47,6 +47,11 @@ import Todo.Index.Optics qualified as IndexO
 import Todo.Utils (MatchResult (MatchFailure, MatchPartial, MatchSuccess))
 import Todo.Utils qualified as Utils
 
+-- FIXME: [Update Index verification]
+--
+-- This module could almost certainly benefit from some reimagining w.r.t
+-- the new Index verification.
+
 setTaskDeadline ::
   ( HasCallStack,
     MonadCatch m,
