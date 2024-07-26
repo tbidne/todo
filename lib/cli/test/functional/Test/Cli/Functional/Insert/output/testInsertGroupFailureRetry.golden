@@ -9,9 +9,9 @@ Parent id(s):
 - empty_group
 
 Task id for parent group (leave blank for no parent)? bad-group
-The predicate (GroupIdMember) failed with the exception: Task id 'bad-group' not found in the index.
+Task id 'bad-group' not found in the index.
 Task id for parent group (leave blank for no parent)? paycheck
-The predicate (GroupIdMember) failed with the message: The task id 'paycheck' exists in the index but is a single task id, not a group.
+The task id 'paycheck' exists in the index but is a single task id, not a group.
 Task id for parent group (leave blank for no parent)? equipment
 Create (empty) task group (y/n)? n
 

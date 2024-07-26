@@ -2,13 +2,21 @@ module Todo.Index
   ( -- * Types
     Index,
 
+    -- ** State
+    IndexState (..),
+    IndexUnverified,
+    IndexVerified,
+
     -- * Creation
     readIndex,
     readTaskList,
     fromList,
+    validate,
 
     -- * Lookup
     Internal.lookup,
+    GroupTaskId,
+    findGroupTaskId,
 
     -- * Membership
     member,
@@ -35,6 +43,10 @@ module Todo.Index
     filterOnIds,
     partitionTaskIds,
     partition,
+
+    -- * Verification
+    unverify,
+    verify,
 
     -- * Misc
     getBlockingIds,
@@ -66,8 +78,14 @@ import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Exception
   ( BlockedIdRefE (MkBlockedIdRefE),
     DuplicateIdE (MkDuplicateIdE),
+    TaskIdNotFoundE (MkTaskIdNotFoundE),
   )
-import Todo.Index.Internal (Index (UnsafeIndex))
+import Todo.Index.Internal
+  ( Index (UnsafeIndex),
+    IndexState (IndexStateUnverified, IndexStateVerified),
+    IndexUnverified,
+    IndexVerified,
+  )
 import Todo.Index.Internal qualified as Internal
 import Todo.Prelude hiding (filter, toList)
 import Todo.Utils (MatchResult)
@@ -80,7 +98,7 @@ readIndex ::
     MonadThrow m
   ) =>
   OsPath ->
-  m Index
+  m IndexVerified
 readIndex = readTaskList >=> uncurry fromList
 {-# INLINEABLE readIndex #-}
 
@@ -89,7 +107,7 @@ writeIndex ::
   ( HasCallStack,
     MonadFileWriter m
   ) =>
-  Index ->
+  IndexVerified ->
   m ()
 writeIndex (UnsafeIndex taskList path) = writeBinaryFile path encoded
   where
@@ -114,22 +132,25 @@ readTaskList path = do
 {-# INLINEABLE readTaskList #-}
 
 -- | Inserts a task into the index. Note that this does __not__ check that
--- the id is not a duplicate i.e. this should only be used when the check has
--- already been performed.
-reallyUnsafeInsert :: SomeTask -> Index -> Index
-reallyUnsafeInsert task = over' #taskList (task :<|)
+-- the id is not a duplicate, hence the need for verification.
+reallyUnsafeInsert :: SomeTask -> Index s -> IndexUnverified
+reallyUnsafeInsert task = unverify . over' #taskList (task :<|)
+
+-- TODO: We probably do __not__ want reallyUnsafeInsertAtTaskId to silently
+-- fail if the task id does not exist. There should be some kind of
+-- error here.
 
 -- | Inserts a new task t1 at the task id. Like 'reallyUnsafeInsert', this is
 -- unsafe in that t1's id is not verified for uniqueness, and the given
 -- task id may not exist in the index (in which case t1 will not be added).
-reallyUnsafeInsertAtTaskId :: TaskId -> SomeTask -> Index -> Index
-reallyUnsafeInsertAtTaskId taskId task = over' tSubtasks (task :<|)
+reallyUnsafeInsertAtTaskId :: GroupTaskId -> SomeTask -> Index s -> IndexUnverified
+reallyUnsafeInsertAtTaskId taskId task = unverify . over' tSubtasks (task :<|)
   where
-    tSubtasks :: AffineTraversal' Index (Seq SomeTask)
-    tSubtasks = ix taskId % _SomeTaskGroup % #subtasks
+    tSubtasks :: AffineTraversal' (Index s) (Seq SomeTask)
+    tSubtasks = ix taskId.unGroupTaskId % _SomeTaskGroup % #subtasks
 
 -- | Returns a list representation of the index.
-toList :: Index -> (OsPath, Seq SomeTask)
+toList :: Index s -> (OsPath, Seq SomeTask)
 toList (UnsafeIndex taskList path) = (path, taskList)
 
 type IdSet = Set TaskId
@@ -138,6 +159,9 @@ type IdSet = Set TaskId
 type IdRefMap = Map TaskId (NESet TaskId)
 
 type FromListAcc = Tuple2 IdSet IdRefMap
+
+verify :: (HasCallStack, MonadThrow m) => Index s -> m IndexVerified
+verify (UnsafeIndex taskList path) = fromList path taskList
 
 -- NOTE: [Index representation]
 --
@@ -163,7 +187,7 @@ fromList ::
   ) =>
   OsPath ->
   Seq SomeTask ->
-  m Index
+  m IndexVerified
 fromList path xs = do
   (foundKeys, blockedKeys) <- mkMaps
 
@@ -253,14 +277,17 @@ fromList path xs = do
     {-# INLINEABLE updateFoundKeys #-}
 {-# INLINEABLE fromList #-}
 
+validate :: (HasCallStack, MonadThrow m) => IndexUnverified -> m IndexVerified
+validate index = fromList index.path index.taskList
+
 -- | Filters the index on the task ids. Included tasks are those with an id
 -- in the set, or task groups who have children in the set.
 filterOnIds ::
   -- | Ids to take.
   Set TaskId ->
   -- | Index
-  Index ->
-  Index
+  Index s ->
+  Index s
 filterOnIds taskIds = filterTopLevel go
   where
     go :: SomeTask -> Bool
@@ -271,7 +298,7 @@ filterOnIds taskIds = filterTopLevel go
 -- | Filters the index on some predicate. Note this runs the predicate on
 -- the top-level tasks __only__. Thus if you need to filter on subtasks,
 -- the passed predicate will have todo this itself.
-filterTopLevel :: (SomeTask -> Bool) -> Index -> Index
+filterTopLevel :: (SomeTask -> Bool) -> Index s -> Index s
 filterTopLevel p (UnsafeIndex taskList path) = UnsafeIndex (Seq.filter p taskList) path
 
 -- | Partitions the Index on the TaskId set. The left result is all tasks
@@ -283,9 +310,9 @@ partitionTaskIds ::
   -- | TaskIds set s.
   NESet TaskId ->
   -- | Index to partition.
-  Index ->
+  Index s ->
   -- | (Tasks in s, Tasks not in s)
-  Tuple2 Index Index
+  Tuple2 (Index s) (Index s)
 partitionTaskIds taskIds = partition pred
   where
     pred = (`NESet.member` taskIds) . (.taskId)
@@ -305,9 +332,9 @@ partition ::
   -- | Predicate p.
   (SomeTask -> Bool) ->
   -- | Index to partition.
-  Index ->
+  Index s ->
   -- | (p == True, p == False)
-  Tuple2 Index Index
+  Tuple2 (Index s) (Index s)
 partition taskPred index =
   (UnsafeIndex tasksIn index.path, UnsafeIndex tasksOut index.path)
   where
@@ -328,23 +355,23 @@ partition taskPred index =
            in (join subAccIn <> accIn, SomeTaskGroup tg' :<| accOut)
 
 -- | Returns 'True' iff the TaskId exists in the index.
-member :: TaskId -> Index -> Bool
+member :: TaskId -> Index s -> Bool
 -- member taskId = isJust . Internal.lookup taskId
 -- member taskId = is _Just . preview (ix taskId)
 member taskId = is (ix taskId)
 
 -- | Operator alias for 'member'. U+2216.
-(∈) :: TaskId -> Index -> Bool
+(∈) :: TaskId -> Index s -> Bool
 (∈) = member
 
 infix 4 ∈
 
 -- | Negation of 'member'.
-notMember :: TaskId -> Index -> Bool
+notMember :: TaskId -> Index s -> Bool
 notMember taskId = not . member taskId
 
 -- | Negation of '(∈)'. U+2209.
-(∉) :: TaskId -> Index -> Bool
+(∉) :: TaskId -> Index s -> Bool
 (∉) = notMember
 
 infix 4 ∉
@@ -353,7 +380,7 @@ infix 4 ∉
 -- t1 and t2 are both blocked by t3, then there should be an entry:
 --
 -- t3 -> [t1, t2]
-getBlockingIds :: Index -> Map TaskId (NESet TaskId)
+getBlockingIds :: Index s -> Map TaskId (NESet TaskId)
 getBlockingIds (UnsafeIndex idx _path) = foldl' go Map.empty idx
   where
     go :: Map TaskId (NESet TaskId) -> SomeTask -> Map TaskId (NESet TaskId)
@@ -397,7 +424,7 @@ forWithKey_ mp = void . forWithKey mp
 --
 -- For general updates, use 'setSomeTaskValueValidate'.
 reallyUnsafeSetSomeTaskValue ::
-  forall a.
+  forall a s.
   -- | Lens for the task value we want to set.
   Lens' SomeTask a ->
   -- | Id for the task to set.
@@ -405,16 +432,16 @@ reallyUnsafeSetSomeTaskValue ::
   -- | The new value.
   a ->
   -- | The index.
-  Index ->
+  Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  Maybe (Index, SomeTask)
+  Maybe (Index s, SomeTask)
 reallyUnsafeSetSomeTaskValue taskLens taskId newA index = mSetResult
   where
     mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
 
 reallyUnsafeSetTaskValue ::
-  forall a.
+  forall a s.
   -- | Lens for the task value we want to set.
   Lens' SingleTask a ->
   -- | Id for the task to set.
@@ -422,10 +449,10 @@ reallyUnsafeSetTaskValue ::
   -- | The new value.
   a ->
   -- | The index.
-  Index ->
+  Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  MatchResult Index SomeTask
+  MatchResult (Index s) SomeTask
 reallyUnsafeSetTaskValue taskLens taskId newA index = mSetResult
   where
     mSetResult =
@@ -439,7 +466,7 @@ reallyUnsafeSetTaskValue taskLens taskId newA index = mSetResult
 -- We validate the result, since some updates can break invariants
 -- (e.g. duplicate task ids, blocked id reference).
 setSomeTaskValueValidate ::
-  forall m a.
+  forall m a s.
   ( MonadThrow m
   ) =>
   -- | Lens for the task value we want to set.
@@ -449,21 +476,21 @@ setSomeTaskValueValidate ::
   -- | The new value.
   a ->
   -- | The index.
-  Index ->
+  Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  m (Maybe (Index, SomeTask))
+  m (Maybe (IndexVerified, SomeTask))
 setSomeTaskValueValidate = setSomeTaskValueMappedValidate identity
 {-# INLINEABLE setSomeTaskValueValidate #-}
 
 -- | Like 'setSomeTaskValueValidate', except we run the index mapping
 -- function on the result before validation. The mapped index is returned.
 setSomeTaskValueMappedValidate ::
-  forall m a.
+  forall m a s.
   ( MonadThrow m
   ) =>
   -- | Index mapper.
-  (Index -> Index) ->
+  (Index s -> Index s) ->
   -- | Lens for the task value we want to set.
   Lens' SomeTask a ->
   -- | Id for the task to set.
@@ -471,10 +498,10 @@ setSomeTaskValueMappedValidate ::
   -- | The new value.
   a ->
   -- | The index.
-  Index ->
+  Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  m (Maybe (Index, SomeTask))
+  m (Maybe (IndexVerified, SomeTask))
 setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetResult of
   Nothing -> pure Nothing
   Just (newIndex, newTask) -> do
@@ -484,3 +511,23 @@ setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetRe
   where
     mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
 {-# INLINEABLE setSomeTaskValueMappedValidate #-}
+
+unverify :: Index s -> IndexUnverified
+unverify = coerce
+
+-- | Newtype for a group task id.
+newtype GroupTaskId = MkGroupTaskId {unGroupTaskId :: TaskId}
+  deriving stock (Eq, Show)
+
+findGroupTaskId :: TaskId -> Index s -> Either Text GroupTaskId
+findGroupTaskId taskId index = case Internal.lookup taskId index of
+  Nothing -> Left $ displayExceptiont $ MkTaskIdNotFoundE taskId
+  Just (SomeTaskSingle _) ->
+    Left
+      $ mconcat
+        [ "The task id '",
+          taskId.unTaskId,
+          "' exists in the index but is a single task id, not a group."
+        ]
+  (Just (SomeTaskGroup _)) ->
+    Right $ MkGroupTaskId taskId

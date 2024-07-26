@@ -12,7 +12,7 @@ Task id for parent group (leave blank for no parent)?
 Create (empty) task group (y/n)? n
 
 Id: groceries
-The predicate (TaskIdNotMember) failed with the exception: Found duplicate tasks with id 'groceries'.
+Found duplicate tasks with id 'groceries'.
 
 Id: test_id
 Status (blocked: <blockers> | completed | in-progress | not-started) (leave blank for not-started): bad_status

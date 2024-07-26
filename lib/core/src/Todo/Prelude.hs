@@ -49,8 +49,6 @@ module Todo.Prelude
     EitherString (..),
     builderToTxt,
     displayExceptiont,
-    displayRefineException',
-    joinRefined,
     stripNulls,
     getTodoXdgConfig,
     mToE,
@@ -85,7 +83,7 @@ import Data.Aeson as X (FromJSON (parseJSON), ToJSON (toJSON), Value (Null))
 import Data.Aeson.Types (Pair)
 import Data.Bool as X (Bool (False, True), not, otherwise, (&&), (||))
 import Data.Char as X (Char)
-import Data.Coerce (coerce)
+import Data.Coerce as X (coerce)
 import Data.Either as X (Either (Left, Right))
 import Data.Eq as X (Eq ((==)), (/=))
 import Data.Foldable as X
@@ -172,7 +170,8 @@ import GHC.Show as X (Show (show))
 import GHC.Stack as X (HasCallStack)
 import Optics.AffineFold as X (An_AffineFold, preview)
 import Optics.AffineTraversal as X
-  ( AffineTraversal',
+  ( AffineTraversal,
+    AffineTraversal',
     An_AffineTraversal,
     atraversal,
   )
@@ -190,8 +189,6 @@ import Optics.Prism as X (Prism, Prism', prism)
 import Optics.Re as X (re)
 import Optics.Setter as X (A_Setter, over', set')
 import Optics.Traversal as X (Traversal', traversalVL)
-import Refined (RefineException, type (&&))
-import Refined.Unsafe.Type (Refined (Refined))
 import System.IO as X (FilePath, IO)
 import System.IO qualified as IO
 import System.IO.Unsafe (unsafePerformIO)
@@ -340,18 +337,8 @@ instance MonadFail EitherString where
 stripNulls :: List Pair -> List Pair
 stripNulls = filter (\(_, v) -> v /= Null)
 
--- | RefineException includes whitespace formatting we really do not want;
--- in particular, somehow the whitespace differs across GHC versions
--- (i.e. GHC 9.8 and 9.10), leading to golden test errors. Thus we strip
--- it here.
-displayRefineException' :: RefineException -> Text
-displayRefineException' = T.strip . pack . displayException
-
 displayExceptiont :: (Exception e) => e -> Text
 displayExceptiont = pack . displayException
-
-joinRefined :: Refined p (Refined q x) -> Refined (q && p) x
-joinRefined = coerce
 
 getTodoXdgConfig :: (HasCallStack, MonadPathReader m) => m OsPath
 getTodoXdgConfig = PR.getXdgConfig [osp|todo|]
