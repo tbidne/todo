@@ -22,6 +22,11 @@ module Todo.Utils
     overPreviewPartialNode',
     setPreviewPartialNode',
 
+    -- *** Optics
+    _MatchSuccess,
+    _MatchPartial,
+    _MatchFailure,
+
     -- * Aeson
     validateKeys,
   )
@@ -213,6 +218,39 @@ data MatchResult s a
   | -- | Match completely succeeded.
     MatchSuccess s a
   deriving stock (Eq, Show)
+
+_MatchFailure :: Prism' (MatchResult s a) ()
+_MatchFailure =
+  prism
+    (const MatchFailure)
+    ( \case
+        MatchSuccess s a -> Left $ MatchSuccess s a
+        MatchPartial x -> Left $ MatchPartial x
+        MatchFailure -> Right ()
+    )
+{-# INLINE _MatchFailure #-}
+
+_MatchPartial :: Prism' (MatchResult s a) a
+_MatchPartial =
+  prism
+    MatchPartial
+    ( \case
+        MatchSuccess s a -> Left $ MatchSuccess s a
+        MatchPartial x -> Left $ MatchPartial x
+        MatchFailure -> Left MatchFailure
+    )
+{-# INLINE _MatchPartial #-}
+
+_MatchSuccess :: Prism (MatchResult s a) (MatchResult t a) (Tuple2 s a) (Tuple2 t a)
+_MatchSuccess =
+  prism
+    (uncurry MatchSuccess)
+    ( \case
+        MatchSuccess s a -> Right (s, a)
+        MatchPartial x -> Left $ MatchPartial x
+        MatchFailure -> Left MatchFailure
+    )
+{-# INLINE _MatchSuccess #-}
 
 -- | Traversal for any Traversable.
 traversal :: (Traversable f) => Traversal' (f a) a
