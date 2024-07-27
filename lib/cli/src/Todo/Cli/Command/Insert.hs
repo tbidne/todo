@@ -131,8 +131,8 @@ mkSomeTask color index = do
       else SomeTaskSingle <$> mkOneTask index
 
   let newIndex = case mParentId of
-        Nothing -> Index.reallyUnsafeInsert newTask index
-        Just parentId -> Index.reallyUnsafeInsertAtTaskId parentId newTask index
+        Nothing -> Index.insert newTask index
+        Just parentId -> Index.insertAtTaskId parentId newTask index
 
   pure (newIndex, newTask.taskId)
 
