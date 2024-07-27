@@ -29,10 +29,9 @@ module Todo.Index
     reallyUnsafeInsertAtTaskId,
 
     -- * Update
-    reallyUnsafeSetSomeTaskValue,
-    setSomeTaskValueValidate,
-    setSomeTaskValueMappedValidate,
-    reallyUnsafeSetTaskValue,
+    setSomeTaskValue,
+    setSomeTaskValueMapped,
+    setTaskValue,
 
     -- * Elimination
     writeIndex,
@@ -88,7 +87,7 @@ import Todo.Index.Internal
   )
 import Todo.Index.Internal qualified as Internal
 import Todo.Prelude hiding (filter, toList)
-import Todo.Utils (MatchResult)
+import Todo.Utils (MatchResult, _MatchSuccess)
 import Todo.Utils qualified as Utils
 
 -- | Reads the file to an 'Index'.
@@ -419,11 +418,9 @@ forWithKey_ :: (Applicative f) => Map k a -> (k -> a -> f b) -> f ()
 forWithKey_ mp = void . forWithKey mp
 
 -- | Attempts to set a value for the corresponding task in the index.
--- This performs __no__ validation, so it must only be used with updates that
--- cannot break internal invariants (e.g. updating the priority is safe).
 --
--- For general updates, use 'setSomeTaskValueValidate'.
-reallyUnsafeSetSomeTaskValue ::
+-- For general updates, use 'setSomeTaskValue'.
+setSomeTaskValue ::
   forall a s.
   -- | Lens for the task value we want to set.
   Lens' SomeTask a ->
@@ -435,12 +432,10 @@ reallyUnsafeSetSomeTaskValue ::
   Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  Maybe (Index s, SomeTask)
-reallyUnsafeSetSomeTaskValue taskLens taskId newA index = mSetResult
-  where
-    mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
+  Maybe (IndexUnverified, SomeTask)
+setSomeTaskValue = setSomeTaskValueMapped unverify
 
-reallyUnsafeSetTaskValue ::
+setTaskValue ::
   forall a s.
   -- | Lens for the task value we want to set.
   Lens' SingleTask a ->
@@ -452,8 +447,9 @@ reallyUnsafeSetTaskValue ::
   Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  MatchResult (Index s) SomeTask
-reallyUnsafeSetTaskValue taskLens taskId newA index = mSetResult
+  MatchResult IndexUnverified SomeTask
+setTaskValue taskLens taskId newA index =
+  over' (_MatchSuccess % _1) unverify mSetResult
   where
     mSetResult =
       Utils.setPreviewPartialNode'
@@ -462,35 +458,11 @@ reallyUnsafeSetTaskValue taskLens taskId newA index = mSetResult
         newA
         index
 
--- | Attempts to set a value for the corresponding task in the index.
--- We validate the result, since some updates can break invariants
--- (e.g. duplicate task ids, blocked id reference).
-setSomeTaskValueValidate ::
-  forall m a s.
-  ( MonadThrow m
-  ) =>
-  -- | Lens for the task value we want to set.
-  Lens' SomeTask a ->
-  -- | Id for the task to set.
-  TaskId ->
-  -- | The new value.
-  a ->
-  -- | The index.
-  Index s ->
-  -- | If successful (task id exists), returns the new index and modified
-  -- task.
-  m (Maybe (IndexVerified, SomeTask))
-setSomeTaskValueValidate = setSomeTaskValueMappedValidate identity
-{-# INLINEABLE setSomeTaskValueValidate #-}
-
--- | Like 'setSomeTaskValueValidate', except we run the index mapping
+-- | Like 'setSomeTaskValue', except we run the index mapping
 -- function on the result before validation. The mapped index is returned.
-setSomeTaskValueMappedValidate ::
-  forall m a s.
-  ( MonadThrow m
-  ) =>
+setSomeTaskValueMapped ::
   -- | Index mapper.
-  (Index s -> Index s) ->
+  (Index s -> IndexUnverified) ->
   -- | Lens for the task value we want to set.
   Lens' SomeTask a ->
   -- | Id for the task to set.
@@ -501,16 +473,12 @@ setSomeTaskValueMappedValidate ::
   Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  m (Maybe (IndexVerified, SomeTask))
-setSomeTaskValueMappedValidate mapIndex taskLens taskId newA index = case mSetResult of
-  Nothing -> pure Nothing
-  Just (newIndex, newTask) -> do
-    let mappedIndex = mapIndex newIndex
-    validIndex <- fromList mappedIndex.path mappedIndex.taskList
-    pure $ Just (validIndex, newTask)
+  Maybe (Tuple2 IndexUnverified SomeTask)
+setSomeTaskValueMapped mapIndex taskLens taskId newA index =
+  over' (_Just % _1) mapIndex mSetResult
   where
     mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
-{-# INLINEABLE setSomeTaskValueMappedValidate #-}
+{-# INLINEABLE setSomeTaskValueMapped #-}
 
 -- TODO: This module is pretty large, and could use some splitting /
 -- reorganization. Start with the validator functions for updates,

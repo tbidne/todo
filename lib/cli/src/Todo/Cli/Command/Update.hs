@@ -41,16 +41,11 @@ import Todo.Exception
     TaskIdNotFoundE (MkTaskIdNotFoundE),
   )
 import Todo.Exception qualified as E
-import Todo.Index (IndexVerified)
+import Todo.Index (IndexUnverified, IndexVerified)
 import Todo.Index qualified as Index
 import Todo.Index.Optics qualified as IndexO
 import Todo.Utils (MatchResult (MatchFailure, MatchPartial, MatchSuccess))
 import Todo.Utils qualified as Utils
-
--- FIXME: [Update Index verification]
---
--- This module could almost certainly benefit from some reimagining w.r.t
--- the new Index verification.
 
 setTaskDeadline ::
   ( HasCallStack,
@@ -73,7 +68,7 @@ setTaskDeadline =
     updateDeadline
   where
     updateDeadline taskId newDeadline index = do
-      let mSetResult = Index.reallyUnsafeSetTaskValue #deadline taskId (Just newDeadline) index
+      let mSetResult = Index.setTaskValue #deadline taskId (Just newDeadline) index
       liftMatchSuccessM taskId mSetResult
 
 setTaskDescription ::
@@ -95,7 +90,7 @@ setTaskDescription = setTaskValueInteractiveSwitch EitherRight updateDescription
   where
     updateDescription taskId newDesc index = do
       let mSetResult =
-            Index.reallyUnsafeSetTaskValue
+            Index.setTaskValue
               #description
               taskId
               (Just newDesc)
@@ -120,17 +115,17 @@ setTaskId ::
 setTaskId = setTaskValueInteractiveSwitch TaskId.parseTaskId updateId
   where
     updateId oldTaskId newId index = do
-      mSetResult <-
-        Index.setSomeTaskValueMappedValidate
-          updateBlockers
-          #taskId
-          oldTaskId
-          newId
-          index
+      let mSetResult =
+            Index.setSomeTaskValueMapped
+              updateBlockers
+              #taskId
+              oldTaskId
+              newId
+              index
       liftJustM oldTaskId mSetResult
       where
-        updateBlockers :: IndexVerified -> IndexVerified
-        updateBlockers = over' indexBlockerIdTraversal g
+        updateBlockers :: IndexVerified -> IndexUnverified
+        updateBlockers = Index.unverify . over' indexBlockerIdTraversal g
           where
             -- Targets all blocking ids
             indexBlockerIdTraversal :: Traversal' IndexVerified TaskId
@@ -168,7 +163,7 @@ setTaskPriority =
   where
     updatePriority taskId newPriority index = do
       let mSetResult =
-            Index.reallyUnsafeSetSomeTaskValue
+            Index.setSomeTaskValue
               #priority
               taskId
               newPriority
@@ -196,7 +191,7 @@ setTaskStatus =
     updateStatus
   where
     updateStatus taskId newStatus index = do
-      mSetResult <- Index.setSomeTaskValueValidate #status taskId newStatus index
+      let mSetResult = Index.setSomeTaskValue #status taskId newStatus index
       liftJustM taskId mSetResult
 
 setTaskValueInteractiveSwitch ::
@@ -209,7 +204,7 @@ setTaskValueInteractiveSwitch ::
     MonadTime m
   ) =>
   (Text -> EitherString a) ->
-  (TaskId -> a -> IndexVerified -> m (IndexVerified, SomeTask)) ->
+  (TaskId -> a -> IndexVerified -> m (IndexUnverified, SomeTask)) ->
   CoreConfigMerged ->
   InteractiveSwitch ->
   -- | The task id.
@@ -265,7 +260,7 @@ setTaskValueWithRetry ::
     MonadTime m
   ) =>
   (Text -> EitherString a) ->
-  (TaskId -> a -> IndexVerified -> m (IndexVerified, SomeTask)) ->
+  (TaskId -> a -> IndexVerified -> m (IndexUnverified, SomeTask)) ->
   CoreConfigMerged ->
   m ()
 setTaskValueWithRetry parser setIndexFn coreConfig = go
@@ -301,9 +296,10 @@ setTaskValue ::
   ( HasCallStack,
     MonadFileWriter m,
     MonadTerminal m,
+    MonadThrow m,
     MonadTime m
   ) =>
-  (TaskId -> a -> IndexVerified -> m (IndexVerified, SomeTask)) ->
+  (TaskId -> a -> IndexVerified -> m (IndexUnverified, SomeTask)) ->
   CoreConfigMerged ->
   TaskId ->
   -- | The task value.
@@ -321,12 +317,14 @@ setTaskValue setIndexFn coreConfig taskId newValue = do
 saveUpdated ::
   ( HasCallStack,
     MonadFileWriter m,
-    MonadTerminal m
+    MonadTerminal m,
+    MonadThrow m
   ) =>
-  IndexVerified ->
+  IndexUnverified ->
   m ()
 saveUpdated newIndex = do
-  Index.writeIndex newIndex
+  verifiedIndex <- Index.verify newIndex
+  Index.writeIndex verifiedIndex
   putTextLn "Successfully updated task"
 
 printUpdated ::
