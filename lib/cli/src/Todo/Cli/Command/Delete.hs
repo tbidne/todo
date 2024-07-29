@@ -129,6 +129,8 @@ deleteIds coreConfig taskIds = do
   let (toDelete, toSave) = Index.partitionTaskIds taskIds index
       blockingIds = Index.getBlockingIds toSave
 
+  -- This is technically redundant since we have to verify the index later
+  -- anyway, but it gives a faster error message.
   for_ taskIds $ \taskId -> do
     when
       (taskId ∉ toDelete)
@@ -151,7 +153,8 @@ deleteIds coreConfig taskIds = do
 
   if ans
     then do
-      Index.writeIndex toSave
+      toSaveVerified <- Index.verify toSave
+      Index.writeIndex toSaveVerified
       putTextLn "Successfully deleted tasks(s)."
     else
       putTextLn "Did not delete any tasks."

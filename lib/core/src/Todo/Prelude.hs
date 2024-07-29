@@ -174,7 +174,7 @@ import Optics.AffineTraversal as X
     An_AffineTraversal,
     atraversal,
   )
-import Optics.At.Core as X (ix)
+-- import Optics.At.Core as X (ix)
 import Optics.Core as X (Is, Optic, Optic')
 import Optics.Core.Extras as X (is)
 import Optics.Fold as X (Fold, toListOf)
@@ -182,12 +182,12 @@ import Optics.Getter as X (A_Getter, Getter, to, view)
 import Optics.Indexed.Core as X (A_Fold, (%))
 import Optics.Iso as X (An_Iso, Iso, Iso', iso)
 import Optics.Label as X (LabelOptic (labelOptic))
-import Optics.Lens as X (A_Lens, Lens', lens, lensVL)
+import Optics.Lens as X (A_Lens, Lens, Lens', lens, lensVL)
 import Optics.Operators as X ((^.), (^?))
 import Optics.Prism as X (Prism, Prism', prism)
 import Optics.Re as X (re)
 import Optics.Setter as X (A_Setter, over', set')
-import Optics.Traversal as X (Traversal', traversalVL)
+import Optics.Traversal as X (A_Traversal, Traversal, Traversal', traversalVL)
 import System.IO as X (FilePath, IO)
 import System.IO qualified as IO
 import System.IO.Unsafe (unsafePerformIO)

@@ -124,11 +124,11 @@ setTaskId = setTaskValueInteractiveSwitch TaskId.parseTaskId updateId
               index
       liftJustM oldTaskId mSetResult
       where
-        updateBlockers :: IndexVerified -> IndexUnverified
-        updateBlockers = Index.unverify . over' indexBlockerIdTraversal g
+        updateBlockers :: IndexUnverified -> IndexUnverified
+        updateBlockers = over' indexBlockerIdTraversal g
           where
             -- Targets all blocking ids
-            indexBlockerIdTraversal :: Traversal' IndexVerified TaskId
+            indexBlockerIdTraversal :: Traversal IndexUnverified IndexUnverified TaskId TaskId
             indexBlockerIdTraversal =
               IndexO.indexTraversal
                 % TaskO.someTaskStatusATraversal

@@ -105,11 +105,12 @@ mkSomeTask ::
   m (IndexUnverified, TaskId)
 mkSomeTask color index = do
   let indexToGroupIds =
-        IndexO.indexTraversal
+        IndexO.unverifyGetter
+          % IndexO.indexTraversal
           % TaskO.taskGroupTraversal
           % #taskId
 
-      parentIds = toListOf indexToGroupIds index
+      parentIds = toListOf indexToGroupIds $ Index.unverify index
 
   putTextLn "Parent id(s):\n"
 

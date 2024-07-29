@@ -45,7 +45,7 @@ module Todo.Index
     toList,
 
     -- * Verification
-    unverify,
+    Internal.unverify,
     verify,
 
     -- * Misc
@@ -87,8 +87,9 @@ import Todo.Index.Internal
     IndexVerified,
   )
 import Todo.Index.Internal qualified as Internal
+import Todo.Index.Optics qualified as IndexO
 import Todo.Prelude hiding (filter, toList)
-import Todo.Utils (MatchResult, _MatchSuccess)
+import Todo.Utils (MatchResult)
 import Todo.Utils qualified as Utils
 
 --------------------------------------------------------------------------------
@@ -260,7 +261,7 @@ setSomeTaskValue ::
   -- | If successful (task id exists), returns the new index and modified
   -- task.
   Maybe (IndexUnverified, SomeTask)
-setSomeTaskValue = setSomeTaskValueMapped unverify
+setSomeTaskValue = setSomeTaskValueMapped Internal.unverify
 
 -- | Like 'setSomeTaskValue', except expects a 'SingleTask'. Returns a
 -- 'MatchResult' to distinguish between a total failure (task id does not
@@ -279,20 +280,17 @@ setTaskValue ::
   -- | If successful (task id exists), returns the new index and modified
   -- task.
   MatchResult IndexUnverified SomeTask
-setTaskValue taskLens taskId newA index =
-  over' (_MatchSuccess % _1) unverify mSetResult
-  where
-    mSetResult =
-      Utils.setPreviewPartialNode'
-        (ix taskId)
-        (_SomeTaskSingle % taskLens)
-        newA
-        index
+setTaskValue taskLens taskId newA =
+  Utils.setPreviewPartialNode'
+    (IndexO.ix taskId)
+    (_SomeTaskSingle % taskLens)
+    newA
+    . Internal.unverify
 
 -- | Like 'setSomeTaskValue', except we map the result.
 setSomeTaskValueMapped ::
   -- | Index mapper.
-  (Index s -> IndexUnverified) ->
+  (IndexUnverified -> IndexUnverified) ->
   -- | Lens for the task value we want to set.
   Lens' SomeTask a ->
   -- | Id for the task to set.
@@ -307,7 +305,12 @@ setSomeTaskValueMapped ::
 setSomeTaskValueMapped mapIndex taskLens taskId newA index =
   over' (_Just % _1) mapIndex mSetResult
   where
-    mSetResult = Utils.setPreviewNode' (ix taskId) taskLens newA index
+    mSetResult =
+      Utils.setPreviewNode'
+        (IndexO.ix taskId)
+        taskLens
+        newA
+        (Internal.unverify index)
 {-# INLINEABLE setSomeTaskValueMapped #-}
 
 --------------------------------------------------------------------------------
@@ -318,7 +321,7 @@ setSomeTaskValueMapped mapIndex taskLens taskId newA index =
 -- __not__ check that the id is not a duplicate, hence the need for
 -- verification.
 insert :: SomeTask -> Index s -> IndexUnverified
-insert task = unverify . over' #taskList (task :<|)
+insert task = Internal.unverify . over' IndexO.taskListLens (task :<|)
 
 -- | Newtype for a group task id.
 newtype GroupTaskId = MkGroupTaskId TaskId
@@ -335,10 +338,11 @@ instance HasField "unGroupTaskId" GroupTaskId TaskId where
 -- id verification, and the given task id may not exist in the index
 -- (in which case t1 will not be added).
 insertAtTaskId :: GroupTaskId -> SomeTask -> Index s -> IndexUnverified
-insertAtTaskId taskId task = unverify . over' tSubtasks (task :<|)
+insertAtTaskId taskId task = over' tSubtasks (task :<|) . Internal.unverify
   where
-    tSubtasks :: AffineTraversal' (Index s) (Seq SomeTask)
-    tSubtasks = ix taskId.unGroupTaskId % _SomeTaskGroup % #subtasks
+    tSubtasks :: AffineTraversal' IndexUnverified (Seq SomeTask)
+    tSubtasks =
+      IndexO.ix taskId.unGroupTaskId % _SomeTaskGroup % #subtasks
 
 --------------------------------------------------------------------------------
 ----------------------------------- Filtering ----------------------------------
@@ -351,7 +355,7 @@ filterOnIds ::
   Set TaskId ->
   -- | Index
   Index s ->
-  Index s
+  IndexUnverified
 filterOnIds taskIds = filterTopLevel go
   where
     go :: SomeTask -> Bool
@@ -362,7 +366,7 @@ filterOnIds taskIds = filterTopLevel go
 -- | Filters the index on some predicate. Note this runs the predicate on
 -- the top-level tasks __only__. Thus if you need to filter on subtasks,
 -- the passed predicate will have todo this itself.
-filterTopLevel :: (SomeTask -> Bool) -> Index s -> Index s
+filterTopLevel :: (SomeTask -> Bool) -> Index s -> IndexUnverified
 filterTopLevel p (UnsafeIndex taskList path) = UnsafeIndex (Seq.filter p taskList) path
 
 -- | Partitions the Index on the TaskId set. The left result is all tasks
@@ -376,7 +380,7 @@ partitionTaskIds ::
   -- | Index to partition.
   Index s ->
   -- | (Tasks in s, Tasks not in s)
-  Tuple2 (Index s) (Index s)
+  Tuple2 IndexUnverified IndexUnverified
 partitionTaskIds taskIds = partition pred
   where
     pred = (`NESet.member` taskIds) . (.taskId)
@@ -398,7 +402,7 @@ partition ::
   -- | Index to partition.
   Index s ->
   -- | (p == True, p == False)
-  Tuple2 (Index s) (Index s)
+  Tuple2 IndexUnverified IndexUnverified
 partition taskPred index =
   (UnsafeIndex tasksIn index.path, UnsafeIndex tasksOut index.path)
   where
@@ -447,7 +451,7 @@ findGroupTaskId taskId index = case Internal.lookup taskId index of
 
 -- | Returns 'True' iff the TaskId exists in the index.
 member :: TaskId -> Index s -> Bool
-member taskId = is (ix taskId)
+member taskId = is (IndexO.ix taskId) . Internal.unverify
 
 -- | Operator alias for 'member'. U+2216.
 (∈) :: TaskId -> Index s -> Bool
@@ -495,10 +499,6 @@ toList (UnsafeIndex taskList path) = (path, taskList)
 verify :: (HasCallStack, MonadThrow m) => Index s -> m IndexVerified
 verify (UnsafeIndex taskList path) = fromList path taskList
 {-# INLINEABLE verify #-}
-
--- | Forgets verification status on an Index.
-unverify :: Index s -> IndexUnverified
-unverify = coerce
 
 --------------------------------------------------------------------------------
 ------------------------------------- Misc -------------------------------------

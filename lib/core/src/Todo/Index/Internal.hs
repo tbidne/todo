@@ -1,17 +1,19 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module Todo.Index.Internal
-  ( Index (..),
+  ( -- * Types
+    Index (..),
     IndexState (..),
     IndexUnverified,
     IndexVerified,
+
+    -- * Misc,
+    unverify,
     lookup,
     replaceAtId,
   )
 where
 
-import Optics.At.Core (At, IxValue, Ixed)
-import Optics.At.Core qualified as At
 import Todo.Data.Task
   ( SingleTask (taskId),
     SomeTask (SomeTaskGroup, SomeTaskSingle),
@@ -46,51 +48,6 @@ instance HasField "taskList" (Index s) (Seq SomeTask) where
 instance HasField "path" (Index s) OsPath where
   getField (UnsafeIndex _ p) = p
 
-instance
-  (k ~ A_Lens, a ~ Seq SomeTask, b ~ Seq SomeTask) =>
-  LabelOptic "taskList" k (Index s) (Index s) a b
-  where
-  labelOptic =
-    lensVL
-      $ \f
-         (UnsafeIndex _taskList _path) ->
-          fmap
-            (`UnsafeIndex` _path)
-            (f _taskList)
-  {-# INLINE labelOptic #-}
-
-instance
-  (k ~ A_Lens, a ~ OsPath, b ~ OsPath) =>
-  LabelOptic "path" k (Index s) (Index s) a b
-  where
-  labelOptic =
-    lensVL
-      $ \f
-         (UnsafeIndex _taskList _path) ->
-          fmap
-            (UnsafeIndex _taskList)
-            (f _path)
-  {-# INLINE labelOptic #-}
-
-type instance At.Index (Index _) = TaskId
-
-type instance IxValue (Index _) = SomeTask
-
-instance Ixed (Index s) where
-  type IxKind (Index s) = An_AffineTraversal
-
-  ix :: TaskId -> AffineTraversal' (Index s) SomeTask
-  ix taskId =
-    atraversal
-      (\idx -> mToE idx $ lookup taskId idx)
-      (\idx -> replaceAtId taskId idx . Just)
-  {-# INLINE ix #-}
-
-instance At (Index s) where
-  at :: TaskId -> Lens' (Index s) (Maybe SomeTask)
-  at taskId = lens (lookup taskId) (replaceAtId taskId)
-  {-# INLINE at #-}
-
 -- | Looks up the TaskId in the Index.
 lookup :: TaskId -> Index s -> Maybe SomeTask
 lookup taskId (UnsafeIndex taskList _) = foldMapAlt go taskList
@@ -106,7 +63,7 @@ lookup taskId (UnsafeIndex taskList _) = foldMapAlt go taskList
 
 -- | @replaceAtId taskId index newTask@ replaces all tasks corresponding to
 -- @taskId@ in @index@ with @newTask@.
-replaceAtId :: TaskId -> Index s -> Maybe SomeTask -> Index s
+replaceAtId :: TaskId -> Index s -> Maybe SomeTask -> IndexUnverified
 replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
   (`UnsafeIndex` path) $ foldr go Empty taskList
   where
@@ -128,3 +85,7 @@ replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
     prependNewTask = case mNewTask of
       Just newTask -> (newTask :<|)
       Nothing -> identity
+
+-- | Forgets verification status on an Index.
+unverify :: Index s -> IndexUnverified
+unverify = coerce

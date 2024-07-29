@@ -253,17 +253,17 @@ _MatchSuccess =
 {-# INLINE _MatchSuccess #-}
 
 -- | Traversal for any Traversable.
-traversal :: (Traversable f) => Traversal' (f a) a
+traversal :: (Traversable f) => Traversal (f a) (f b) a b
 traversal = traversalVL traverse
 
-listTraversal :: Traversal' (List a) a
+listTraversal :: Traversal (List a) (List b) a b
 listTraversal = listPredTraversal (const True)
 
-listPredTraversal :: forall a. (a -> Bool) -> Traversal' (List a) a
+listPredTraversal :: forall a b. (a -> Bool) -> Traversal (List a) (List b) a b
 listPredTraversal pred = traversalVL f
   where
     --
-    f :: forall f. (Applicative f) => (a -> f a) -> List a -> f (List a)
+    f :: forall f. (Applicative f) => (a -> f b) -> List a -> f (List b)
     f g = go
       where
         go [] = pure []
@@ -272,14 +272,14 @@ listPredTraversal pred = traversalVL f
             then (:) <$> g x <*> go xs
             else go xs
 
-seqTraversal :: Traversal' (Seq a) a
+seqTraversal :: Traversal (Seq a) (Seq b) a b
 seqTraversal = seqPredTraversal (const True)
 
-seqPredTraversal :: forall a. (a -> Bool) -> Traversal' (Seq a) a
+seqPredTraversal :: forall a b. (a -> Bool) -> Traversal (Seq a) (Seq b) a b
 seqPredTraversal pred = traversalVL f
   where
     --
-    f :: forall f. (Applicative f) => (a -> f a) -> Seq a -> f (Seq a)
+    f :: forall f. (Applicative f) => (a -> f b) -> Seq a -> f (Seq b)
     f g = go
       where
         go Empty = pure Empty
@@ -289,10 +289,10 @@ seqPredTraversal pred = traversalVL f
             else go xs
 
 -- | Traverses an NESet.
-neSetTraversal :: forall a. (Ord a) => Traversal' (NESet a) a
+neSetTraversal :: forall a b. (Ord b) => Traversal (NESet a) (NESet b) a b
 neSetTraversal = traversalVL f
   where
-    f :: forall f. (Applicative f) => (a -> f a) -> NESet a -> f (NESet a)
+    f :: forall f. (Applicative f) => (a -> f b) -> NESet a -> f (NESet b)
     f g =
       fmap NESet.fromList
         . traverse g

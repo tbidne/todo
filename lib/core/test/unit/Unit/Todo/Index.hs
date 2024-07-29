@@ -36,7 +36,9 @@ testIndexTraversal = testCase "indexTraversal retrieves all ids" $ do
   index <- Index.readIndex examplePath
   expected @=? indexToIds index
   where
-    indexToIds = toListOf (IndexO.indexTraversal % #taskId % #unTaskId)
+    indexToIds =
+      toListOf (IndexO.unverifyGetter % IndexO.indexTraversal % #taskId % #unTaskId)
+        . Index.unverify
     expected =
       [ "haircut",
         "walk_dog",
@@ -58,7 +60,10 @@ testIndexPredTraversal = testCase "indexTraversal retrieves targeted ids" $ do
   index <- Index.readIndex examplePath
   expected @=? indexToIds index
   where
-    indexToIds = toListOf (IndexO.indexPredTraversal p % #taskId % #unTaskId)
+    indexToIds =
+      toListOf
+        (IndexO.unverifyGetter % IndexO.indexPredTraversal p % #taskId % #unTaskId)
+        . Index.unverify
 
     p :: SomeTask -> Bool
     p = (/= Normal) . view #priority
