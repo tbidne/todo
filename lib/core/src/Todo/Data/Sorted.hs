@@ -115,8 +115,6 @@ sortSomeTaskSubtasks partitionCompleted revSort c (SomeTaskGroup t) =
 sortTaskGroupSubtasks :: Bool -> RevSort -> (SomeTask -> SomeTask -> Ordering) -> TaskGroup -> TaskGroup
 sortTaskGroupSubtasks partitionCompleted revSort c t = t {subtasks = subtasks'}
   where
-    -- TODO: Avoid the Seq <-> List conversion (Either replace a type or
-    -- use Foldable).
     subtasks' =
       sortSomeTasks partitionCompleted revSort c t.subtasks
 

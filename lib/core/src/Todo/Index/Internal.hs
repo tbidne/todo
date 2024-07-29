@@ -1,5 +1,4 @@
 {-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 module Todo.Index.Internal
   ( -- * Types
@@ -39,6 +38,9 @@ type Index𝕌 = Index IndexStateUnverified
 
 -- | Verified index. U+1D54D
 type Index𝕍 = Index IndexStateVerified
+
+-- Disallow coerce :: Index𝕌 -> Index𝕍.
+type role Index nominal
 
 -- | Todo index.
 type Index :: IndexState -> Type
@@ -91,4 +93,4 @@ replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
 
 -- | Forgets verification status on an Index.
 unverify :: Index s -> Index𝕌
-unverify = coerce
+unverify (UnsafeIndex taskList path) = UnsafeIndex taskList path

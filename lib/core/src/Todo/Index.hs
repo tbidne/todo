@@ -173,11 +173,6 @@ fromList path xs = do
 
       case st of
         SomeTaskSingle t -> do
-          if Set.notMember t.taskId foundKeys
-            then pure ()
-            else
-              throwM $ MkDuplicateIdE t.taskId
-
           foundKeys' <- updateFoundKeys (SomeTaskSingle t) foundKeys
 
           let blockedKeys' = case t.status of

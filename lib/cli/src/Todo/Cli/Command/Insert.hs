@@ -47,7 +47,7 @@ import Todo.Data.TaskStatus (TaskStatus (NotStarted))
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Exception (DuplicateIdE (MkDuplicateIdE))
-import Todo.Index (GroupTaskId, Index, Index𝕌, Index𝕍, (∈))
+import Todo.Index (GroupTaskId, Index, Index𝕌, (∈))
 import Todo.Index qualified as Index
 import Todo.Index.Optics qualified as IndexO
 import Todo.Utils qualified as Utils
@@ -74,12 +74,12 @@ insertTask coreConfig = do
     then
       putTextLn "Did not add any tasks."
     else do
-      indexVerified <- Index.verify newIndex
-      Index.writeIndex indexVerified
+      index𝕍 <- Index.verify newIndex
+      Index.writeIndex index𝕍
 
       currTime <- getSystemZonedTime
 
-      let indexDiff = Index.filterOnIds newTaskIds newIndex
+      let indexDiff = Index.filterOnIds newTaskIds index𝕍
           sorted = Sorted.sortTasks Nothing def (snd $ Index.toList indexDiff)
 
       putTextLn "Successfully added task. Modified tasks:\n"
@@ -89,7 +89,6 @@ insertTask coreConfig = do
         $ Render.renderSorted currTime color unicode sorted
   where
     color = coreConfig.colorSwitch
-    index :: Index𝕍
     index = coreConfig.index
     unicode = coreConfig.unicodeSwitch
 
