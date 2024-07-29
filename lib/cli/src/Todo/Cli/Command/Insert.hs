@@ -70,12 +70,11 @@ insertTask coreConfig = do
   (newIndex, newTaskIds) <-
     Utils.whileApplySetM indexUnverified getMoreTasksAns (mkSomeTask color)
 
-  indexVerified <- Index.verify newIndex
-
   if null newTaskIds
     then
       putTextLn "Did not add any tasks."
     else do
+      indexVerified <- Index.verify newIndex
       Index.writeIndex indexVerified
 
       currTime <- getSystemZonedTime
