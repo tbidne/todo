@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Index.Optics</span><span>
+</span><span id="line-2"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Lenses</span></span><span>
+</span><span id="line-3"></span><span>    </span><span class="annot"><a href="Todo.Index.Optics.html#pathLens"><span class="hs-identifier">pathLens</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Todo.Index.Optics.html#taskListLens"><span class="hs-identifier">taskListLens</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Indexed</span></span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Todo.Index.Optics.html#ix"><span class="hs-identifier">ix</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Todo.Index.Optics.html#at"><span class="hs-identifier">at</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Traversals</span></span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Todo.Index.Optics.html#indexIdStatusFold"><span class="hs-identifier">indexIdStatusFold</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Todo.Index.Optics.html#indexPredTraversal"><span class="hs-identifier">indexPredTraversal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Todo.Index.Optics.html#indexTraversal"><span class="hs-identifier">indexTraversal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Misc</span></span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Todo.Index.Optics.html#unverifyGetter"><span class="hs-identifier">unverifyGetter</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.Task.html"><span class="hs-identifier">Todo.Data.Task</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier">SomeTask</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.Task.Optics.html"><span class="hs-identifier">Todo.Data.Task.Optics</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Task</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.html"><span class="hs-identifier">Todo.Data.TaskId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier">TaskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html"><span class="hs-identifier">Todo.Data.TaskStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier">TaskStatus</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html"><span class="hs-identifier">Todo.Index.Internal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier">Index</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-identifier">UnsafeIndex</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier">Index&#120140;</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html"><span class="hs-identifier">Todo.Index.Internal</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Internal</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Utils.html"><span class="hs-identifier">Todo.Utils</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/scientific-0.3.7.0-9c9f0797714a67ec372ec6bbf8392e8b6ddc816c9baffddc26f8fd06bfd61818/share/doc/html/src/Utils.html"><span class="hs-identifier">Utils</span></a></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- NOTE: [Optics Safety]</span><span>
+</span><span id="line-30"></span><span class="hs-comment">--</span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- We need to ensure that our optics do not allow violating our invariants.</span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- This means:</span><span>
+</span><span id="line-33"></span><span class="hs-comment">--</span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- 1. For optics that can change the index (e.g. Lenses, general traversals),</span><span>
+</span><span id="line-35"></span><span class="hs-comment">--    the result must be Index&#120140;, and the source either (Index s)</span><span>
+</span><span id="line-36"></span><span class="hs-comment">--    (preferred where possible) or Index&#120140;.</span><span>
+</span><span id="line-37"></span><span class="hs-comment">--</span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- 2. Optics that only retrieve values (folds) can either be type-preserving</span><span>
+</span><span id="line-39"></span><span class="hs-comment">--    on (Index s) (preferred) or result in Index&#120140;. In particular,</span><span>
+</span><span id="line-40"></span><span class="hs-comment">--    we cannot allow transforming Index&#120141; to Index&#120140;.</span><span>
+</span><span id="line-41"></span><span class="hs-comment">--</span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- Usage is usually straightforward, though we sometimes have to manually</span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- unverify the index first.</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- | Path lens.</span><span>
+</span><span id="line-46"></span><span class="hs-comment">--</span><span>
+</span><span id="line-47"></span><span class="hs-comment">-- This appears to violate our methodology in NOTE: [Optics Safety], but</span><span>
+</span><span id="line-48"></span><span class="hs-comment">-- modifying the path does not impact any invariants, so it is fine.</span><span>
+</span><span id="line-49"></span><span id="local-6989586621679136074"><span class="annot"><a href="Todo.Index.Optics.html#pathLens"><span class="hs-identifier hs-type">pathLens</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Lens.html#Lens%27"><span class="hs-identifier hs-type">Lens'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679136074"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/filepath-1.5.3.0-6011b464ca6ac2c82d72f2055d231d555c21bae02133f2f163ecc16363fdb1f7/share/doc/html/src/System.OsPath.Types.html#OsPath"><span class="hs-identifier hs-type">OsPath</span></a></span></span><span>
+</span><span id="line-50"></span><span id="pathLens"><span class="annot"><span class="annottext">pathLens :: forall (s :: IndexState). Lens' (Index s) OsPath
+</span><a href="Todo.Index.Optics.html#pathLens"><span class="hs-identifier hs-var hs-var">pathLens</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-51"></span><span>  </span><span class="annot"><span class="annottext">LensVL (Index s) (Index s) OsPath OsPath
+-&gt; Lens (Index s) (Index s) OsPath OsPath
+forall s t a b. LensVL s t a b -&gt; Lens s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Lens.html#lensVL"><span class="hs-identifier hs-var">lensVL</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="annot"><span class="annottext">(LensVL (Index s) (Index s) OsPath OsPath
+ -&gt; Lens (Index s) (Index s) OsPath OsPath)
+-&gt; LensVL (Index s) (Index s) OsPath OsPath
+-&gt; Lens (Index s) (Index s) OsPath OsPath
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679136184"><span class="annot"><span class="annottext">OsPath -&gt; f OsPath
+</span><a href="#local-6989586621679136184"><span class="hs-identifier hs-var">f</span></a></span></span><span>
+</span><span id="line-53"></span><span>       </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-identifier hs-type">UnsafeIndex</span></a></span><span> </span><span id="local-6989586621679136185"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679136185"><span class="hs-identifier hs-var">_taskList</span></a></span></span><span> </span><span id="local-6989586621679136186"><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679136186"><span class="hs-identifier hs-var">_path</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-54"></span><span>        </span><span class="annot"><span class="annottext">(OsPath -&gt; Index s) -&gt; f OsPath -&gt; f (Index s)
+forall a b. (a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span>
+</span><span id="line-55"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Seq SomeTask -&gt; OsPath -&gt; Index s
+forall (s :: IndexState). Seq SomeTask -&gt; OsPath -&gt; Index s
+</span><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-identifier hs-var">UnsafeIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679136185"><span class="hs-identifier hs-var">_taskList</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">OsPath -&gt; f OsPath
+</span><a href="#local-6989586621679136184"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679136186"><span class="hs-identifier hs-var">_path</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Index.Optics.html#pathLens"><span class="hs-pragma hs-type">pathLens</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="annot"><span class="hs-comment">-- | Lens for task list.</span></span><span>
+</span><span id="line-60"></span><span id="local-6989586621679136096"><span class="annot"><a href="Todo.Index.Optics.html#taskListLens"><span class="hs-identifier hs-type">taskListLens</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Lens.html#Lens"><span class="hs-identifier hs-type">Lens</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679136096"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier hs-type">Index&#120140;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-61"></span><span id="taskListLens"><span class="annot"><span class="annottext">taskListLens :: forall (s :: IndexState).
+Lens (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask)
+</span><a href="Todo.Index.Optics.html#taskListLens"><span class="hs-identifier hs-var hs-var">taskListLens</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-62"></span><span>  </span><span class="annot"><span class="annottext">LensVL (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask)
+-&gt; Lens (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask)
+forall s t a b. LensVL s t a b -&gt; Lens s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Lens.html#lensVL"><span class="hs-identifier hs-var">lensVL</span></a></span><span>
+</span><span id="line-63"></span><span>    </span><span class="annot"><span class="annottext">(LensVL (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask)
+ -&gt; Lens (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask))
+-&gt; LensVL (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask)
+-&gt; Lens (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679136189"><span class="annot"><span class="annottext">Seq SomeTask -&gt; f (Seq SomeTask)
+</span><a href="#local-6989586621679136189"><span class="hs-identifier hs-var">f</span></a></span></span><span>
+</span><span id="line-64"></span><span>       </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-identifier hs-type">UnsafeIndex</span></a></span><span> </span><span id="local-6989586621679136190"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679136190"><span class="hs-identifier hs-var">_taskList</span></a></span></span><span> </span><span id="local-6989586621679136191"><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679136191"><span class="hs-identifier hs-var">_path</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-65"></span><span>        </span><span class="annot"><span class="annottext">(Seq SomeTask -&gt; Index&#120140;) -&gt; f (Seq SomeTask) -&gt; f Index&#120140;
+forall a b. (a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span>
+</span><span id="line-66"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Seq SomeTask -&gt; OsPath -&gt; Index&#120140;
+forall (s :: IndexState). Seq SomeTask -&gt; OsPath -&gt; Index s
+</span><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-operator hs-var">`UnsafeIndex`</span></a></span><span> </span><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679136191"><span class="hs-identifier hs-var">_path</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Seq SomeTask -&gt; f (Seq SomeTask)
+</span><a href="#local-6989586621679136189"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679136190"><span class="hs-identifier hs-var">_taskList</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Index.Optics.html#taskListLens"><span class="hs-pragma hs-type">taskListLens</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><span class="hs-comment">-- | Indexed affine traversal.</span></span><span>
+</span><span id="line-71"></span><span id="local-6989586621679136101"><span class="annot"><a href="Todo.Index.Optics.html#ix"><span class="hs-identifier hs-type">ix</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineTraversal.html#AffineTraversal"><span class="hs-identifier hs-type">AffineTraversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679136101"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier hs-type">Index&#120140;</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span></span><span>
+</span><span id="line-72"></span><span id="ix"><span class="annot"><span class="annottext">ix :: forall (s :: IndexState).
+TaskId -&gt; AffineTraversal (Index s) Index&#120140; SomeTask SomeTask
+</span><a href="Todo.Index.Optics.html#ix"><span class="hs-identifier hs-var hs-var">ix</span></a></span></span><span> </span><span id="local-6989586621679136192"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679136192"><span class="hs-identifier hs-var">taskId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-73"></span><span>  </span><span class="annot"><span class="annottext">(Index s -&gt; Either Index&#120140; SomeTask)
+-&gt; (Index s -&gt; SomeTask -&gt; Index&#120140;)
+-&gt; AffineTraversal (Index s) Index&#120140; SomeTask SomeTask
+forall s t a b.
+(s -&gt; Either t a) -&gt; (s -&gt; b -&gt; t) -&gt; AffineTraversal s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineTraversal.html#atraversal"><span class="hs-identifier hs-var">atraversal</span></a></span><span>
+</span><span id="line-74"></span><span>    </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679136194"><span class="annot"><span class="annottext">Index s
+</span><a href="#local-6989586621679136194"><span class="hs-identifier hs-var">idx</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Index&#120140; -&gt; Maybe SomeTask -&gt; Either Index&#120140; SomeTask
+forall e a. e -&gt; Maybe a -&gt; Either e a
+</span><a href="Todo.Prelude.html#mToE"><span class="hs-identifier hs-var">mToE</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Index s -&gt; Index&#120140;
+forall (s :: IndexState). Index s -&gt; Index&#120140;
+</span><a href="Todo.Index.Internal.html#unverify"><span class="hs-identifier hs-var">Internal.unverify</span></a></span><span> </span><span class="annot"><span class="annottext">Index s
+</span><a href="#local-6989586621679136194"><span class="hs-identifier hs-var">idx</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Maybe SomeTask -&gt; Either Index&#120140; SomeTask)
+-&gt; Maybe SomeTask -&gt; Either Index&#120140; SomeTask
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; Index s -&gt; Maybe SomeTask
+forall (s :: IndexState). TaskId -&gt; Index s -&gt; Maybe SomeTask
+</span><a href="Todo.Index.Internal.html#lookup"><span class="hs-identifier hs-var">Internal.lookup</span></a></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679136192"><span class="hs-identifier hs-var">taskId</span></a></span><span> </span><span class="annot"><span class="annottext">Index s
+</span><a href="#local-6989586621679136194"><span class="hs-identifier hs-var">idx</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679136198"><span class="annot"><span class="annottext">Index s
+</span><a href="#local-6989586621679136198"><span class="hs-identifier hs-var">idx</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; Index s -&gt; Maybe SomeTask -&gt; Index&#120140;
+forall (s :: IndexState).
+TaskId -&gt; Index s -&gt; Maybe SomeTask -&gt; Index&#120140;
+</span><a href="Todo.Index.Internal.html#replaceAtId"><span class="hs-identifier hs-var">Internal.replaceAtId</span></a></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679136192"><span class="hs-identifier hs-var">taskId</span></a></span><span> </span><span class="annot"><span class="annottext">Index s
+</span><a href="#local-6989586621679136198"><span class="hs-identifier hs-var">idx</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe SomeTask -&gt; Index&#120140;)
+-&gt; (SomeTask -&gt; Maybe SomeTask) -&gt; SomeTask -&gt; Index&#120140;
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Maybe SomeTask
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Index.Optics.html#ix"><span class="hs-pragma hs-type">ix</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="annot"><span class="hs-comment">-- | Indexed lens.</span></span><span>
+</span><span id="line-79"></span><span id="local-6989586621679136117"><span class="annot"><a href="Todo.Index.Optics.html#at"><span class="hs-identifier hs-type">at</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Lens.html#Lens"><span class="hs-identifier hs-type">Lens</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679136117"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier hs-type">Index&#120140;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-80"></span><span id="at"><span class="annot"><span class="annottext">at :: forall (s :: IndexState).
+TaskId -&gt; Lens (Index s) Index&#120140; (Maybe SomeTask) (Maybe SomeTask)
+</span><a href="Todo.Index.Optics.html#at"><span class="hs-identifier hs-var hs-var">at</span></a></span></span><span> </span><span id="local-6989586621679136201"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679136201"><span class="hs-identifier hs-var">taskId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Index s -&gt; Maybe SomeTask)
+-&gt; (Index s -&gt; Maybe SomeTask -&gt; Index&#120140;)
+-&gt; Lens (Index s) Index&#120140; (Maybe SomeTask) (Maybe SomeTask)
+forall s a b t. (s -&gt; a) -&gt; (s -&gt; b -&gt; t) -&gt; Lens s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Lens.html#lens"><span class="hs-identifier hs-var">lens</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskId -&gt; Index s -&gt; Maybe SomeTask
+forall (s :: IndexState). TaskId -&gt; Index s -&gt; Maybe SomeTask
+</span><a href="Todo.Index.Internal.html#lookup"><span class="hs-identifier hs-var">Internal.lookup</span></a></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679136201"><span class="hs-identifier hs-var">taskId</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskId -&gt; Index s -&gt; Maybe SomeTask -&gt; Index&#120140;
+forall (s :: IndexState).
+TaskId -&gt; Index s -&gt; Maybe SomeTask -&gt; Index&#120140;
+</span><a href="Todo.Index.Internal.html#replaceAtId"><span class="hs-identifier hs-var">Internal.replaceAtId</span></a></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679136201"><span class="hs-identifier hs-var">taskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-81"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Index.Optics.html#at"><span class="hs-pragma hs-type">at</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="annot"><span class="hs-comment">-- | Retrieves all ids and statuses.</span></span><span>
+</span><span id="line-84"></span><span id="local-6989586621679136123"><span class="annot"><a href="Todo.Index.Optics.html#indexIdStatusFold"><span class="hs-identifier hs-type">indexIdStatusFold</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Fold.html#Fold"><span class="hs-identifier hs-type">Fold</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679136123"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#Tuple2"><span class="hs-identifier hs-type">Tuple2</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-85"></span><span id="indexIdStatusFold"><span class="annot"><span class="annottext">indexIdStatusFold :: forall (s :: IndexState). Fold (Index s) (Tuple2 TaskId TaskStatus)
+</span><a href="Todo.Index.Optics.html#indexIdStatusFold"><span class="hs-identifier hs-var hs-var">indexIdStatusFold</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-86"></span><span>  </span><span class="annot"><span class="annottext">Getter (Index s) Index&#120140;
+forall (s :: IndexState). Getter (Index s) Index&#120140;
+</span><a href="Todo.Index.Optics.html#unverifyGetter"><span class="hs-identifier hs-var">unverifyGetter</span></a></span><span> </span><span class="annot"><span class="annottext">Getter (Index s) Index&#120140;
+-&gt; Optic A_Traversal '[] Index&#120140; Index&#120140; SomeTask SomeTask
+-&gt; Optic A_Fold '[] (Index s) (Index s) SomeTask SomeTask
+forall k l m (is :: IxList) (js :: IxList) (ks :: IxList) s t u v a
+       b.
+(JoinKinds k l m, AppendIndices is js ks) =&gt;
+Optic k is s t u v -&gt; Optic l js u v a b -&gt; Optic m ks s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.html#%25"><span class="hs-operator hs-var">%</span></a></span><span> </span><span class="annot"><span class="annottext">Optic A_Traversal '[] Index&#120140; Index&#120140; SomeTask SomeTask
+forall (s :: IndexState).
+Traversal (Index s) Index&#120140; SomeTask SomeTask
+</span><a href="Todo.Index.Optics.html#indexTraversal"><span class="hs-identifier hs-var">indexTraversal</span></a></span><span> </span><span class="annot"><span class="annottext">Optic A_Fold '[] (Index s) (Index s) SomeTask SomeTask
+-&gt; Optic
+     A_Getter
+     '[]
+     SomeTask
+     SomeTask
+     (Tuple2 TaskId TaskStatus)
+     (Tuple2 TaskId TaskStatus)
+-&gt; Optic
+     A_Fold
+     '[]
+     (Index s)
+     (Index s)
+     (Tuple2 TaskId TaskStatus)
+     (Tuple2 TaskId TaskStatus)
+forall k l m (is :: IxList) (js :: IxList) (ks :: IxList) s t u v a
+       b.
+(JoinKinds k l m, AppendIndices is js ks) =&gt;
+Optic k is s t u v -&gt; Optic l js u v a b -&gt; Optic m ks s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.html#%25"><span class="hs-operator hs-var">%</span></a></span><span> </span><span class="annot"><span class="annottext">Optic
+  A_Getter
+  '[]
+  SomeTask
+  SomeTask
+  (Tuple2 TaskId TaskStatus)
+  (Tuple2 TaskId TaskStatus)
+</span><a href="Todo.Data.Task.Optics.html#someTaskIdStatusGetter"><span class="hs-identifier hs-var">Task.someTaskIdStatusGetter</span></a></span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="annot"><span class="hs-comment">-- | Traversal for every task that satisfies the predicate.</span></span><span>
+</span><span id="line-89"></span><span id="local-6989586621679136159"><span class="annot"><a href="Todo.Index.Optics.html#indexPredTraversal"><span class="hs-identifier hs-type">indexPredTraversal</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-90"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-91"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#Traversal"><span class="hs-identifier hs-type">Traversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679136159"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier hs-type">Index&#120140;</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span></span><span>
+</span><span id="line-92"></span><span id="indexPredTraversal"><span class="annot"><span class="annottext">indexPredTraversal :: forall (s :: IndexState).
+(SomeTask -&gt; Bool) -&gt; Traversal (Index s) Index&#120140; SomeTask SomeTask
+</span><a href="Todo.Index.Optics.html#indexPredTraversal"><span class="hs-identifier hs-var hs-var">indexPredTraversal</span></a></span></span><span> </span><span id="local-6989586621679136227"><span class="annot"><span class="annottext">SomeTask -&gt; Bool
+</span><a href="#local-6989586621679136227"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-93"></span><span>  </span><span class="annot"><span class="annottext">Lens (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask)
+forall (s :: IndexState).
+Lens (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask)
+</span><a href="Todo.Index.Optics.html#taskListLens"><span class="hs-identifier hs-var">taskListLens</span></a></span><span>
+</span><span id="line-94"></span><span>    </span><span class="annot"><span class="annottext">Lens (Index s) Index&#120140; (Seq SomeTask) (Seq SomeTask)
+-&gt; Optic
+     A_Traversal '[] (Seq SomeTask) (Seq SomeTask) SomeTask SomeTask
+-&gt; Optic A_Traversal '[] (Index s) Index&#120140; SomeTask SomeTask
+forall k l m (is :: IxList) (js :: IxList) (ks :: IxList) s t u v a
+       b.
+(JoinKinds k l m, AppendIndices is js ks) =&gt;
+Optic k is s t u v -&gt; Optic l js u v a b -&gt; Optic m ks s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.html#%25"><span class="hs-operator hs-var">%</span></a></span><span> </span><span class="annot"><span class="annottext">Optic
+  A_Traversal '[] (Seq SomeTask) (Seq SomeTask) SomeTask SomeTask
+forall a b. Traversal (Seq a) (Seq b) a b
+</span><a href="Todo.Utils.html#seqTraversal"><span class="hs-identifier hs-var">Utils.seqTraversal</span></a></span><span>
+</span><span id="line-95"></span><span>    </span><span class="annot"><span class="annottext">Optic A_Traversal '[] (Index s) Index&#120140; SomeTask SomeTask
+-&gt; Optic A_Traversal '[] SomeTask SomeTask SomeTask SomeTask
+-&gt; Optic A_Traversal '[] (Index s) Index&#120140; SomeTask SomeTask
+forall k l m (is :: IxList) (js :: IxList) (ks :: IxList) s t u v a
+       b.
+(JoinKinds k l m, AppendIndices is js ks) =&gt;
+Optic k is s t u v -&gt; Optic l js u v a b -&gt; Optic m ks s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.html#%25"><span class="hs-operator hs-var">%</span></a></span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; Bool)
+-&gt; Optic A_Traversal '[] SomeTask SomeTask SomeTask SomeTask
+</span><a href="Todo.Data.Task.Optics.html#someTaskPredTraversal"><span class="hs-identifier hs-var">Task.someTaskPredTraversal</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Bool
+</span><a href="#local-6989586621679136227"><span class="hs-identifier hs-var">p</span></a></span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span class="annot"><span class="hs-comment">-- | Traversal across all tasks.</span></span><span>
+</span><span id="line-98"></span><span id="local-6989586621679136157"><span class="annot"><a href="Todo.Index.Optics.html#indexTraversal"><span class="hs-identifier hs-type">indexTraversal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#Traversal"><span class="hs-identifier hs-type">Traversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679136157"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier hs-type">Index&#120140;</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span></span><span>
+</span><span id="line-99"></span><span id="indexTraversal"><span class="annot"><span class="annottext">indexTraversal :: forall (s :: IndexState).
+Traversal (Index s) Index&#120140; SomeTask SomeTask
+</span><a href="Todo.Index.Optics.html#indexTraversal"><span class="hs-identifier hs-var hs-var">indexTraversal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; Bool) -&gt; Traversal (Index s) Index&#120140; SomeTask SomeTask
+forall (s :: IndexState).
+(SomeTask -&gt; Bool) -&gt; Traversal (Index s) Index&#120140; SomeTask SomeTask
+</span><a href="Todo.Index.Optics.html#indexPredTraversal"><span class="hs-identifier hs-var">indexPredTraversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; SomeTask -&gt; Bool
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span>
+</span><span id="line-101"></span><span class="annot"><span class="hs-comment">-- | Drops verification.</span></span><span>
+</span><span id="line-102"></span><span id="local-6989586621679136143"><span class="annot"><a href="Todo.Index.Optics.html#unverifyGetter"><span class="hs-identifier hs-type">unverifyGetter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Getter.html#Getter"><span class="hs-identifier hs-type">Getter</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679136143"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier hs-type">Index&#120140;</span></a></span></span><span>
+</span><span id="line-103"></span><span id="unverifyGetter"><span class="annot"><span class="annottext">unverifyGetter :: forall (s :: IndexState). Getter (Index s) Index&#120140;
+</span><a href="Todo.Index.Optics.html#unverifyGetter"><span class="hs-identifier hs-var hs-var">unverifyGetter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Index s -&gt; Index&#120140;) -&gt; Getter (Index s) Index&#120140;
+forall s a. (s -&gt; a) -&gt; Getter s a
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Getter.html#to"><span class="hs-identifier hs-var">to</span></a></span><span> </span><span class="annot"><span class="annottext">Index s -&gt; Index&#120140;
+forall (s :: IndexState). Index s -&gt; Index&#120140;
+</span><a href="Todo.Index.Internal.html#unverify"><span class="hs-identifier hs-var">Internal.unverify</span></a></span><span>
+</span><span id="line-104"></span></pre></body></html>

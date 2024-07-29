@@ -1,0 +1,498 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE CPP #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Exception</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Types</span></span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Todo.Exception.html#BlockedIdRefE"><span class="hs-identifier">BlockedIdRefE</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Todo.Exception.html#ConfigNotFoundE"><span class="hs-identifier">ConfigNotFoundE</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Todo.Exception.html#DeleteE"><span class="hs-identifier">DeleteE</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Todo.Exception.html#DuplicateIdE"><span class="hs-identifier">DuplicateIdE</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Todo.Exception.html#FoundGroupNotSingleE"><span class="hs-identifier">FoundGroupNotSingleE</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Todo.Exception.html#IndexNameLookupE"><span class="hs-identifier">IndexNameLookupE</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Todo.Exception.html#TaskIdNotFoundE"><span class="hs-identifier">TaskIdNotFoundE</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Todo.Exception.html#XdgIndexNotFoundE"><span class="hs-identifier">XdgIndexNotFoundE</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Functions</span></span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Todo.Exception.html#displayExceptionSkipKnownCS"><span class="hs-identifier">displayExceptionSkipKnownCS</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Proxy</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Proxy</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Proxy</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.html"><span class="hs-identifier">Effects.Exception</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#ExceptionProxy"><span class="hs-identifier">ExceptionProxy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#MkExceptionProxy"><span class="hs-identifier">MkExceptionProxy</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.html"><span class="hs-identifier">Effects.Exception</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Ex</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-fs-0.1-5be167b1324af88bf741d32ebe4f6f3c088e3e9252f060e45e8cb42aebf2fae8/share/doc/html/src/Effects.FileSystem.Utils.html"><span class="hs-identifier">Effects.FileSystem.Utils</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">FsUtils</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.html"><span class="hs-identifier">Todo.Data.TaskId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier">TaskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.html"><span class="hs-identifier">Todo.Data.TaskId</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">TaskId</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="annot"><span class="hs-comment">-- | Error for two tasks t1 and t2 having the same id.</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">newtype</span><span> </span><span id="DuplicateIdE"><span class="annot"><a href="Todo.Exception.html#DuplicateIdE"><span class="hs-identifier hs-var">DuplicateIdE</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MkDuplicateIdE"><span class="annot"><a href="Todo.Exception.html#MkDuplicateIdE"><span class="hs-identifier hs-var">MkDuplicateIdE</span></a></span></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133402"><span id="local-6989586621679133406"><span class="annot"><span class="annottext">DuplicateIdE -&gt; DuplicateIdE -&gt; Bool
+(DuplicateIdE -&gt; DuplicateIdE -&gt; Bool)
+-&gt; (DuplicateIdE -&gt; DuplicateIdE -&gt; Bool) -&gt; Eq DuplicateIdE
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DuplicateIdE -&gt; DuplicateIdE -&gt; Bool
+== :: DuplicateIdE -&gt; DuplicateIdE -&gt; Bool
+$c/= :: DuplicateIdE -&gt; DuplicateIdE -&gt; Bool
+/= :: DuplicateIdE -&gt; DuplicateIdE -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133411"><span id="local-6989586621679133417"><span id="local-6989586621679133421"><span class="annot"><span class="annottext">Int -&gt; DuplicateIdE -&gt; ShowS
+[DuplicateIdE] -&gt; ShowS
+DuplicateIdE -&gt; String
+(Int -&gt; DuplicateIdE -&gt; ShowS)
+-&gt; (DuplicateIdE -&gt; String)
+-&gt; ([DuplicateIdE] -&gt; ShowS)
+-&gt; Show DuplicateIdE
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DuplicateIdE -&gt; ShowS
+showsPrec :: Int -&gt; DuplicateIdE -&gt; ShowS
+$cshow :: DuplicateIdE -&gt; String
+show :: DuplicateIdE -&gt; String
+$cshowList :: [DuplicateIdE] -&gt; ShowS
+showList :: [DuplicateIdE] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133429"><span id="local-6989586621679133432"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="Todo.Exception.html#DuplicateIdE"><span class="hs-identifier hs-type">DuplicateIdE</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-32"></span><span>  </span><span id="local-6989586621679133444"><span class="annot"><span class="annottext">displayException :: DuplicateIdE -&gt; String
+</span><a href="#local-6989586621679133444"><span class="hs-identifier hs-var hs-var hs-var hs-var">displayException</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Exception.html#MkDuplicateIdE"><span class="hs-identifier hs-type">MkDuplicateIdE</span></a></span><span> </span><span id="local-6989586621679133446"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133446"><span class="hs-identifier hs-var">id</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-33"></span><span>    </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-34"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Found duplicate tasks with id '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133446"><span class="hs-identifier hs-var">id</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">unTaskId</span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;'.&quot;</span></span><span>
+</span><span id="line-37"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="annot"><span class="hs-comment">-- | Error for not finding a task id in the index.</span></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">newtype</span><span> </span><span id="TaskIdNotFoundE"><span class="annot"><a href="Todo.Exception.html#TaskIdNotFoundE"><span class="hs-identifier hs-var">TaskIdNotFoundE</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MkTaskIdNotFoundE"><span class="annot"><a href="Todo.Exception.html#MkTaskIdNotFoundE"><span class="hs-identifier hs-var">MkTaskIdNotFoundE</span></a></span></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133450"><span id="local-6989586621679133453"><span class="annot"><span class="annottext">TaskIdNotFoundE -&gt; TaskIdNotFoundE -&gt; Bool
+(TaskIdNotFoundE -&gt; TaskIdNotFoundE -&gt; Bool)
+-&gt; (TaskIdNotFoundE -&gt; TaskIdNotFoundE -&gt; Bool)
+-&gt; Eq TaskIdNotFoundE
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TaskIdNotFoundE -&gt; TaskIdNotFoundE -&gt; Bool
+== :: TaskIdNotFoundE -&gt; TaskIdNotFoundE -&gt; Bool
+$c/= :: TaskIdNotFoundE -&gt; TaskIdNotFoundE -&gt; Bool
+/= :: TaskIdNotFoundE -&gt; TaskIdNotFoundE -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133457"><span id="local-6989586621679133461"><span id="local-6989586621679133465"><span class="annot"><span class="annottext">Int -&gt; TaskIdNotFoundE -&gt; ShowS
+[TaskIdNotFoundE] -&gt; ShowS
+TaskIdNotFoundE -&gt; String
+(Int -&gt; TaskIdNotFoundE -&gt; ShowS)
+-&gt; (TaskIdNotFoundE -&gt; String)
+-&gt; ([TaskIdNotFoundE] -&gt; ShowS)
+-&gt; Show TaskIdNotFoundE
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TaskIdNotFoundE -&gt; ShowS
+showsPrec :: Int -&gt; TaskIdNotFoundE -&gt; ShowS
+$cshow :: TaskIdNotFoundE -&gt; String
+show :: TaskIdNotFoundE -&gt; String
+$cshowList :: [TaskIdNotFoundE] -&gt; ShowS
+showList :: [TaskIdNotFoundE] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133472"><span id="local-6989586621679133475"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="Todo.Exception.html#TaskIdNotFoundE"><span class="hs-identifier hs-type">TaskIdNotFoundE</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-44"></span><span>  </span><span id="local-6989586621679133483"><span class="annot"><span class="annottext">displayException :: TaskIdNotFoundE -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">displayException</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Exception.html#MkTaskIdNotFoundE"><span class="hs-identifier hs-type">MkTaskIdNotFoundE</span></a></span><span> </span><span id="local-6989586621679133484"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133484"><span class="hs-identifier hs-var">taskId</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-45"></span><span>    </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-46"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Task id '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133484"><span class="hs-identifier hs-var">taskId</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">unTaskId</span><span class="hs-special">,</span><span>
+</span><span id="line-48"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;' not found in the index.&quot;</span></span><span>
+</span><span id="line-49"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="annot"><span class="hs-comment">-- | Error for a task t1 referencing task ids that do not exist.</span></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">data</span><span> </span><span id="BlockedIdRefE"><span class="annot"><a href="Todo.Exception.html#BlockedIdRefE"><span class="hs-identifier hs-var">BlockedIdRefE</span></a></span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="MkBlockedIdRefE"><span class="annot"><a href="Todo.Exception.html#MkBlockedIdRefE"><span class="hs-identifier hs-var">MkBlockedIdRefE</span></a></span></span><span>
+</span><span id="line-54"></span><span>      </span><span class="annot"><span class="hs-comment">-- | t1.id</span></span><span>
+</span><span id="line-55"></span><span>      </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span>
+</span><span id="line-56"></span><span>      </span><span class="annot"><span class="hs-comment">-- | t1.refIds</span></span><span>
+</span><span id="line-57"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133487"><span id="local-6989586621679133492"><span class="annot"><span class="annottext">BlockedIdRefE -&gt; BlockedIdRefE -&gt; Bool
+(BlockedIdRefE -&gt; BlockedIdRefE -&gt; Bool)
+-&gt; (BlockedIdRefE -&gt; BlockedIdRefE -&gt; Bool) -&gt; Eq BlockedIdRefE
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BlockedIdRefE -&gt; BlockedIdRefE -&gt; Bool
+== :: BlockedIdRefE -&gt; BlockedIdRefE -&gt; Bool
+$c/= :: BlockedIdRefE -&gt; BlockedIdRefE -&gt; Bool
+/= :: BlockedIdRefE -&gt; BlockedIdRefE -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133496"><span id="local-6989586621679133502"><span id="local-6989586621679133506"><span class="annot"><span class="annottext">Int -&gt; BlockedIdRefE -&gt; ShowS
+[BlockedIdRefE] -&gt; ShowS
+BlockedIdRefE -&gt; String
+(Int -&gt; BlockedIdRefE -&gt; ShowS)
+-&gt; (BlockedIdRefE -&gt; String)
+-&gt; ([BlockedIdRefE] -&gt; ShowS)
+-&gt; Show BlockedIdRefE
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BlockedIdRefE -&gt; ShowS
+showsPrec :: Int -&gt; BlockedIdRefE -&gt; ShowS
+$cshow :: BlockedIdRefE -&gt; String
+show :: BlockedIdRefE -&gt; String
+$cshowList :: [BlockedIdRefE] -&gt; ShowS
+showList :: [BlockedIdRefE] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133513"><span id="local-6989586621679133516"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="Todo.Exception.html#BlockedIdRefE"><span class="hs-identifier hs-type">BlockedIdRefE</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-61"></span><span>  </span><span id="local-6989586621679133527"><span class="annot"><span class="annottext">displayException :: BlockedIdRefE -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">displayException</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Exception.html#MkBlockedIdRefE"><span class="hs-identifier hs-type">MkBlockedIdRefE</span></a></span><span> </span><span id="local-6989586621679133528"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133528"><span class="hs-identifier hs-var">id</span></a></span></span><span> </span><span id="local-6989586621679133529"><span class="annot"><span class="annottext">NESet TaskId
+</span><a href="#local-6989586621679133529"><span class="hs-identifier hs-var">refIds</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-63"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Task with id '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-64"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133528"><span class="hs-identifier hs-var">id</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">unTaskId</span><span class="hs-special">,</span><span>
+</span><span id="line-65"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;' references non-extant id(s): &quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-66"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133530"><span class="hs-identifier hs-var">displayIds</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-67"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.&quot;</span></span><span>
+</span><span id="line-68"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-69"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-70"></span><span>      </span><span id="local-6989586621679133530"><span class="annot"><span class="annottext">displayIds :: Text
+</span><a href="#local-6989586621679133530"><span class="hs-identifier hs-var hs-var">displayIds</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NESet TaskId -&gt; Text
+forall (f :: * -&gt; *). Foldable f =&gt; f TaskId -&gt; Text
+</span><a href="Todo.Data.TaskId.html#taskIdsToTextQuote"><span class="hs-identifier hs-var">TaskId.taskIdsToTextQuote</span></a></span><span> </span><span class="annot"><span class="annottext">NESet TaskId
+</span><a href="#local-6989586621679133529"><span class="hs-identifier hs-var">refIds</span></a></span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="annot"><span class="hs-comment">-- | Errors when deleting a task.</span></span><span>
+</span><span id="line-73"></span><span class="hs-keyword">data</span><span> </span><span id="DeleteE"><span class="annot"><a href="Todo.Exception.html#DeleteE"><span class="hs-identifier hs-var">DeleteE</span></a></span></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-comment">-- | Attempted to delete an id that was not found</span></span><span>
+</span><span id="line-75"></span><span>    </span><span id="DeleteTaskIdNotFound"><span class="annot"><a href="Todo.Exception.html#DeleteTaskIdNotFound"><span class="hs-identifier hs-var">DeleteTaskIdNotFound</span></a></span></span><span> </span><span class="annot"><a href="Todo.Exception.html#TaskIdNotFoundE"><span class="hs-identifier hs-type">TaskIdNotFoundE</span></a></span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | Attempted to delete a task that is referenced by other tasks.</span></span><span>
+</span><span id="line-77"></span><span>    </span><span id="DeleteRefId"><span class="annot"><a href="Todo.Exception.html#DeleteRefId"><span class="hs-identifier hs-var">DeleteRefId</span></a></span></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133535"><span id="local-6989586621679133540"><span class="annot"><span class="annottext">DeleteE -&gt; DeleteE -&gt; Bool
+(DeleteE -&gt; DeleteE -&gt; Bool)
+-&gt; (DeleteE -&gt; DeleteE -&gt; Bool) -&gt; Eq DeleteE
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DeleteE -&gt; DeleteE -&gt; Bool
+== :: DeleteE -&gt; DeleteE -&gt; Bool
+$c/= :: DeleteE -&gt; DeleteE -&gt; Bool
+/= :: DeleteE -&gt; DeleteE -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133544"><span id="local-6989586621679133551"><span id="local-6989586621679133555"><span class="annot"><span class="annottext">Int -&gt; DeleteE -&gt; ShowS
+[DeleteE] -&gt; ShowS
+DeleteE -&gt; String
+(Int -&gt; DeleteE -&gt; ShowS)
+-&gt; (DeleteE -&gt; String) -&gt; ([DeleteE] -&gt; ShowS) -&gt; Show DeleteE
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DeleteE -&gt; ShowS
+showsPrec :: Int -&gt; DeleteE -&gt; ShowS
+$cshow :: DeleteE -&gt; String
+show :: DeleteE -&gt; String
+$cshowList :: [DeleteE] -&gt; ShowS
+showList :: [DeleteE] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133562"><span id="local-6989586621679133565"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="Todo.Exception.html#DeleteE"><span class="hs-identifier hs-type">DeleteE</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-81"></span><span>  </span><span id="local-6989586621679133575"><span class="annot"><span class="annottext">displayException :: DeleteE -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">displayException</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Exception.html#DeleteTaskIdNotFound"><span class="hs-identifier hs-type">DeleteTaskIdNotFound</span></a></span><span> </span><span id="local-6989586621679133576"><span class="annot"><span class="annottext">TaskIdNotFoundE
+</span><a href="#local-6989586621679133576"><span class="hs-identifier hs-var">err</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskIdNotFoundE -&gt; String
+forall e. Exception e =&gt; e -&gt; String
+</span><span class="hs-identifier hs-var">displayException</span></span><span> </span><span class="annot"><span class="annottext">TaskIdNotFoundE
+</span><a href="#local-6989586621679133576"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-82"></span><span>  </span><span class="annot"><span class="hs-identifier hs-var">displayException</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Exception.html#DeleteRefId"><span class="hs-identifier hs-type">DeleteRefId</span></a></span><span> </span><span id="local-6989586621679133577"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133577"><span class="hs-identifier hs-var">taskId</span></a></span></span><span> </span><span id="local-6989586621679133578"><span class="annot"><span class="annottext">NESet TaskId
+</span><a href="#local-6989586621679133578"><span class="hs-identifier hs-var">ids</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-84"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Task id '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-85"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133577"><span class="hs-identifier hs-var">taskId</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">unTaskId</span><span class="hs-special">,</span><span>
+</span><span id="line-86"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;' is referenced by other tasks, so it cannot be deleted: &quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-87"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NESet TaskId -&gt; Text
+forall (f :: * -&gt; *). Foldable f =&gt; f TaskId -&gt; Text
+</span><a href="Todo.Data.TaskId.html#taskIdsToTextQuote"><span class="hs-identifier hs-var">TaskId.taskIdsToTextQuote</span></a></span><span> </span><span class="annot"><span class="annottext">NESet TaskId
+</span><a href="#local-6989586621679133578"><span class="hs-identifier hs-var">ids</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span class="annot"><span class="hs-comment">-- | Error for finding a group when we wanted a single task.</span></span><span>
+</span><span id="line-91"></span><span class="hs-keyword">newtype</span><span> </span><span id="FoundGroupNotSingleE"><span class="annot"><a href="Todo.Exception.html#FoundGroupNotSingleE"><span class="hs-identifier hs-var">FoundGroupNotSingleE</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MkFoundGroupNotSingleE"><span class="annot"><a href="Todo.Exception.html#MkFoundGroupNotSingleE"><span class="hs-identifier hs-var">MkFoundGroupNotSingleE</span></a></span></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133581"><span id="local-6989586621679133584"><span class="annot"><span class="annottext">FoundGroupNotSingleE -&gt; FoundGroupNotSingleE -&gt; Bool
+(FoundGroupNotSingleE -&gt; FoundGroupNotSingleE -&gt; Bool)
+-&gt; (FoundGroupNotSingleE -&gt; FoundGroupNotSingleE -&gt; Bool)
+-&gt; Eq FoundGroupNotSingleE
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: FoundGroupNotSingleE -&gt; FoundGroupNotSingleE -&gt; Bool
+== :: FoundGroupNotSingleE -&gt; FoundGroupNotSingleE -&gt; Bool
+$c/= :: FoundGroupNotSingleE -&gt; FoundGroupNotSingleE -&gt; Bool
+/= :: FoundGroupNotSingleE -&gt; FoundGroupNotSingleE -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133588"><span id="local-6989586621679133592"><span id="local-6989586621679133596"><span class="annot"><span class="annottext">Int -&gt; FoundGroupNotSingleE -&gt; ShowS
+[FoundGroupNotSingleE] -&gt; ShowS
+FoundGroupNotSingleE -&gt; String
+(Int -&gt; FoundGroupNotSingleE -&gt; ShowS)
+-&gt; (FoundGroupNotSingleE -&gt; String)
+-&gt; ([FoundGroupNotSingleE] -&gt; ShowS)
+-&gt; Show FoundGroupNotSingleE
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; FoundGroupNotSingleE -&gt; ShowS
+showsPrec :: Int -&gt; FoundGroupNotSingleE -&gt; ShowS
+$cshow :: FoundGroupNotSingleE -&gt; String
+show :: FoundGroupNotSingleE -&gt; String
+$cshowList :: [FoundGroupNotSingleE] -&gt; ShowS
+showList :: [FoundGroupNotSingleE] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133603"><span id="local-6989586621679133606"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="Todo.Exception.html#FoundGroupNotSingleE"><span class="hs-identifier hs-type">FoundGroupNotSingleE</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-95"></span><span>  </span><span id="local-6989586621679133614"><span class="annot"><span class="annottext">displayException :: FoundGroupNotSingleE -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">displayException</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Exception.html#MkFoundGroupNotSingleE"><span class="hs-identifier hs-type">MkFoundGroupNotSingleE</span></a></span><span> </span><span id="local-6989586621679133615"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133615"><span class="hs-identifier hs-var">taskId</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-96"></span><span>    </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-97"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Found a group task with id '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-98"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133615"><span class="hs-identifier hs-var">taskId</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">unTaskId</span><span class="hs-special">,</span><span>
+</span><span id="line-99"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;', but wanted a single task.&quot;</span></span><span>
+</span><span id="line-100"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span class="annot"><span class="hs-comment">-- | Error when failing to find an index name.</span></span><span>
+</span><span id="line-103"></span><span class="hs-keyword">data</span><span> </span><span id="IndexNameLookupE"><span class="annot"><a href="Todo.Exception.html#IndexNameLookupE"><span class="hs-identifier hs-var">IndexNameLookupE</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MkIndexNameLookupE"><span class="annot"><a href="Todo.Exception.html#MkIndexNameLookupE"><span class="hs-identifier hs-var">MkIndexNameLookupE</span></a></span></span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/filepath-1.5.3.0-6011b464ca6ac2c82d72f2055d231d555c21bae02133f2f163ecc16363fdb1f7/share/doc/html/src/System.OsPath.Types.html#OsPath"><span class="hs-identifier hs-type">OsPath</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133618"><span id="local-6989586621679133624"><span class="annot"><span class="annottext">IndexNameLookupE -&gt; IndexNameLookupE -&gt; Bool
+(IndexNameLookupE -&gt; IndexNameLookupE -&gt; Bool)
+-&gt; (IndexNameLookupE -&gt; IndexNameLookupE -&gt; Bool)
+-&gt; Eq IndexNameLookupE
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: IndexNameLookupE -&gt; IndexNameLookupE -&gt; Bool
+== :: IndexNameLookupE -&gt; IndexNameLookupE -&gt; Bool
+$c/= :: IndexNameLookupE -&gt; IndexNameLookupE -&gt; Bool
+/= :: IndexNameLookupE -&gt; IndexNameLookupE -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133628"><span id="local-6989586621679133635"><span id="local-6989586621679133639"><span class="annot"><span class="annottext">Int -&gt; IndexNameLookupE -&gt; ShowS
+[IndexNameLookupE] -&gt; ShowS
+IndexNameLookupE -&gt; String
+(Int -&gt; IndexNameLookupE -&gt; ShowS)
+-&gt; (IndexNameLookupE -&gt; String)
+-&gt; ([IndexNameLookupE] -&gt; ShowS)
+-&gt; Show IndexNameLookupE
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; IndexNameLookupE -&gt; ShowS
+showsPrec :: Int -&gt; IndexNameLookupE -&gt; ShowS
+$cshow :: IndexNameLookupE -&gt; String
+show :: IndexNameLookupE -&gt; String
+$cshowList :: [IndexNameLookupE] -&gt; ShowS
+showList :: [IndexNameLookupE] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-105"></span><span>
+</span><span id="line-106"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133646"><span id="local-6989586621679133649"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="Todo.Exception.html#IndexNameLookupE"><span class="hs-identifier hs-type">IndexNameLookupE</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-107"></span><span>  </span><span id="local-6989586621679133657"><span class="annot"><span class="annottext">displayException :: IndexNameLookupE -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">displayException</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Exception.html#MkIndexNameLookupE"><span class="hs-identifier hs-type">MkIndexNameLookupE</span></a></span><span> </span><span id="local-6989586621679133658"><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679133658"><span class="hs-identifier hs-var">path</span></a></span></span><span> </span><span id="local-6989586621679133659"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133659"><span class="hs-identifier hs-var">name</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-108"></span><span>    </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-109"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;No index with name '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-110"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133659"><span class="hs-identifier hs-var">name</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-111"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;' found in index-legend: '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-112"></span><span>        </span><span class="annot"><span class="annottext">OsPath -&gt; String
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-fs-0.1-5be167b1324af88bf741d32ebe4f6f3c088e3e9252f060e45e8cb42aebf2fae8/share/doc/html/src/Effects.FileSystem.Utils.html#decodeOsToFpLenient"><span class="hs-identifier hs-var">FsUtils.decodeOsToFpLenient</span></a></span><span> </span><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679133658"><span class="hs-identifier hs-var">path</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-113"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;'&quot;</span></span><span>
+</span><span id="line-114"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-115"></span><span>
+</span><span id="line-116"></span><span class="annot"><span class="hs-comment">-- | Error for failing to find the XDG index.</span></span><span>
+</span><span id="line-117"></span><span class="hs-keyword">newtype</span><span> </span><span id="XdgIndexNotFoundE"><span class="annot"><a href="Todo.Exception.html#XdgIndexNotFoundE"><span class="hs-identifier hs-var">XdgIndexNotFoundE</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MkXdgIndexNotFoundE"><span class="annot"><a href="Todo.Exception.html#MkXdgIndexNotFoundE"><span class="hs-identifier hs-var">MkXdgIndexNotFoundE</span></a></span></span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/filepath-1.5.3.0-6011b464ca6ac2c82d72f2055d231d555c21bae02133f2f163ecc16363fdb1f7/share/doc/html/src/System.OsPath.Types.html#OsPath"><span class="hs-identifier hs-type">OsPath</span></a></span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133663"><span id="local-6989586621679133666"><span class="annot"><span class="annottext">XdgIndexNotFoundE -&gt; XdgIndexNotFoundE -&gt; Bool
+(XdgIndexNotFoundE -&gt; XdgIndexNotFoundE -&gt; Bool)
+-&gt; (XdgIndexNotFoundE -&gt; XdgIndexNotFoundE -&gt; Bool)
+-&gt; Eq XdgIndexNotFoundE
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: XdgIndexNotFoundE -&gt; XdgIndexNotFoundE -&gt; Bool
+== :: XdgIndexNotFoundE -&gt; XdgIndexNotFoundE -&gt; Bool
+$c/= :: XdgIndexNotFoundE -&gt; XdgIndexNotFoundE -&gt; Bool
+/= :: XdgIndexNotFoundE -&gt; XdgIndexNotFoundE -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133670"><span id="local-6989586621679133674"><span id="local-6989586621679133678"><span class="annot"><span class="annottext">Int -&gt; XdgIndexNotFoundE -&gt; ShowS
+[XdgIndexNotFoundE] -&gt; ShowS
+XdgIndexNotFoundE -&gt; String
+(Int -&gt; XdgIndexNotFoundE -&gt; ShowS)
+-&gt; (XdgIndexNotFoundE -&gt; String)
+-&gt; ([XdgIndexNotFoundE] -&gt; ShowS)
+-&gt; Show XdgIndexNotFoundE
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; XdgIndexNotFoundE -&gt; ShowS
+showsPrec :: Int -&gt; XdgIndexNotFoundE -&gt; ShowS
+$cshow :: XdgIndexNotFoundE -&gt; String
+show :: XdgIndexNotFoundE -&gt; String
+$cshowList :: [XdgIndexNotFoundE] -&gt; ShowS
+showList :: [XdgIndexNotFoundE] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-119"></span><span>
+</span><span id="line-120"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133685"><span id="local-6989586621679133689"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="Todo.Exception.html#XdgIndexNotFoundE"><span class="hs-identifier hs-type">XdgIndexNotFoundE</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-121"></span><span>  </span><span id="local-6989586621679133696"><span class="annot"><span class="annottext">displayException :: XdgIndexNotFoundE -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">displayException</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Exception.html#MkXdgIndexNotFoundE"><span class="hs-identifier hs-type">MkXdgIndexNotFoundE</span></a></span><span> </span><span id="local-6989586621679133697"><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679133697"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-122"></span><span>    </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-123"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;No index name or path was given, so we fell back to XDG config '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-124"></span><span>        </span><span class="annot"><span class="annottext">OsPath -&gt; String
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-fs-0.1-5be167b1324af88bf741d32ebe4f6f3c088e3e9252f060e45e8cb42aebf2fae8/share/doc/html/src/Effects.FileSystem.Utils.html#decodeOsToFpLenient"><span class="hs-identifier hs-var">FsUtils.decodeOsToFpLenient</span></a></span><span> </span><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679133697"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-125"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;', but none were found.&quot;</span></span><span>
+</span><span id="line-126"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-127"></span><span>
+</span><span id="line-128"></span><span class="annot"><span class="hs-comment">-- | Error for config not found.</span></span><span>
+</span><span id="line-129"></span><span class="hs-keyword">newtype</span><span> </span><span id="ConfigNotFoundE"><span class="annot"><a href="Todo.Exception.html#ConfigNotFoundE"><span class="hs-identifier hs-var">ConfigNotFoundE</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MkConfigNotFoundE"><span class="annot"><a href="Todo.Exception.html#MkConfigNotFoundE"><span class="hs-identifier hs-var">MkConfigNotFoundE</span></a></span></span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/filepath-1.5.3.0-6011b464ca6ac2c82d72f2055d231d555c21bae02133f2f163ecc16363fdb1f7/share/doc/html/src/System.OsPath.Types.html#OsPath"><span class="hs-identifier hs-type">OsPath</span></a></span><span>
+</span><span id="line-130"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133700"><span id="local-6989586621679133703"><span class="annot"><span class="annottext">ConfigNotFoundE -&gt; ConfigNotFoundE -&gt; Bool
+(ConfigNotFoundE -&gt; ConfigNotFoundE -&gt; Bool)
+-&gt; (ConfigNotFoundE -&gt; ConfigNotFoundE -&gt; Bool)
+-&gt; Eq ConfigNotFoundE
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ConfigNotFoundE -&gt; ConfigNotFoundE -&gt; Bool
+== :: ConfigNotFoundE -&gt; ConfigNotFoundE -&gt; Bool
+$c/= :: ConfigNotFoundE -&gt; ConfigNotFoundE -&gt; Bool
+/= :: ConfigNotFoundE -&gt; ConfigNotFoundE -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133707"><span id="local-6989586621679133711"><span id="local-6989586621679133715"><span class="annot"><span class="annottext">Int -&gt; ConfigNotFoundE -&gt; ShowS
+[ConfigNotFoundE] -&gt; ShowS
+ConfigNotFoundE -&gt; String
+(Int -&gt; ConfigNotFoundE -&gt; ShowS)
+-&gt; (ConfigNotFoundE -&gt; String)
+-&gt; ([ConfigNotFoundE] -&gt; ShowS)
+-&gt; Show ConfigNotFoundE
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ConfigNotFoundE -&gt; ShowS
+showsPrec :: Int -&gt; ConfigNotFoundE -&gt; ShowS
+$cshow :: ConfigNotFoundE -&gt; String
+show :: ConfigNotFoundE -&gt; String
+$cshowList :: [ConfigNotFoundE] -&gt; ShowS
+showList :: [ConfigNotFoundE] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-131"></span><span>
+</span><span id="line-132"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133722"><span id="local-6989586621679133725"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="Todo.Exception.html#ConfigNotFoundE"><span class="hs-identifier hs-type">ConfigNotFoundE</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-133"></span><span>  </span><span id="local-6989586621679133732"><span class="annot"><span class="annottext">displayException :: ConfigNotFoundE -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">displayException</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Exception.html#MkConfigNotFoundE"><span class="hs-identifier hs-type">MkConfigNotFoundE</span></a></span><span> </span><span id="local-6989586621679133733"><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679133733"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-134"></span><span>    </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-135"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Config file not found: '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-136"></span><span>        </span><span class="annot"><span class="annottext">OsPath -&gt; String
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-fs-0.1-5be167b1324af88bf741d32ebe4f6f3c088e3e9252f060e45e8cb42aebf2fae8/share/doc/html/src/Effects.FileSystem.Utils.html#decodeOsToFpLenient"><span class="hs-identifier hs-var">FsUtils.decodeOsToFpLenient</span></a></span><span> </span><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679133733"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-137"></span><span>        </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;'&quot;</span></span><span>
+</span><span id="line-138"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-139"></span><span>
+</span><span id="line-140"></span><span class="hs-comment">-- TODO: For GHC 9.10+, consider replacing this mechanism with</span><span>
+</span><span id="line-141"></span><span class="hs-comment">-- backtraceDesired _ = False in the Exception definition.</span><span>
+</span><span id="line-142"></span><span>
+</span><span id="line-143"></span><span class="annot"><span class="hs-comment">-- | Display exception, skipping callstacks for known exceptions.</span></span><span>
+</span><span id="line-144"></span><span id="local-6989586621679133734"><span class="annot"><a href="Todo.Exception.html#displayExceptionSkipKnownCS"><span class="hs-identifier hs-type">displayExceptionSkipKnownCS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="#local-6989586621679133734"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133734"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span></span><span>
+</span><span id="line-145"></span><span id="displayExceptionSkipKnownCS"><span class="annot"><span class="annottext">displayExceptionSkipKnownCS :: forall e. Exception e =&gt; e -&gt; String
+</span><a href="Todo.Exception.html#displayExceptionSkipKnownCS"><span class="hs-identifier hs-var hs-var">displayExceptionSkipKnownCS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[ExceptionProxy] -&gt; e -&gt; String
+forall e. Exception e =&gt; [ExceptionProxy] -&gt; e -&gt; String
+</span><a href="Todo.Exception.html#skipKnownExceptions"><span class="hs-identifier hs-var">skipKnownExceptions</span></a></span><span> </span><span class="annot"><span class="annottext">[ExceptionProxy]
+</span><a href="Todo.Exception.html#proxies"><span class="hs-identifier hs-var">proxies</span></a></span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span class="annot"><a href="Todo.Exception.html#proxies"><span class="hs-identifier hs-type">proxies</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Prelude.html#List"><span class="hs-identifier hs-type">List</span></a></span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#ExceptionProxy"><span class="hs-identifier hs-type">ExceptionProxy</span></a></span><span>
+</span><span id="line-148"></span><span id="proxies"><span class="annot"><span class="annottext">proxies :: [ExceptionProxy]
+</span><a href="Todo.Exception.html#proxies"><span class="hs-identifier hs-var hs-var">proxies</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-149"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Proxy BlockedIdRefE -&gt; ExceptionProxy
+forall e. Exception e =&gt; Proxy e -&gt; ExceptionProxy
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#MkExceptionProxy"><span class="hs-identifier hs-var">MkExceptionProxy</span></a></span><span> </span><span class="annot"><span class="annottext">(Proxy BlockedIdRefE -&gt; ExceptionProxy)
+-&gt; Proxy BlockedIdRefE -&gt; ExceptionProxy
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">forall t. Proxy t
+forall {k} (t :: k). Proxy t
+</span><span class="hs-identifier hs-var">Proxy</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Todo.Exception.html#BlockedIdRefE"><span class="hs-identifier hs-type">BlockedIdRefE</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-150"></span><span>    </span><span class="annot"><span class="annottext">Proxy ConfigNotFoundE -&gt; ExceptionProxy
+forall e. Exception e =&gt; Proxy e -&gt; ExceptionProxy
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#MkExceptionProxy"><span class="hs-identifier hs-var">MkExceptionProxy</span></a></span><span> </span><span class="annot"><span class="annottext">(Proxy ConfigNotFoundE -&gt; ExceptionProxy)
+-&gt; Proxy ConfigNotFoundE -&gt; ExceptionProxy
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">forall t. Proxy t
+forall {k} (t :: k). Proxy t
+</span><span class="hs-identifier hs-var">Proxy</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Todo.Exception.html#ConfigNotFoundE"><span class="hs-identifier hs-type">ConfigNotFoundE</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-151"></span><span>    </span><span class="annot"><span class="annottext">Proxy DeleteE -&gt; ExceptionProxy
+forall e. Exception e =&gt; Proxy e -&gt; ExceptionProxy
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#MkExceptionProxy"><span class="hs-identifier hs-var">MkExceptionProxy</span></a></span><span> </span><span class="annot"><span class="annottext">(Proxy DeleteE -&gt; ExceptionProxy)
+-&gt; Proxy DeleteE -&gt; ExceptionProxy
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">forall t. Proxy t
+forall {k} (t :: k). Proxy t
+</span><span class="hs-identifier hs-var">Proxy</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Todo.Exception.html#DeleteE"><span class="hs-identifier hs-type">DeleteE</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-152"></span><span>    </span><span class="annot"><span class="annottext">Proxy DuplicateIdE -&gt; ExceptionProxy
+forall e. Exception e =&gt; Proxy e -&gt; ExceptionProxy
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#MkExceptionProxy"><span class="hs-identifier hs-var">MkExceptionProxy</span></a></span><span> </span><span class="annot"><span class="annottext">(Proxy DuplicateIdE -&gt; ExceptionProxy)
+-&gt; Proxy DuplicateIdE -&gt; ExceptionProxy
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">forall t. Proxy t
+forall {k} (t :: k). Proxy t
+</span><span class="hs-identifier hs-var">Proxy</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Todo.Exception.html#DuplicateIdE"><span class="hs-identifier hs-type">DuplicateIdE</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-153"></span><span>    </span><span class="annot"><span class="annottext">Proxy FoundGroupNotSingleE -&gt; ExceptionProxy
+forall e. Exception e =&gt; Proxy e -&gt; ExceptionProxy
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#MkExceptionProxy"><span class="hs-identifier hs-var">MkExceptionProxy</span></a></span><span> </span><span class="annot"><span class="annottext">(Proxy FoundGroupNotSingleE -&gt; ExceptionProxy)
+-&gt; Proxy FoundGroupNotSingleE -&gt; ExceptionProxy
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">forall t. Proxy t
+forall {k} (t :: k). Proxy t
+</span><span class="hs-identifier hs-var">Proxy</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Todo.Exception.html#FoundGroupNotSingleE"><span class="hs-identifier hs-type">FoundGroupNotSingleE</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-154"></span><span>    </span><span class="annot"><span class="annottext">Proxy IndexNameLookupE -&gt; ExceptionProxy
+forall e. Exception e =&gt; Proxy e -&gt; ExceptionProxy
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#MkExceptionProxy"><span class="hs-identifier hs-var">MkExceptionProxy</span></a></span><span> </span><span class="annot"><span class="annottext">(Proxy IndexNameLookupE -&gt; ExceptionProxy)
+-&gt; Proxy IndexNameLookupE -&gt; ExceptionProxy
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">forall t. Proxy t
+forall {k} (t :: k). Proxy t
+</span><span class="hs-identifier hs-var">Proxy</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Todo.Exception.html#IndexNameLookupE"><span class="hs-identifier hs-type">IndexNameLookupE</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-155"></span><span>    </span><span class="annot"><span class="annottext">Proxy TaskIdNotFoundE -&gt; ExceptionProxy
+forall e. Exception e =&gt; Proxy e -&gt; ExceptionProxy
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#MkExceptionProxy"><span class="hs-identifier hs-var">MkExceptionProxy</span></a></span><span> </span><span class="annot"><span class="annottext">(Proxy TaskIdNotFoundE -&gt; ExceptionProxy)
+-&gt; Proxy TaskIdNotFoundE -&gt; ExceptionProxy
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">forall t. Proxy t
+forall {k} (t :: k). Proxy t
+</span><span class="hs-identifier hs-var">Proxy</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Todo.Exception.html#TaskIdNotFoundE"><span class="hs-identifier hs-type">TaskIdNotFoundE</span></a></span><span>
+</span><span id="line-156"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-157"></span><span>
+</span><span id="line-158"></span><span class="annot"><a href="Todo.Exception.html#skipKnownExceptions"><span class="hs-identifier hs-type">skipKnownExceptions</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679133373"><span class="annot"><a href="#local-6989586621679133373"><span class="hs-identifier hs-type">e</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="#local-6989586621679133373"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.Common.html#ExceptionProxy"><span class="hs-identifier hs-type">ExceptionProxy</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133373"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-159"></span><span>
+</span><span id="line-160"></span><span class="hs-comment">{- ORMOLU_DISABLE -}</span><span class="hs-cpp">
+
+#if MIN_VERSION_base(4, 20, 0)
+</span><span class="hs-identifier">skipKnownExceptions</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">Ex.displayInnerMatch</span><span class="hs-cpp">
+#else
+</span><span id="skipKnownExceptions"><span class="annot"><span class="annottext">skipKnownExceptions :: forall e. Exception e =&gt; [ExceptionProxy] -&gt; e -&gt; String
+</span><a href="Todo.Exception.html#skipKnownExceptions"><span class="hs-identifier hs-var hs-var">skipKnownExceptions</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[ExceptionProxy] -&gt; e -&gt; String
+forall e. Exception e =&gt; [ExceptionProxy] -&gt; e -&gt; String
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-exceptions-0.1-23ea7294de4bda7acf284749bdd90667bb21829c9af09afffa78e75cdeeabb46/share/doc/html/src/Effects.Exception.Annotation.CallStack.Legacy.html#displayCSNoMatch"><span class="hs-identifier hs-var">Ex.displayCSNoMatch</span></a></span><span class="hs-cpp">
+#endif
+</span><span>
+</span><span id="line-168"></span><span class="hs-comment">{- ORMOLU_ENABLE -}</span><span>
+</span><span id="line-169"></span></pre></body></html>

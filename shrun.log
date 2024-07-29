@@ -1,0 +1,740 @@
+[2024-07-29 13:57:14][Command][haddock_push] Starting...
+[2024-07-29 13:57:14][Command][haddock_push] Your branch is up to date with 'origin/main'.
+[2024-07-29 13:57:14][Command][haddock_push] Already on 'main'
+[2024-07-29 13:57:14][Command][haddock_push] Deleted branch gh-pages (was a09a4bd).
+[2024-07-29 13:57:14][Command][haddock_push] Switched to a new branch 'gh-pages'
+[2024-07-29 13:57:14][Command][haddock_push] Cloning into '/home/tommy/Dev/tommy/github/todo/dist-newstyle/src/algebra-s_-2a7b87f8c6400553'...
+[2024-07-29 13:57:19][Command][haddock_push] HEAD is now at f859048 Formatting, move language to common-lang
+[2024-07-29 13:57:20][Command][haddock_push] Cloning into '/home/tommy/Dev/tommy/github/todo/dist-newstyle/src/bounds-f5f4e5c7ee8eeba7'...
+[2024-07-29 13:57:23][Command][haddock_push] HEAD is now at f93b202 Move default-language, formatting
+[2024-07-29 13:57:23][Command][haddock_push] Cloning into '/home/tommy/Dev/tommy/github/todo/dist-newstyle/src/monad-eff_-bcdb1461afd68f09'...
+[2024-07-29 13:57:29][Command][haddock_push] HEAD is now at 29d9463 Add warning to MonadHaskeline
+[2024-07-29 13:57:29][Command][haddock_push] Cloning into '/home/tommy/Dev/tommy/github/todo/dist-newstyle/src/refined-e_-c502dbef407d77cd'...
+[2024-07-29 13:57:33][Command][haddock_push] HEAD is now at 9c0e3b2 Add reallyUnsafeLiftX functions
+[2024-07-29 13:57:38][Command][haddock_push] Resolving dependencies...
+[2024-07-29 13:57:44][Command][haddock_push] Build profile: -w ghc-9.8.2 -O2
+[2024-07-29 13:57:44][Command][haddock_push] In order, the following will be built (use -v for more details):
+[2024-07-29 13:57:44][Command][haddock_push]  - todo-0.1 (lib) (first run)
+[2024-07-29 13:57:44][Command][haddock_push]  - todo-0.1 (lib:todo-cli) (first run)
+[2024-07-29 13:57:44][Command][haddock_push] Configuring library for todo-0.1..
+[2024-07-29 13:57:48][Command][haddock_push] Preprocessing library for todo-0.1..
+[2024-07-29 13:57:48][Command][haddock_push] Building library for todo-0.1..
+[2024-07-29 13:57:49][Command][haddock_push] [ 1 of 18] Compiling Paths_todo       ( /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/autogen/Paths_todo.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Paths_todo.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Paths_todo.dyn_o )
+[2024-07-29 13:57:49][Command][haddock_push] [ 2 of 18] Compiling Todo.Prelude     ( lib/core/src/Todo/Prelude.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Prelude.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Prelude.dyn_o )
+[2024-07-29 13:57:52][Command][haddock_push] [ 3 of 18] Compiling Todo.Data.Timestamp ( lib/core/src/Todo/Data/Timestamp.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Timestamp.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Timestamp.dyn_o )
+[2024-07-29 13:57:53][Command][haddock_push] [ 4 of 18] Compiling Todo.Data.TaskPriority ( lib/core/src/Todo/Data/TaskPriority.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/TaskPriority.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/TaskPriority.dyn_o )
+[2024-07-29 13:57:54][Command][haddock_push] [ 5 of 18] Compiling Todo.Data.TaskId.Internal ( lib/core/src/Todo/Data/TaskId/Internal.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/TaskId/Internal.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/TaskId/Internal.dyn_o )
+[2024-07-29 13:57:56][Command][haddock_push] [ 6 of 18] Compiling Todo.Data.TaskId ( lib/core/src/Todo/Data/TaskId.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/TaskId.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/TaskId.dyn_o )
+[2024-07-29 13:57:56][Command][haddock_push] [ 7 of 18] Compiling Todo.Exception   ( lib/core/src/Todo/Exception.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Exception.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Exception.dyn_o )
+[2024-07-29 13:57:57][Command][haddock_push] [ 8 of 18] Compiling Todo.Data.TaskStatus ( lib/core/src/Todo/Data/TaskStatus.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/TaskStatus.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/TaskStatus.dyn_o )
+[2024-07-29 13:58:02][Command][haddock_push] [ 9 of 18] Compiling Todo.Configuration.Default ( lib/core/src/Todo/Configuration/Default.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Configuration/Default.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Configuration/Default.dyn_o )
+[2024-07-29 13:58:03][Command][haddock_push] [10 of 18] Compiling Todo.Data.Sorted.RevSort ( lib/core/src/Todo/Data/Sorted/RevSort.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Sorted/RevSort.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Sorted/RevSort.dyn_o )
+[2024-07-29 13:58:03][Command][haddock_push] [11 of 18] Compiling Todo.Utils       ( lib/core/src/Todo/Utils.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Utils.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Utils.dyn_o )
+[2024-07-29 13:58:04][Command][haddock_push] [12 of 18] Compiling Todo.Data.Task   ( lib/core/src/Todo/Data/Task.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Task.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Task.dyn_o )
+[2024-07-29 13:58:08][Command][haddock_push] [13 of 18] Compiling Todo.Index.Internal ( lib/core/src/Todo/Index/Internal.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Index/Internal.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Index/Internal.dyn_o )
+[2024-07-29 13:58:09][Command][haddock_push] [14 of 18] Compiling Todo.Data.Task.Optics ( lib/core/src/Todo/Data/Task/Optics.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Task/Optics.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Task/Optics.dyn_o )
+[2024-07-29 13:58:09][Command][haddock_push] [15 of 18] Compiling Todo.Index.Optics ( lib/core/src/Todo/Index/Optics.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Index/Optics.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Index/Optics.dyn_o )
+[2024-07-29 13:58:10][Command][haddock_push] [16 of 18] Compiling Todo.Index       ( lib/core/src/Todo/Index.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Index.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Index.dyn_o )
+[2024-07-29 13:58:15][Command][haddock_push] [17 of 18] Compiling Todo.Data.Sorted.Internal ( lib/core/src/Todo/Data/Sorted/Internal.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Sorted/Internal.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Sorted/Internal.dyn_o )
+[2024-07-29 13:58:15][Command][haddock_push] [18 of 18] Compiling Todo.Data.Sorted ( lib/core/src/Todo/Data/Sorted.hs, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Sorted.o, /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/Todo/Data/Sorted.dyn_o )
+[2024-07-29 13:58:18][Command][haddock_push] Preprocessing library for todo-0.1..
+[2024-07-29 13:58:18][Command][haddock_push] Running Haddock on library for todo-0.1..
+[2024-07-29 13:58:19][Command][haddock_push] Warning: --source-* options are ignored when --hyperlinked-source is enabled.
+[2024-07-29 13:58:20][Command][haddock_push] [ 1 of 18] Compiling Paths_todo       ( /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/build/autogen/Paths_todo.hs, nothing )
+[2024-07-29 13:58:20][Command][haddock_push] [ 2 of 18] Compiling Todo.Prelude     ( lib/core/src/Todo/Prelude.hs, nothing )
+[2024-07-29 13:58:22][Command][haddock_push] 
+[2024-07-29 13:58:22][Command][haddock_push] lib/core/src/Todo/Prelude.hs:296:13: warning: [GHC-68441] [-Wdeprecations]
+[2024-07-29 13:58:22][Command][haddock_push]     In the use of data constructor ‘MkExceptionCS’
+[2024-07-29 13:58:22][Command][haddock_push]     (imported from Effects.Exception, but defined in Effects.Exception.Annotation.CallStack.Legacy):
+[2024-07-29 13:58:22][Command][haddock_push]     Deprecated: "The l
+[2024-07-29 13:58:22][Command][haddock_push] egacy CallStack exception annotations are deprecated as
+[2024-07-29 13:58:22][Command][haddock_push]                  the functionality is subsumed in base 4.20 (GHC 9.10)."
+[2024-07-29 13:58:22][Command][haddock_push]     |
+[2024-07-29 13:58:22][Command][haddock_push] 296 |       Just (Ex.MkExceptionCS ExitSuccess _) -> pure ()
+[2024-07-29 13:58:22][Command][haddock_push]     |             ^^^^^^^^^^^^^^^^
+[2024-07-29 13:58:22][Command][haddock_push] 
+[2024-07-29 13:58:22][Command][haddock_push] lib/core/src/Todo/Prelude.hs:298:13: warning: [GHC-68441] [-Wdeprecations]
+[2024-07-29 13:58:22][Command][haddock_push]     In the use of data constructor ‘MkExceptionCS’
+[2024-07-29 13:58:22][Command][haddock_push]     (imported from Effects.Exception, but defined in Effects.Exception.Annotation.CallStack.Legacy):
+[2024-07-29 13:58:22][Command][haddock_push]     Deprecated: "The legacy CallStack exception annotations are deprecated as
+[2024-07-29 13:58:22][Command][haddock_push]                  the functionality is subsumed in base 4.20 (GHC 9.10)."
+[2024-07-29 13:58:22][Command][haddock_push]     |
+[2024-07-29 13:58:22][Command][haddock_push] 298 |       Just (Ex.MkExceptionCS (ExitFailure _) _) -> pure ()
+[2024-07-29 13:58:22][Command][haddock_push]     |             ^^^^^^^^^^^^^^^^
+[2024-07-29 13:58:22][Command][haddock_push] [ 3 of 18] Compiling Todo.Data.Timestamp ( lib/core/src/Todo/Data/Timestamp.hs, nothing )
+[2024-07-29 13:58:22][Command][haddock_push] [ 4 of 18] Compiling Todo.Data.TaskPriority ( lib/core/src/Todo/Data/TaskPriority.hs, nothing )
+[2024-07-29 13:58:22][Command][haddock_push] [ 5 of 18] Compiling Todo.Data.TaskId.Internal ( lib/core/src/Todo/Data/TaskId/Internal.hs, nothing )
+[2024-07-29 13:58:22][Command][haddock_push] [ 6 of 18] Compiling Todo.Data.TaskId ( lib/core/src/Todo/Data/TaskId.hs, nothing )
+[2024-07-29 13:58:22][Command][haddock_push] [ 7 of 18] Compiling Todo.Exception   ( lib/core/src/Todo/Exception.hs, nothing )
+[2024-07-29 13:58:22][Command][haddock_push] 
+[2024-07-29 13:58:22][Command][haddock_push] lib/core/src/Todo/Exception.hs:165:23: warning: [GHC-68441] [-Wdeprecations]
+[2024-07-29 13:58:22][Command][haddock_push]     In the use of ‘displayCSNoMatch’
+[2024-07-29 13:58:22][Command][haddock_push]     (imported from Effects.Exception, but defined in Effects.Exception.Annotation.CallStack.Legacy):
+[2024-07-29 13:58:22][Command][haddock_push]     Deprecated: "The legacy CallStack exception annotations are deprecated as
+[2024-07-29 13:58:22][Command][haddock_push]                  the functionality is subsumed in base 4.20 (GHC 9.10)."
+[2024-07-29 13:58:22][Command][haddock_push]     |
+[2024-07-29 13:58:22][Command][haddock_push] 165 | skipKnownExceptions = Ex.displayCSNoMatch
+[2024-07-29 13:58:22][Command][haddock_push]     |                       ^^^^^^^^^^^^^^^^^^^
+[2024-07-29 13:58:22][Command][haddock_push] [ 8 of 18] Compiling Todo.Data.TaskStatus ( lib/core/src/Todo/Data/TaskStatus.hs, nothing )
+[2024-07-29 13:58:22][Command][haddock_push] [ 9 of 18] Compiling Todo.Configuration.Default ( lib/core/src/Todo/Configuration/Default.hs, nothing )
+[2024-07-29 13:58:22][Command][haddock_push] [10 of 18] Compiling Todo.Data.Sorted.RevSort ( lib/core/src/Todo/Data/Sorted/RevSort.hs, nothing )
+[2024-07-29 13:58:23][Command][haddock_push] [11 of 18] Compiling Todo.Utils       ( lib/core/src/Todo/Utils.hs, nothing )
+[2024-07-29 13:58:23][Command][haddock_push] [12 of 18] Compiling Todo.Data.Task   ( lib/core/src/Todo/Data/Task.hs, nothing )
+[2024-07-29 13:58:23][Command][haddock_push] [13 of 18] Compiling Todo.Index.Internal ( lib/core/src/Todo/Index/Internal.hs, nothing )
+[2024-07-29 13:58:23][Command][haddock_push] [14 of 18] Compiling Todo.Data.Task.Optics ( lib/core/src/Todo/Data/Task/Optics.hs, nothing )
+[2024-07-29 13:58:23][Command][haddock_push] [15 of 18] Compiling Todo.Index.Optics ( lib/core/src/Todo/Index/Optics.hs, nothing )
+[2024-07-29 13:58:23][Command][haddock_push] [16 of 18] Compiling Todo.Index       ( lib/core/src/Todo/Index.hs, nothing )
+[2024-07-29 13:58:24][Command][haddock_push] [17 of 18] Compiling Todo.Data.Sorted.Internal ( lib/core/src/Todo/Data/Sorted/Internal.hs, nothing )
+[2024-07-29 13:58:24][Command][haddock_push] [18 of 18] Compiling Todo.Data.Sorted ( lib/core/src/Todo/Data/Sorted.hs, nothing )
+[2024-07-29 13:58:26][Command][haddock_push] Haddock coverage:
+[2024-07-29 13:58:26][Command][haddock_push]   86% (155 /180) in 'Todo.Prelude'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     Bool
+[2024-07-29 13:58:26][Command][haddock_push]     Ordering
+[2024-07-29 13:58:26][Command][haddock_push]     List (lib/core/src/Todo/Prelude.hs:197)
+[2024-07-29 13:58:26][Command][haddock_push]     Tuple2 (lib/core/src/Todo/Prelude.hs:199)
+[2024-07-29 13:58:26][Command][haddock_push]     Tuple3 (lib/core/src/Todo/Prelude.hs:201)
+[2024-07-29 13:58:26][Command][haddock_push]     firstJust (lib/core/src/Todo/Prelude.hs:356)
+[2024-07-29 13:58:26][Command][haddock_push]     headMaybe (lib/core/src/Todo/Prelude.hs:359)
+[2024-07-29 13:58:26][Command][haddock_push]     listToSeq (lib/core/src/Todo/Prelude.hs:250)
+[2024-07-29 13:58:26][Command][haddock_push]     listToNESet (lib/core/src/Todo/Prelude.hs:259)
+[2024-07-29 13:58:26][Command][haddock_push]     unsafeListToNonEmpty (lib/core/src/Todo/Prelude.hs:256)
+[2024-07-29 13:58:26][Command][haddock_push]     seqToList (lib/core/src/Todo/Prelude.hs:253)
+[2024-07-29 13:58:26][Command][haddock_push]     todo (lib/core/src/Todo/Prelude.hs:265)
+[2024-07-29 13:58:26][Command][haddock_push]     unimpl (lib/core/src/Todo/Prelude.hs:269)
+[2024-07-29 13:58:26][Command][haddock_push]     traceFile (lib/core/src/Todo/Prelude.hs:273)
+[2024-07-29 13:58:26][Command][haddock_push]     traceFileLine (lib/core/src/Todo/Prelude.hs:279)
+[2024-07-29 13:58:26][Command][haddock_push]     strTxtIso (lib/core/src/Todo/Prelude.hs:367)
+[2024-07-29 13:58:26][Command][haddock_push]     toListLikeOf (lib/core/src/Todo/Prelude.hs:376)
+[2024-07-29 13:58:26][Command][haddock_push]     builderToTxt (lib/core/src/Todo/Prelude.hs:247)
+[2024-07-29 13:58:26][Command][haddock_push]     displayExceptiont (lib/core/src/Todo/Prelude.hs:340)
+[2024-07-29 13:58:26][Command][haddock_push]     getTodoXdgConfig (lib/core/src/Todo/Prelude.hs:343)
+[2024-07-29 13:58:26][Command][haddock_push]     mToE (lib/core/src/Todo/Prelude.hs:363)
+[2024-07-29 13:58:26][Command][haddock_push]     throwLeft (lib/core/src/Todo/Prelude.hs:352)
+[2024-07-29 13:58:26][Command][haddock_push]     identity (lib/core/src/Todo/Prelude.hs:206)
+[2024-07-29 13:58:26][Command][haddock_push]     showt (lib/core/src/Todo/Prelude.hs:262)
+[2024-07-29 13:58:26][Command][haddock_push]   20% (  1 /  5) in 'Todo.Data.Timestamp'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     parseTimestamp (lib/core/src/Todo/Data/Timestamp.hs:37)
+[2024-07-29 13:58:26][Command][haddock_push]     formatTimestamp (lib/core/src/Todo/Data/Timestamp.hs:49)
+[2024-07-29 13:58:26][Command][haddock_push]     metavar (lib/core/src/Todo/Data/Timestamp.hs:57)
+[2024-07-29 13:58:26][Command][haddock_push]   25% (  1 /  4) in 'Todo.Data.TaskPriority'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     parseTaskPriority (lib/core/src/Todo/Data/TaskPriority.hs:28)
+[2024-07-29 13:58:26][Command][haddock_push]     metavar (lib/core/src/Todo/Data/TaskPriority.hs:39)
+[2024-07-29 13:58:26][Command][haddock_push]   55% (  5 /  9) in 'Todo.Data.TaskId.Internal'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     ValidateResult (lib/core/src/Todo/Data/TaskId/Internal.hs:67)
+[2024-07-29 13:58:26][Command][haddock_push]     validateText (lib/core/src/Todo/Data/TaskId/Internal.hs:73)
+[2024-07-29 13:58:26][Command][haddock_push]     mkA (lib/core/src/Todo/Data/TaskId/Internal.hs:50)
+[2024-07-29 13:58:26][Command][haddock_push]   73% ( 11 / 15) in 'Todo.Data.TaskId'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     ValidateResult (lib/core/src/Todo/Data/TaskId/Internal.hs:67)
+[2024-07-29 13:58:26][Command][haddock_push]     validateText (lib/core/src/Todo/Data/TaskId/Internal.hs:73)
+[2024-07-29 13:58:26][Command][haddock_push]     mkA (lib/core/src/Todo/Data/TaskId/Internal.hs:50)
+[2024-07-29 13:58:26][Command][haddock_push]   91% ( 11 / 12) in 'Todo.Exception'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]   38% (  7 / 18) in 'Todo.Data.TaskStatus'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     parseTaskStatus (lib/core/src/Todo/Data/TaskStatus.hs:111)
+[2024-07-29 13:58:26][Command][haddock_push]     filterBlockingIds (lib/core/src/Todo/Data/TaskStatus.hs:96)
+[2024-07-29 13:58:26][Command][haddock_push]     metavar (lib/core/src/Todo/Data/TaskStatus.hs:183)
+[2024-07-29 13:58:26][Command][haddock_push]     _Completed (lib/core/src/Todo/Data/TaskStatus.hs:186)
+[2024-07-29 13:58:26][Command][haddock_push]     _NotStarted (lib/core/src/Todo/Data/TaskStatus.hs:196)
+[2024-07-29 13:58:26][Command][haddock_push]     _InProgress (lib/core/src/Todo/Data/TaskStatus.hs:206)
+[2024-07-29 13:58:26][Command][haddock_push]     _Blocked (lib/core/src/Todo/Data/TaskStatus.hs:216)
+[2024-07-29 13:58:26][Command][haddock_push]     parseBlockedTarget (lib/core/src/Todo/Data/TaskStatus.hs:58)
+[2024-07-29 13:58:26][Command][haddock_push]     _BlockerId (lib/core/src/Todo/Data/TaskStatus.hs:226)
+[2024-07-29 13:58:26][Command][haddock_push]     _BlockerText (lib/core/src/Todo/Data/TaskStatus.hs:236)
+[2024-07-29 13:58:26][Command][haddock_push]    0% (  0 /  4) in 'Todo.Configuration.Default'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     Default (lib/core/src/Todo/Configuration/Default.hs:10)
+[2024-07-29 13:58:26][Command][haddock_push]     fromDefault (lib/core/src/Todo/Configuration/Default.hs:14)
+[2024-07-29 13:58:26][Command][haddock_push]     <.> (lib/core/src/Todo/Configuration/Default.hs:18)
+[2024-07-29 13:58:26][Command][haddock_push]    0% (  0 /  2) in 'Todo.Data.Sorted.RevSort'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     RevSort (lib/core/src/Todo/Data/Sorted/RevSort.hs:11)
+[2024-07-29 13:58:26][Command][haddock_push] Warning: 'Ixed' is out of scope.
+[2024-07-29 13:58:26][Command][haddock_push]     If you qualify the identifier, haddock can try to link it anyway.
+[2024-07-29 13:58:26][Command][haddock_push] Warning: 'MatchParial' is out of scope.
+[2024-07-29 13:58:26][Command][haddock_push]     If you qualify the identifier, haddock can try to link it anyway.
+[2024-07-29 13:58:26][Command][haddock_push]   51% ( 14 / 27) in 'Todo.Utils'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     whileM (lib/core/src/Todo/Utils.hs:47)
+[2024-07-29 13:58:26][Command][haddock_push]     whileApplyM (lib/core/src/Todo/Utils.hs:65)
+[2024-07-29 13:58:26][Command][haddock_push]     whileApplySetM (lib/core/src/Todo/Utils.hs:84)
+[2024-07-29 13:58:26][Command][haddock_push]     whileM_ (lib/core/src/Todo/Utils.hs:97)
+[2024-07-29 13:58:26][Command][haddock_push]     listTraversal (lib/core/src/Todo/Utils.hs:260)
+[2024-07-29 13:58:26][Command][haddock_push]     listPredTraversal (lib/core/src/Todo/Utils.hs:263)
+[2024-07-29 13:58:26][Command][haddock_push]     seqTraversal (lib/core/src/Todo/Utils.hs:276)
+[2024-07-29 13:58:26][Command][haddock_push]     seqPredTraversal (lib/core/src/Todo/Utils.hs:279)
+[2024-07-29 13:58:26][Command][haddock_push]     setPreviewPartialNode' (lib/core/src/Todo/Utils.hs:176)
+[2024-07-29 13:58:26][Command][haddock_push]     _MatchSuccess (lib/core/src/Todo/Utils.hs:245)
+[2024-07-29 13:58:26][Command][haddock_push]     _MatchPartial (lib/core/src/Todo/Utils.hs:234)
+[2024-07-29 13:58:26][Command][haddock_push]     _MatchFailure (lib/core/src/Todo/Utils.hs:223)
+[2024-07-29 13:58:26][Command][haddock_push] Warning: 'Task' is out of scope.
+[2024-07-29 13:58:26][Command][haddock_push]     If you qualify the identifier, haddock can try to link it anyway.
+[2024-07-29 13:58:26][Command][haddock_push]   71% ( 10 / 14) in 'Todo.Data.Task'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     taskGroupPriority (lib/core/src/Todo/Data/Task.hs:292)
+[2024-07-29 13:58:26][Command][haddock_push]     _SomeTaskSingle (lib/core/src/Todo/Data/Task.hs:412)
+[2024-07-29 13:58:26][Command][haddock_push]     _SomeTaskGroup (lib/core/src/Todo/Data/Task.hs:422)
+[2024-07-29 13:58:26][Command][haddock_push]   90% (  9 / 10) in 'Todo.Index.Internal'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]   62% (  5 /  8) in 'Todo.Data.Task.Optics'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     someTaskStatusATraversal (lib/core/src/Todo/Data/Task/Optics.hs:24)
+[2024-07-29 13:58:26][Command][haddock_push]     someTaskIdStatusGetter (lib/core/src/Todo/Data/Task/Optics.hs:68)
+[2024-07-29 13:58:26][Command][haddock_push]   92% ( 12 / 13) in 'Todo.Index.Optics'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]   97% ( 40 / 41) in 'Todo.Index'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]   50% (  1 /  2) in 'Todo.Data.Sorted.Internal'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]   62% (  5 /  8) in 'Todo.Data.Sorted'
+[2024-07-29 13:58:26][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:58:26][Command][haddock_push]     Module header
+[2024-07-29 13:58:26][Command][haddock_push]     traverseSorted (lib/core/src/Todo/Data/Sorted.hs:127)
+[2024-07-29 13:58:26][Command][haddock_push]     parseSortType (lib/core/src/Todo/Data/Sorted.hs:130)
+[2024-07-29 13:58:26][Command][haddock_push] Warning: Todo.Prelude: could not find link destinations for: 
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Prim.~#
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Aeson.Types.Generic.ProductSize
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Aeson.Types.ToJSON.KeyValuePair
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Aeson.Types.ToJSON.FromPairs
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Aeson.Types.ToJSON.gToJSON
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Aeson.Types.ToJSON.fromPairs
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Aeson.Types.ToJSON.pair
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Aeson.TH.Arity
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.SingKind
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.DemoteRep
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.fromSing
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.SingI
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.sing
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Sing
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.D:R:UReckIntp0
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.D:R:UReckCharp0
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep1_Either
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep1_Maybe
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep1_NonEmpty
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep_Ordering
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep_Bool
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep_Either
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep_Maybe
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep_NonEmpty
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep_R:UReckIntp
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep1_R:UReckIntp
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep_R:UReckCharp
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.Rep1_R:UReckCharp
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Foldable1.JoinWith
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Foldable1.FromMaybe
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Foldable1.NonEmptyDList
+[2024-07-29 13:58:26][Command][haddock_push] - Data.ByteString.Builder.RealFloat.FormatMode
+[2024-07-29 13:58:26][Command][haddock_push] - Optics.Label.GenericLabelOpticContext
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Text.Internal.Encoding.PartialUtf8CodePoint
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Text.Short.Internal.B
+[2024-07-29 13:58:26][Command][haddock_push] - Data.UUID.Types.Internal.Builder.ByteSource
+[2024-07-29 13:58:26][Command][haddock_push] - Data.UUID.Types.Internal.Builder./-/
+[2024-07-29 13:58:26][Command][haddock_push] - Data.UUID.Types.Internal.Builder.ByteSink
+[2024-07-29 13:58:26][Command][haddock_push] - Data.UUID.Types.Internal.Builder.Takes1Byte
+[2024-07-29 13:58:26][Command][haddock_push] - Data.UUID.Types.Internal.Builder.Takes2Bytes
+[2024-07-29 13:58:26][Command][haddock_push] - Data.UUID.Types.Internal.Builder.Takes4Bytes
+[2024-07-29 13:58:26][Command][haddock_push] - Data.UUID.Types.Internal.UnpackedUUID
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Vector.Unboxed.Base.V_Bool
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Vector.Unboxed.Base.V_Char
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Vector.Unboxed.Base.V_Int
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Vector.Unboxed.Base.V_Word16
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Vector.Unboxed.Base.V_Word8
+[2024-07-29 13:58:26][Command][haddock_push] - Text.ParserCombinators.ReadP.P
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.IO.Exception.Rep_ExitCode
+[2024-07-29 13:58:26][Command][haddock_push] - Optics.Label.GenericOptic
+[2024-07-29 13:58:26][Command][haddock_push] - Optics.Label.Void0
+[2024-07-29 13:58:26][Command][haddock_push] - Optics.Label.genericOptic
+[2024-07-29 13:58:26][Command][haddock_push] - Optics.Re.D:R:ReversedOpticA_Getter
+[2024-07-29 13:58:26][Command][haddock_push] - Optics.Re.D:R:ReversedOpticA_Lens
+[2024-07-29 13:58:26][Command][haddock_push] - Optics.Re.D:R:ReversedOpticAn_Iso
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:MVectorsBool0
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:VectorBool0
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:MVectorsInt0
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:VectorInt0
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Aeson.KeyMap.D:R:ItemKeyMap
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.IsList.D:R:ItemCallStack
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.IsList.D:R:ItemList
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.IsList.D:R:ItemNonEmpty
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.IsList.D:R:ItemVersion
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.IsList.D:R:ItemZipList
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Aeson.Types.Internal.Rep_Value
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.D:R:SingBoola0
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.STrue
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.D:R:DemoteRepBool
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.SFalse
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.D:R:SingMaybeb0
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.SNothing
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.SJust
+[2024-07-29 13:58:26][Command][haddock_push] - GHC.Generics.D:R:DemoteRepMaybe
+[2024-07-29 13:58:26][Command][haddock_push] - Data.ByteString.Internal.Type.D:R:ItemByteString
+[2024-07-29 13:58:26][Command][haddock_push] - Data.ByteString.Lazy.Internal.D:R:ItemByteString
+[2024-07-29 13:58:26][Command][haddock_push] - Data.Array.Byte.D:R:ItemByteArray
+[2024-07-29 13:58:26][Command][haddock_push] - Data.ByteString.Short.Internal.D:R:ItemShortByteStr
+[2024-07-29 13:58:48][Command][haddock_push] ing
+[2024-07-29 13:58:48][Command][haddock_push] - Data.IntMap.Internal.D:R:ItemIntMap
+[2024-07-29 13:58:48][Command][haddock_push] - Data.IntSet.Internal.D:R:ItemIntSet
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Map.Internal.D:R:ItemMap
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Sequence.Internal.D:R:ItemSeq
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Sequence.Internal.UnzipWith
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Sequence.Internal.unzipWith'
+[2024-07-29 13:58:48][Command][haddock_push] - Data.DList.DNonEmpty.Internal.D:R:ItemDNonEmpty
+[2024-07-29 13:58:48][Command][haddock_push] - Data.DList.Internal.D:R:ItemDList
+[2024-07-29 13:58:48][Command][haddock_push] - Control.Monad.Primitive.D:R:PrimStateIO
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Primitive.Array.D:R:ItemArray
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Primitive.PrimArray.D:R:ItemPrimArray
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Primitive.SmallArray.D:R:ItemSmallArray
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Text.Short.Internal.D:R:ItemShortText
+[2024-07-29 13:58:48][Command][haddock_push] - Data.HashMap.Internal.D:R:ItemHashMap
+[2024-07-29 13:58:48][Command][haddock_push] - Data.HashSet.Internal.D:R:ItemHashSet
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Vector.D:R:ItemVector
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Vector.Primitive.D:R:ItemVector
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Vector.Storable.D:R:ItemVector
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:MVectorsChar0
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:MVectorsWord160
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:MVectorsWord80
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:VectorChar0
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:VectorWord160
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Vector.Unboxed.Base.D:R:VectorWord80
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.At.Core.R:IxKindMap
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.At.Core.R:IxKindMaybe
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.At.Core.R:IxKindSet
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.At.Core.R:IxKindNonEmpty
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.At.Core.R:IxKindSeq
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.Mapping.D:R:MappedOpticA_Getter
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.Mapping.D:R:MappedOpticA_Lens
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.Mapping.D:R:MappedOpticAn_Iso
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.ReadOnly.D:R:ReadOnlyOpticA_Fold
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.ReadOnly.D:R:ReadOnlyOpticA_Getter
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.ReadOnly.D:R:ReadOnlyOpticA_Lens
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.ReadOnly.D:R:ReadOnlyOpticA_Traversal
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.ReadOnly.D:R:ReadOnlyOpticAn_AffineFold
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.ReadOnly.D:R:ReadOnlyOpticAn_AffineTraversal
+[2024-07-29 13:58:48][Command][haddock_push] - Optics.ReadOnly.D:R:ReadOnlyOpticAn_Iso
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Set.Internal.D:R:ItemSet
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Set.Internal.MergeSet
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Aeson.Types.ToJSON.ConsToJSON
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Aeson.Types.ToJSON.EncodeProduct
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Aeson.Types.ToJSON.WriteProduct
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Aeson.Types.ToJSON.SumToJSON'
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Aeson.Types.ToJSON.TwoElemArray
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Aeson.Types.ToJSON.sumToJSON'
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Megaparsec.Stream.D:R:TokenNoShareInput0
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Megaparsec.Stream.D:R:TokensNoShareInput0
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Megaparsec.Stream.D:R:TokenSeq
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Megaparsec.Stream.D:R:TokensSeq
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Megaparsec.Stream.D:R:TokenShareInput0
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Megaparsec.Stream.D:R:TokensShareInput0
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Megaparsec.Stream.D:R:TokenText0
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Megaparsec.Stream.D:R:TokensText0
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Printf.UPrintf
+[2024-07-29 13:58:48][Command][haddock_push] - GHC.IOPort.IOPortException
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Printf.hspr
+[2024-07-29 13:58:48][Command][haddock_push] - Text.Printf.spr
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Graph.SetM
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Containers.NonEmpty.D:R:NEMap
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Containers.NonEmpty.D:R:NESeq
+[2024-07-29 13:58:48][Command][haddock_push] - Data.Containers.NonEmpty.D:R:NESet
+[2024-07-29 13:58:48][Command][haddock_push] - TOML.Parser.NormalizeM
+[2024-07-29 13:58:49][Command][haddock_push] Documentation created:
+[2024-07-29 13:58:49][Command][haddock_push] /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/opt/doc/html/todo/
+[2024-07-29 13:58:49][Command][haddock_push] Configuring library 'todo-cli' for todo-0.1..
+[2024-07-29 13:58:54][Command][haddock_push] Preprocessing library 'todo-cli' for todo-0.1..
+[2024-07-29 13:58:54][Command][haddock_push] Running Haddock on library 'todo-cli' for todo-0.1..
+[2024-07-29 13:58:55][Command][haddock_push] Warning: --source-* options are ignored when --hyperlinked-source is enabled.
+[2024-07-29 13:58:56][Command][haddock_push] [ 1 of 23] Compiling Paths_todo       ( /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/build/todo-cli/autogen/Paths_todo.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_4.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_4.dyn_o )
+[2024-07-29 13:58:56][Command][haddock_push] [ 2 of 23] Compiling Todo.Cli.Prelude ( lib/cli/src/Todo/Cli/Prelude.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_20.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_20.dyn_o )
+[2024-07-29 13:58:57][Command][haddock_push] 
+[2024-07-29 13:58:57][Command][haddock_push] lib/cli/src/Todo/Cli/Prelude.hs:6:1: warning: [GHC-15328] [-Wx-experimental]
+[2024-07-29 13:58:57][Command][haddock_push]     Module ‘Effects.Haskeline’:
+[2024-07-29 13:58:57][Command][haddock_push]       "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:58:57][Command][haddock_push]   |
+[2024-07-29 13:58:57][Command][haddock_push] 6 | import Effects.Haskeline as X (MonadHaskeline)
+[2024-07-29 13:58:57][Command][haddock_push]   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2024-07-29 13:58:57][Command][haddock_push] [ 3 of 23] Compiling Todo.Cli.Configuration.Data.Utils ( lib/cli/src/Todo/Cli/Configuration/Data/Utils.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_16.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_16.dyn_o )
+[2024-07-29 13:58:57][Command][haddock_push] [ 4 of 23] Compiling Todo.Cli.Configuration.Data.InteractiveSwitch ( lib/cli/src/Todo/Cli/Configuration/Data/InteractiveSwitch.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_14.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_14.dyn_o )
+[2024-07-29 13:58:58][Command][haddock_push] [ 5 of 23] Compiling Todo.Cli.Configuration.ConfigPhase ( lib/cli/src/Todo/Cli/Configuration/ConfigPhase.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_8.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_8.dyn_o )
+[2024-07-29 13:58:58][Command][haddock_push] [ 6 of 23] Compiling Todo.Cli.Configuration.Data.Command ( lib/cli/src/Todo/Cli/Configuration/Data/Command.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_12.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_12.dyn_o )
+[2024-07-29 13:58:59][Command][haddock_push] [ 7 of 23] Compiling Todo.Cli.Command.Utils ( lib/cli/src/Todo/Cli/Command/Utils.hs, nothing )
+[2024-07-29 13:58:59][Command][haddock_push] 
+[2024-07-29 13:58:59][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Utils.hs:17:1: warning: [GHC-15328] [-Wx-experimental]
+[2024-07-29 13:58:59][Command][haddock_push]     Module ‘Effects.Haskeline’:
+[2024-07-29 13:58:59][Command][haddock_push]       "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:58:59][Command][haddock_push]    |
+[2024-07-29 13:58:59][Command][haddock_push] 17 | import Effects.Haskeline qualified as Haskeline
+[2024-07-29 13:58:59][Command][haddock_push]    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2024-07-29 13:58:59][Command][haddock_push] 
+[2024-07-29 13:58:59][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Utils.hs:22:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:58:59][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:58:59][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:58:59][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:58:59][Command][haddock_push]    |
+[2024-07-29 13:58:59][Command][haddock_push] 22 |     MonadHaskeline m,
+[2024-07-29 13:58:59][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:58:59][Command][haddock_push] 
+[2024-07-29 13:58:59][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Utils.hs:48:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:58:59][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:58:59][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:58:59][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:58:59][Command][haddock_push]    |
+[2024-07-29 13:58:59][Command][haddock_push] 48 |     MonadHaskeline m,
+[2024-07-29 13:58:59][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:58:59][Command][haddock_push] 
+[2024-07-29 13:58:59][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Utils.hs:67:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:58:59][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:58:59][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:58:59][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:58:59][Command][haddock_push]    |
+[2024-07-29 13:58:59][Command][haddock_push] 67 |     MonadHaskeline m,
+[2024-07-29 13:58:59][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:58:59][Command][haddock_push] 
+[2024-07-29 13:58:59][Command][haddock_push] [ 8 of 23] Compiling Todo.Cli.AppT    ( lib/cli/src/Todo/Cli/AppT.hs, nothing )
+[2024-07-29 13:58:59][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Utils.hs:88:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:58:59][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:58:59][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:58:59][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:58:59][Command][haddock_push]    |
+[2024-07-29 13:58:59][Command][haddock_push] 88 |     MonadHaskeline m,
+[2024-07-29 13:58:59][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:58:59][Command][haddock_push] 
+[2024-07-29 13:58:59][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Utils.hs:94:3: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:58:59][Command][haddock_push]     In the use of ‘getInputLine’ (imported from Effects.Haskeline):
+[2024-07-29 13:58:59][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:58:59][Command][haddock_push]    |
+[2024-07-29 13:58:59][Command][haddock_push] 94 |   Haskeline.getInputLine (unpack prompt) >>= \case
+[2024-07-29 13:58:59][Command][haddock_push]    |   ^^^^^^^^^^^^^^^^^^^^^^
+[2024-07-29 13:58:59][Command][haddock_push] 
+[2024-07-29 13:58:59][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Utils.hs:100:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:58:59][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:58:59][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:58:59][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:58:59][Command][haddock_push]     |
+[2024-07-29 13:58:59][Command][haddock_push] 100 |     MonadHaskeline m,
+[2024-07-29 13:58:59][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:58:59][Command][haddock_push] 
+[2024-07-29 13:58:59][Command][haddock_push] lib/cli/src/Todo/Cli/AppT.hs:104:7: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:58:59][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:58:59][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:58:59][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:58:59][Command][haddock_push]     |
+[2024-07-29 13:58:59][Command][haddock_push] 104 |       MonadHaskeline,
+[2024-07-29 13:58:59][Command][haddock_push]     |       ^^^^^^^^^^^^^^
+[2024-07-29 13:58:59][Command][haddock_push] [ 9 of 23] Compiling Todo.Cli.Render.Utils ( lib/cli/src/Todo/Cli/Render/Utils.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_22.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_22.dyn_o )
+[2024-07-29 13:59:00][Command][haddock_push] [10 of 23] Compiling Todo.Cli.Render.Timestamp ( lib/cli/src/Todo/Cli/Render/Timestamp.hs, nothing )
+[2024-07-29 13:59:00][Command][haddock_push] [11 of 23] Compiling Todo.Cli.Render.TaskStatus ( lib/cli/src/Todo/Cli/Render/TaskStatus.hs, nothing )
+[2024-07-29 13:59:00][Command][haddock_push] [12 of 23] Compiling Todo.Cli.Render.TaskPriority ( lib/cli/src/Todo/Cli/Render/TaskPriority.hs, nothing )
+[2024-07-29 13:59:00][Command][haddock_push] [13 of 23] Compiling Todo.Cli.Render.TaskId ( lib/cli/src/Todo/Cli/Render/TaskId.hs, nothing )
+[2024-07-29 13:59:00][Command][haddock_push] [14 of 23] Compiling Todo.Cli.Render  ( lib/cli/src/Todo/Cli/Render.hs, nothing )
+[2024-07-29 13:59:00][Command][haddock_push] [15 of 23] Compiling Todo.Cli.Configuration.Core ( lib/cli/src/Todo/Cli/Configuration/Core.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_10.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_10.dyn_o )
+[2024-07-29 13:59:00][Command][haddock_push] [16 of 23] Compiling Todo.Cli.Configuration.Toml ( lib/cli/src/Todo/Cli/Configuration/Toml.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_18.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_18.dyn_o )
+[2024-07-29 13:59:02][Command][haddock_push] [17 of 23] Compiling Todo.Cli.Command.Update ( lib/cli/src/Todo/Cli/Command/Update.hs, nothing )
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Update.hs:54:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]    |
+[2024-07-29 13:59:02][Command][haddock_push] 54 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Update.hs:78:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]    |
+[2024-07-29 13:59:02][Command][haddock_push] 78 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Update.hs:104:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]     |
+[2024-07-29 13:59:02][Command][haddock_push] 104 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Update.hs:148:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]     |
+[2024-07-29 13:59:02][Command][haddock_push] 148 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Update.hs:177:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.P
+[2024-07-29 13:59:02][Command][haddock_push] [18 of 23] Compiling Todo.Cli.Command.List ( lib/cli/src/Todo/Cli/Command/List.hs, nothing )
+[2024-07-29 13:59:02][Command][haddock_push] relude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]     |
+[2024-07-29 13:59:02][Command][haddock_push] 177 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Update.hs:202:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]     |
+[2024-07-29 13:59:02][Command][haddock_push] 202 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Update.hs:258:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]     |
+[2024-07-29 13:59:02][Command][haddock_push] 258 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] [19 of 23] Compiling Todo.Cli.Command.Delete ( lib/cli/src/Todo/Cli/Command/Delete.hs, nothing )
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Delete.hs:48:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]    |
+[2024-07-29 13:59:02][Command][haddock_push] 48 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Delete.hs:87:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]    |
+[2024-07-29 13:59:02][Command][haddock_push] 87 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] 
+[2024-07-29 13:59:02][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Delete.hs:120:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:02][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:02][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:02][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:02][Command][haddock_push]     |
+[2024-07-29 13:59:02][Command][haddock_push] 120 |     MonadHaskeline m,
+[2024-07-29 13:59:02][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:02][Command][haddock_push] [20 of 23] Compiling Todo.Cli.Configuration.Args ( lib/cli/src/Todo/Cli/Configuration/Args.hs, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_6.o, /tmp/nix-shell.Vgj4m9/ghc2776848_0/ghc_6.dyn_o )
+[2024-07-29 13:59:03][Command][haddock_push] [21 of 23] Compiling Todo.Cli.Configuration.Merged ( lib/cli/src/Todo/Cli/Configuration/Merged.hs, nothing )
+[2024-07-29 13:59:03][Command][haddock_push] [22 of 23] Compiling Todo.Cli.Command.Insert ( lib/cli/src/Todo/Cli/Command/Insert.hs, nothing )
+[2024-07-29 13:59:03][Command][haddock_push] 
+[2024-07-29 13:59:03][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Insert.hs:61:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:03][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:03][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:03][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:03][Command][haddock_push]    |
+[2024-07-29 13:59:03][Command][haddock_push] 61 |     MonadHaskeline m,
+[2024-07-29 13:59:03][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:03][Command][haddock_push] 
+[2024-07-29 13:59:03][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Insert.hs:98:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:03][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:03][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:03][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:03][Command][haddock_push]    |
+[2024-07-29 13:59:03][Command][haddock_push] 98 |     MonadHaskeline m,
+[2024-07-29 13:59:03][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:03][Command][haddock_push] 
+[2024-07-29 13:59:03][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Insert.hs:143:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:03][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:03][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:03][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:03][Command][haddock_push]     |
+[2024-07-29 13:59:03][Command][haddock_push] 143 |     MonadHaskeline m,
+[2024-07-29 13:59:03][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:03][Command][haddock_push] 
+[2024-07-29 13:59:03][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Insert.hs:185:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:03][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:03][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:03][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:03][Command][haddock_push]     |
+[2024-07-29 13:59:03][Command][haddock_push] 185 |     MonadHaskeline m,
+[2024-07-29 13:59:03][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:03][Command][haddock_push] 
+[2024-07-29 13:59:03][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Insert.hs:245:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:03][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:03][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:03][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:03][Command][haddock_push]     |
+[2024-07-29 13:59:03][Command][haddock_push] 245 |     MonadHaskeline m,
+[2024-07-29 13:59:03][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:03][Command][haddock_push] 
+[2024-07-29 13:59:03][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Insert.hs:273:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:03][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:03][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:03][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:03][Command][haddock_push]     |
+[2024-07-29 13:59:03][Command][haddock_push] 273 |     MonadHaskeline m,
+[2024-07-29 13:59:03][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:03][Command][haddock_push] 
+[2024-07-29 13:59:03][Command][haddock_push] lib/cli/src/Todo/Cli/Command/Insert.hs:301:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:03][Command][haddock_push] [23 of 23] Compiling Todo.Cli         ( lib/cli/src/Todo/Cli.hs, nothing )
+[2024-07-29 13:59:03][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:03][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:03][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:03][Command][haddock_push]     |
+[2024-07-29 13:59:03][Command][haddock_push] 301 |     MonadHaskeline m,
+[2024-07-29 13:59:03][Command][haddock_push]     |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:03][Command][haddock_push] 
+[2024-07-29 13:59:03][Command][haddock_push] lib/cli/src/Todo/Cli.hs:40:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:03][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:03][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:03][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:03][Command][haddock_push]    |
+[2024-07-29 13:59:03][Command][haddock_push] 40 |     MonadHaskeline m,
+[2024-07-29 13:59:03][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:03][Command][haddock_push] 
+[2024-07-29 13:59:03][Command][haddock_push] lib/cli/src/Todo/Cli.hs:73:5: warning: [GHC-63394] [-Wx-experimental]
+[2024-07-29 13:59:03][Command][haddock_push]     In the use of type constructor or class ‘MonadHaskeline’
+[2024-07-29 13:59:03][Command][haddock_push]     (imported from Todo.Cli.Prelude, but defined in Effects.Haskeline):
+[2024-07-29 13:59:03][Command][haddock_push]     "Effects.Haskeline is experimental and subject to change."
+[2024-07-29 13:59:03][Command][haddock_push]    |
+[2024-07-29 13:59:03][Command][haddock_push] 73 |     MonadHaskeline m,
+[2024-07-29 13:59:03][Command][haddock_push]    |     ^^^^^^^^^^^^^^
+[2024-07-29 13:59:19][Command][haddock_push] Haddock coverage:
+[2024-07-29 13:59:19][Command][haddock_push]    0% (  0 /  9) in 'Paths_todo'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     version (/home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/build/todo-cli/autogen/Paths_todo.hs:36)
+[2024-07-29 13:59:19][Command][haddock_push]     getBinDir (/home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/build/todo-cli/autogen/Paths_todo.hs:56)
+[2024-07-29 13:59:19][Command][haddock_push]     getLibDir (/home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/build/todo-cli/autogen/Paths_todo.hs:57)
+[2024-07-29 13:59:19][Command][haddock_push]     getDynLibDir (/home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/build/todo-cli/autogen/Paths_todo.hs:58)
+[2024-07-29 13:59:19][Command][haddock_push]     getDataDir (/home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/build/todo-cli/autogen/Paths_todo.hs:59)
+[2024-07-29 13:59:19][Command][haddock_push]     getLibexecDir (/home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/build/todo-cli/autogen/Paths_todo.hs:60)
+[2024-07-29 13:59:19][Command][haddock_push]     getDataFileName (/home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/build/todo-cli/autogen/Paths_todo.hs:39)
+[2024-07-29 13:59:19][Command][haddock_push]     getSysconfDir (/home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/build/todo-cli/autogen/Paths_todo.hs:61)
+[2024-07-29 13:59:19][Command][haddock_push]   75% (  6 /  8) in 'Todo.Cli.Prelude'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     MonadHaskeline
+[2024-07-29 13:59:19][Command][haddock_push]    0% (  0 /  4) in 'Todo.Cli.Configuration.Data.Utils'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     parseTextToBoolIso (lib/cli/src/Todo/Cli/Configuration/Data/Utils.hs:22)
+[2024-07-29 13:59:19][Command][haddock_push]     parseBool (lib/cli/src/Todo/Cli/Configuration/Data/Utils.hs:25)
+[2024-07-29 13:59:19][Command][haddock_push]     mkHelp (lib/cli/src/Todo/Cli/Configuration/Data/Utils.hs:33)
+[2024-07-29 13:59:19][Command][haddock_push]    0% (  0 /  3) in 'Todo.Cli.Configuration.Data.InteractiveSwitch'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     InteractiveSwitch (lib/cli/src/Todo/Cli/Configuration/Data/InteractiveSwitch.hs:12)
+[2024-07-29 13:59:19][Command][haddock_push]     interactiveParser (lib/cli/src/Todo/Cli/Configuration/Data/InteractiveSwitch.hs:18)
+[2024-07-29 13:59:19][Command][haddock_push]   42% (  3 /  7) in 'Todo.Cli.Configuration.ConfigPhase'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     ConfigPhaseF (lib/cli/src/Todo/Cli/Configuration/ConfigPhase.hs:15)
+[2024-07-29 13:59:19][Command][haddock_push]     ConfigPhaseMaybeF (lib/cli/src/Todo/Cli/Configuration/ConfigPhase.hs:21)
+[2024-07-29 13:59:19][Command][haddock_push]     ConfigPhaseVoidF (lib/cli/src/Todo/Cli/Configuration/ConfigPhase.hs:27)
+[2024-07-29 13:59:19][Command][haddock_push]   14% (  1 /  7) in 'Todo.Cli.Configuration.Data.Command'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     Command (lib/cli/src/Todo/Cli/Configuration/Data/Command.hs:49)
+[2024-07-29 13:59:19][Command][haddock_push]     CommandArgs (lib/cli/src/Todo/Cli/Configuration/Data/Command.hs:63)
+[2024-07-29 13:59:19][Command][haddock_push]     CommandMerged (lib/cli/src/Todo/Cli/Configuration/Data/Command.hs:65)
+[2024-07-29 13:59:19][Command][haddock_push]     commandParser (lib/cli/src/Todo/Cli/Configuration/Data/Command.hs:68)
+[2024-07-29 13:59:19][Command][haddock_push]     advancePhase (lib/cli/src/Todo/Cli/Configuration/Data/Command.hs:238)
+[2024-07-29 13:59:19][Command][haddock_push]   30% (  3 / 10) in 'Todo.Cli.Command.Utils'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     askYesNoQ (lib/cli/src/Todo/Cli/Command/Utils.hs:28)
+[2024-07-29 13:59:19][Command][haddock_push]     askParseQ (lib/cli/src/Todo/Cli/Command/Utils.hs:55)
+[2024-07-29 13:59:19][Command][haddock_push]     askParseEmptyQ (lib/cli/src/Todo/Cli/Command/Utils.hs:74)
+[2024-07-29 13:59:19][Command][haddock_push]     getStrippedLine (lib/cli/src/Todo/Cli/Command/Utils.hs:93)
+[2024-07-29 13:59:19][Command][haddock_push]     getStrippedLineEmpty (lib/cli/src/Todo/Cli/Command/Utils.hs:105)
+[2024-07-29 13:59:19][Command][haddock_push]     formatBadResponse (lib/cli/src/Todo/Cli/Command/Utils.hs:112)
+[2024-07-29 13:59:19][Command][haddock_push]   42% (  3 /  7) in 'Todo.Cli.AppT'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     runAppT (lib/cli/src/Todo/Cli/AppT.hs:118)
+[2024-07-29 13:59:19][Command][haddock_push]     AppIO (lib/cli/src/Todo/Cli/AppT.hs:120)
+[2024-07-29 13:59:19][Command][haddock_push]     runAppIO (lib/cli/src/Todo/Cli/AppT.hs:123)
+[2024-07-29 13:59:19][Command][haddock_push]   25% (  1 /  4) in 'Todo.Cli.Render.Utils'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     ColorSwitch (lib/cli/src/Todo/Cli/Render/Utils.hs:13)
+[2024-07-29 13:59:19][Command][haddock_push]     UnicodeSwitch (lib/cli/src/Todo/Cli/Render/Utils.hs:27)
+[2024-07-29 13:59:19][Command][haddock_push]    0% (  0 /  2) in 'Todo.Cli.Render.Timestamp'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     render (lib/cli/src/Todo/Cli/Render/Timestamp.hs:21)
+[2024-07-29 13:59:19][Command][haddock_push]   50% (  1 /  2) in 'Todo.Cli.Render.TaskStatus'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]    0% (  0 /  2) in 'Todo.Cli.Render.TaskPriority'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     render (lib/cli/src/Todo/Cli/Render/TaskPriority.hs:13)
+[2024-07-29 13:59:19][Command][haddock_push]   50% (  1 /  2) in 'Todo.Cli.Render.TaskId'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]   42% (  3 /  7) in 'Todo.Cli.Render'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     renderOne (lib/cli/src/Todo/Cli/Render.hs:48)
+[2024-07-29 13:59:19][Command][haddock_push]     renderOne' (lib/cli/src/Todo/Cli/Render.hs:60)
+[2024-07-29 13:59:19][Command][haddock_push]     renderSomeTask (lib/cli/src/Todo/Cli/Render.hs:90)
+[2024-07-29 13:59:19][Command][haddock_push]   30% (  3 / 10) in 'Todo.Cli.Configuration.Core'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     CoreConfig (lib/cli/src/Todo/Cli/Configuration/Core.hs:51)
+[2024-07-29 13:59:19][Command][haddock_push]     IndexConfig (lib/cli/src/Todo/Cli/Configuration/Core.hs:30)
+[2024-07-29 13:59:19][Command][haddock_push]     CoreConfigArgs (lib/cli/src/Todo/Cli/Configuration/Core.hs:71)
+[2024-07-29 13:59:19][Command][haddock_push]     CoreConfigToml (lib/cli/src/Todo/Cli/Configuration/Core.hs:73)
+[2024-07-29 13:59:19][Command][haddock_push]     CoreConfigMerged (lib/cli/src/Todo/Cli/Configuration/Core.hs:75)
+[2024-07-29 13:59:19][Command][haddock_push]     IndexF (lib/cli/src/Todo/Cli/Configuration/Core.hs:45)
+[2024-07-29 13:59:19][Command][haddock_push]   25% (  1 /  4) in 'Todo.Cli.Configuration.Toml'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     Toml (lib/cli/src/Todo/Cli/Configuration/Toml.hs:83)
+[2024-07-29 13:59:19][Command][haddock_push]     maybeReadToml (lib/cli/src/Todo/Cli/Configuration/Toml.hs:168)
+[2024-07-29 13:59:19][Command][haddock_push]   14% (  1 /  7) in 'Todo.Cli.Command.Update'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     setTaskDeadline (lib/cli/src/Todo/Cli/Command/Update.hs:65)
+[2024-07-29 13:59:19][Command][haddock_push]     setTaskDescription (lib/cli/src/Todo/Cli/Command/Update.hs:89)
+[2024-07-29 13:59:19][Command][haddock_push]     setTaskId (lib/cli/src/Todo/Cli/Command/Update.hs:115)
+[2024-07-29 13:59:19][Command][haddock_push]     setTaskPriority (lib/cli/src/Todo/Cli/Command/Update.hs:159)
+[2024-07-29 13:59:19][Command][haddock_push]     setTaskStatus (lib/cli/src/Todo/Cli/Command/Update.hs:188)
+[2024-07-29 13:59:19][Command][haddock_push]   50% (  1 /  2) in 'Todo.Cli.Command.List'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]   50% (  1 /  2) in 'Todo.Cli.Command.Delete'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]   66% (  2 /  3) in 'Todo.Cli.Configuration.Args'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]    0% (  0 /  3) in 'Todo.Cli.Configuration.Merged'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     Merged (lib/cli/src/Todo/Cli/Configuration/Merged.hs:37)
+[2024-07-29 13:59:19][Command][haddock_push]     mergeConfig (lib/cli/src/Todo/Cli/Configuration/Merged.hs:52)
+[2024-07-29 13:59:19][Command][haddock_push]   50% (  1 /  2) in 'Todo.Cli.Command.Insert'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]   50% (  3 /  6) in 'Todo.Cli'
+[2024-07-29 13:59:19][Command][haddock_push]   Missing documentation for:
+[2024-07-29 13:59:19][Command][haddock_push]     Module header
+[2024-07-29 13:59:19][Command][haddock_push]     withConfig (lib/cli/src/Todo/Cli.hs:79)
+[2024-07-29 13:59:19][Command][haddock_push]     getConfig (lib/cli/src/Todo/Cli.hs:57)
+[2024-07-29 13:59:19][Command][haddock_push] Warning: Todo.Cli.Configuration.Core: could not find link destinations for: 
+[2024-07-29 13:59:19][Command][haddock_push] - Todo.Cli.Configuration.Core.IndexPathF
+[2024-07-29 13:59:19][Command][haddock_push] Warning: Todo.Cli.Configuration.Toml: could not find link destinations for: 
+[2024-07-29 13:59:19][Command][haddock_push] - Todo.Cli.Configuration.Toml.ListToml
+[2024-07-29 13:59:20][Command][haddock_push] Documentation created:
+[2024-07-29 13:59:20][Command][haddock_push] /home/tommy/Dev/tommy/github/todo/dist-newstyle/build/x86_64-linux/ghc-9.8.2/todo-0.1/l/todo-cli/opt/doc/html/todo/

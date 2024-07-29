@@ -1,0 +1,460 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Data.Sorted</span><span>
+</span><span id="line-2"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Types</span></span><span>
+</span><span id="line-3"></span><span>    </span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#SortedTasks"><span class="hs-identifier">SortedTasks</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Todo.Data.Sorted.html#SortType"><span class="hs-identifier">SortType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Functions</span></span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Todo.Data.Sorted.html#sortTasks"><span class="hs-identifier">sortTasks</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Todo.Data.Sorted.html#traverseSorted"><span class="hs-identifier">traverseSorted</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Todo.Data.Sorted.html#parseSortType"><span class="hs-identifier">parseSortType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Ord</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Down</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Down</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Sequence</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Seq</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/toml-reader-0.2.1.0-a21f2c8df7944515bfc492cfe6f8223880af866e928060b5bae79c9aa82f909e/share/doc/html/src/TOML.html"><span class="hs-identifier">TOML</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/toml-reader-0.2.1.0-a21f2c8df7944515bfc492cfe6f8223880af866e928060b5bae79c9aa82f909e/share/doc/html/src/TOML.Decode.html#DecodeTOML"><span class="hs-identifier">DecodeTOML</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/toml-reader-0.2.1.0-a21f2c8df7944515bfc492cfe6f8223880af866e928060b5bae79c9aa82f909e/share/doc/html/src/TOML.Decode.html#tomlDecoder"><span class="hs-identifier">tomlDecoder</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.Sorted.Internal.html"><span class="hs-identifier">Todo.Data.Sorted.Internal</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#SortedTasks"><span class="hs-identifier">SortedTasks</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#UnsafeSortedTasks"><span class="hs-identifier">UnsafeSortedTasks</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html"><span class="hs-identifier">Todo.Data.Sorted.RevSort</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier">RevSort</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.Task.html"><span class="hs-identifier">Todo.Data.Task</span></a></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SingleTask"><span class="hs-identifier">SingleTask</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier">SomeTask</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskGroup"><span class="hs-identifier">SomeTaskGroup</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskSingle"><span class="hs-identifier">SomeTaskSingle</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span class="annot"><a href="Todo.Data.Task.html#TaskGroup"><span class="hs-identifier">TaskGroup</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#subtasks"><span class="hs-identifier">subtasks</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span class="annot"><a href="Todo.Data.Task.html#traverseSomeTasks"><span class="hs-identifier">traverseSomeTasks</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.Task.html"><span class="hs-identifier">Todo.Data.Task</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Task</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Sort type.</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="SortType"><span class="annot"><a href="Todo.Data.Sorted.html#SortType"><span class="hs-identifier hs-var">SortType</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-comment">-- | Sort by priority.</span></span><span>
+</span><span id="line-32"></span><span>    </span><span id="SortPriority"><span class="annot"><a href="Todo.Data.Sorted.html#SortPriority"><span class="hs-identifier hs-var">SortPriority</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | Sort by status.</span></span><span>
+</span><span id="line-34"></span><span>    </span><span id="SortStatus"><span class="annot"><a href="Todo.Data.Sorted.html#SortStatus"><span class="hs-identifier hs-var">SortStatus</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | Sort by priority then status.</span></span><span>
+</span><span id="line-36"></span><span>    </span><span id="SortPriorityStatus"><span class="annot"><a href="Todo.Data.Sorted.html#SortPriorityStatus"><span class="hs-identifier hs-var">SortPriorityStatus</span></a></span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | Sort by status then priority.</span></span><span>
+</span><span id="line-38"></span><span>    </span><span id="SortStatusPriority"><span class="annot"><a href="Todo.Data.Sorted.html#SortStatusPriority"><span class="hs-identifier hs-var">SortStatusPriority</span></a></span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679137194"><span id="local-6989586621679137196"><span class="annot"><span class="annottext">SortType -&gt; SortType -&gt; Bool
+(SortType -&gt; SortType -&gt; Bool)
+-&gt; (SortType -&gt; SortType -&gt; Bool) -&gt; Eq SortType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SortType -&gt; SortType -&gt; Bool
+== :: SortType -&gt; SortType -&gt; Bool
+$c/= :: SortType -&gt; SortType -&gt; Bool
+/= :: SortType -&gt; SortType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679137201"><span id="local-6989586621679137203"><span id="local-6989586621679137207"><span class="annot"><span class="annottext">Int -&gt; SortType -&gt; ShowS
+[SortType] -&gt; ShowS
+SortType -&gt; String
+(Int -&gt; SortType -&gt; ShowS)
+-&gt; (SortType -&gt; String) -&gt; ([SortType] -&gt; ShowS) -&gt; Show SortType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SortType -&gt; ShowS
+showsPrec :: Int -&gt; SortType -&gt; ShowS
+$cshow :: SortType -&gt; String
+show :: SortType -&gt; String
+$cshowList :: [SortType] -&gt; ShowS
+showList :: [SortType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/toml-reader-0.2.1.0-a21f2c8df7944515bfc492cfe6f8223880af866e928060b5bae79c9aa82f909e/share/doc/html/src/TOML.Decode.html#DecodeTOML"><span class="hs-identifier hs-type">DecodeTOML</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Sorted.html#SortType"><span class="hs-identifier hs-type">SortType</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-42"></span><span>  </span><span id="local-6989586621679137217"><span class="annot"><span class="annottext">tomlDecoder :: Decoder SortType
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/toml-reader-0.2.1.0-a21f2c8df7944515bfc492cfe6f8223880af866e928060b5bae79c9aa82f909e/share/doc/html/src/TOML.Decode.html#tomlDecoder"><span class="hs-identifier hs-var hs-var hs-var hs-var">tomlDecoder</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decoder Text -&gt; Decoder SortType
+forall (m :: * -&gt; *). MonadFail m =&gt; m Text -&gt; m SortType
+</span><a href="Todo.Data.Sorted.html#parseSortType"><span class="hs-identifier hs-var">parseSortType</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder Text
+forall a. DecodeTOML a =&gt; Decoder a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/toml-reader-0.2.1.0-a21f2c8df7944515bfc492cfe6f8223880af866e928060b5bae79c9aa82f909e/share/doc/html/src/TOML.Decode.html#tomlDecoder"><span class="hs-identifier hs-var">tomlDecoder</span></a></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- | Sorts tasks. Tasks are always sorted by id, so any given sort will</span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- take priority, using id as a tie-breaker.</span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Todo.Data.Sorted.html#sortTasks"><span class="hs-identifier hs-type">sortTasks</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-comment">-- | Primary sort type. If 'Nothing', sorts by status then priority, with</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-comment">-- all completed tasks appearing at the bottom.</span><span>
+</span><span id="line-49"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Todo.Data.Sorted.html#SortType"><span class="hs-identifier hs-type">SortType</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-50"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Reverses the sort.</span></span><span>
+</span><span id="line-51"></span><span>  </span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier hs-type">RevSort</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-52"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Tasks to sort.</span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-54"></span><span>  </span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#SortedTasks"><span class="hs-identifier hs-type">SortedTasks</span></a></span><span>
+</span><span id="line-55"></span><span id="sortTasks"><span class="annot"><span class="annottext">sortTasks :: Maybe SortType -&gt; RevSort -&gt; Seq SomeTask -&gt; SortedTasks
+</span><a href="Todo.Data.Sorted.html#sortTasks"><span class="hs-identifier hs-var hs-var">sortTasks</span></a></span></span><span> </span><span id="local-6989586621679137218"><span class="annot"><span class="annottext">Maybe SortType
+</span><a href="#local-6989586621679137218"><span class="hs-identifier hs-var">mSortType</span></a></span></span><span> </span><span id="local-6989586621679137219"><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137219"><span class="hs-identifier hs-var">revSort</span></a></span></span><span> </span><span id="local-6989586621679137220"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137220"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe SortType
+</span><a href="#local-6989586621679137218"><span class="hs-identifier hs-var">mSortType</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-57"></span><span>    </span><span class="annot"><span class="annottext">Maybe SortType
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-58"></span><span>      </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; SortedTasks
+</span><a href="Todo.Data.Sorted.Internal.html#UnsafeSortedTasks"><span class="hs-identifier hs-var">UnsafeSortedTasks</span></a></span><span> </span><span class="annot"><span class="annottext">(Seq SomeTask -&gt; SortedTasks) -&gt; Seq SomeTask -&gt; SortedTasks
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Bool
+-&gt; RevSort
+-&gt; (SomeTask -&gt; SomeTask -&gt; Ordering)
+-&gt; Seq SomeTask
+-&gt; Seq SomeTask
+</span><a href="Todo.Data.Sorted.html#sortSomeTasks"><span class="hs-identifier hs-var">sortSomeTasks</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137219"><span class="hs-identifier hs-var">revSort</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137222"><span class="hs-identifier hs-var">defSort'</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137220"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-59"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679137223"><span class="annot"><span class="annottext">SortType
+</span><a href="#local-6989586621679137223"><span class="hs-identifier hs-var">sortType</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; SortedTasks
+</span><a href="Todo.Data.Sorted.Internal.html#UnsafeSortedTasks"><span class="hs-identifier hs-var">UnsafeSortedTasks</span></a></span><span> </span><span class="annot"><span class="annottext">(Seq SomeTask -&gt; SortedTasks) -&gt; Seq SomeTask -&gt; SortedTasks
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Bool
+-&gt; RevSort
+-&gt; (SomeTask -&gt; SomeTask -&gt; Ordering)
+-&gt; Seq SomeTask
+-&gt; Seq SomeTask
+</span><a href="Todo.Data.Sorted.html#sortSomeTasks"><span class="hs-identifier hs-var">sortSomeTasks</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137219"><span class="hs-identifier hs-var">revSort</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SortType -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137224"><span class="hs-identifier hs-var">toOrd'</span></a></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="#local-6989586621679137223"><span class="hs-identifier hs-var">sortType</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137220"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679137224"><span class="annot"><span class="annottext">SortType -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137224"><span class="hs-identifier hs-var">toOrd'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679137222"><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137222"><span class="hs-identifier hs-var">defSort'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-62"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137219"><span class="hs-identifier hs-var">revSort</span></a></span><span> </span><span class="annot"><span class="annottext">RevSort -&gt; Optic' An_Iso NoIx RevSort Bool -&gt; Bool
+forall k s (is :: IxList) a.
+Is k A_Getter =&gt;
+s -&gt; Optic' k is s a -&gt; a
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Operators.html#%5E."><span class="hs-operator hs-var">^.</span></a></span><span> </span><span class="annot"><span class="annottext">Optic' An_Iso NoIx RevSort Bool
+</span><span class="">#boolIso</span></span><span>
+</span><span id="line-63"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SortType -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137226"><span class="hs-identifier hs-var">toOrdRev</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137227"><span class="hs-identifier hs-var">defSortRev</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SortType -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137228"><span class="hs-identifier hs-var">toOrd</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137229"><span class="hs-identifier hs-var">defSort</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span>    </span><span id="local-6989586621679137228"><span class="annot"><span class="annottext">toOrd :: SortType -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137228"><span class="hs-identifier hs-var hs-var">toOrd</span></a></span></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="Todo.Data.Sorted.html#SortPriority"><span class="hs-identifier hs-var">SortPriority</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-67"></span><span>      </span><span class="annot"><span class="annottext">(SomeTask -&gt; (Down TaskPriority, TaskId))
+-&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+forall a.
+Ord a =&gt;
+(SomeTask -&gt; a) -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="Todo.Data.Sorted.html#cSomeTask"><span class="hs-identifier hs-var">cSomeTask</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679137270"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137270"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskPriority -&gt; Down TaskPriority
+forall a. a -&gt; Down a
+</span><span class="hs-identifier hs-var">Down</span></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137270"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">priority</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137270"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">taskId</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>    </span><span class="annot"><a href="#local-6989586621679137228"><span class="hs-identifier hs-var">toOrd</span></a></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="Todo.Data.Sorted.html#SortStatus"><span class="hs-identifier hs-var">SortStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-69"></span><span>      </span><span class="annot"><span class="annottext">(SomeTask -&gt; (Down TaskStatus, TaskId))
+-&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+forall a.
+Ord a =&gt;
+(SomeTask -&gt; a) -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="Todo.Data.Sorted.html#cSomeTask"><span class="hs-identifier hs-var">cSomeTask</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679137271"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137271"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskStatus -&gt; Down TaskStatus
+forall a. a -&gt; Down a
+</span><span class="hs-identifier hs-var">Down</span></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137271"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">status</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137271"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">taskId</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>    </span><span class="annot"><a href="#local-6989586621679137228"><span class="hs-identifier hs-var">toOrd</span></a></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="Todo.Data.Sorted.html#SortPriorityStatus"><span class="hs-identifier hs-var">SortPriorityStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-71"></span><span>      </span><span class="annot"><span class="annottext">(SomeTask -&gt; (Down TaskPriority, Down TaskStatus, TaskId))
+-&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+forall a.
+Ord a =&gt;
+(SomeTask -&gt; a) -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="Todo.Data.Sorted.html#cSomeTask"><span class="hs-identifier hs-var">cSomeTask</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679137272"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137272"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskPriority -&gt; Down TaskPriority
+forall a. a -&gt; Down a
+</span><span class="hs-identifier hs-var">Down</span></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137272"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">priority</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; Down TaskStatus
+forall a. a -&gt; Down a
+</span><span class="hs-identifier hs-var">Down</span></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137272"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">status</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137272"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">taskId</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>    </span><span class="annot"><a href="#local-6989586621679137228"><span class="hs-identifier hs-var">toOrd</span></a></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="Todo.Data.Sorted.html#SortStatusPriority"><span class="hs-identifier hs-var">SortStatusPriority</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-73"></span><span>      </span><span class="annot"><span class="annottext">(SomeTask -&gt; (Down TaskStatus, Down TaskPriority, TaskId))
+-&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+forall a.
+Ord a =&gt;
+(SomeTask -&gt; a) -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="Todo.Data.Sorted.html#cSomeTask"><span class="hs-identifier hs-var">cSomeTask</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679137273"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137273"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskStatus -&gt; Down TaskStatus
+forall a. a -&gt; Down a
+</span><span class="hs-identifier hs-var">Down</span></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137273"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">status</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">TaskPriority -&gt; Down TaskPriority
+forall a. a -&gt; Down a
+</span><span class="hs-identifier hs-var">Down</span></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137273"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">priority</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137273"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">taskId</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span>    </span><span id="local-6989586621679137226"><span class="annot"><span class="annottext">toOrdRev :: SortType -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137226"><span class="hs-identifier hs-var hs-var">toOrdRev</span></a></span></span><span> </span><span id="local-6989586621679137274"><span class="annot"><span class="annottext">SortType
+</span><a href="#local-6989586621679137274"><span class="hs-identifier hs-var">sortType</span></a></span></span><span> </span><span id="local-6989586621679137275"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137275"><span class="hs-identifier hs-var">t1</span></a></span></span><span> </span><span id="local-6989586621679137276"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137276"><span class="hs-identifier hs-var">t2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-76"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">SortType -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137228"><span class="hs-identifier hs-var">toOrd</span></a></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="#local-6989586621679137274"><span class="hs-identifier hs-var">sortType</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137275"><span class="hs-identifier hs-var">t1</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137276"><span class="hs-identifier hs-var">t2</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-77"></span><span>        </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">EQ</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">EQ</span></span><span>
+</span><span id="line-78"></span><span>        </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">LT</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">GT</span></span><span>
+</span><span id="line-79"></span><span>        </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">GT</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">LT</span></span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span>    </span><span id="local-6989586621679137229"><span class="annot"><span class="annottext">defSort :: SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137229"><span class="hs-identifier hs-var hs-var">defSort</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; (Down TaskPriority, Down TaskStatus, TaskId))
+-&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+forall a.
+Ord a =&gt;
+(SomeTask -&gt; a) -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="Todo.Data.Sorted.html#cSomeTask"><span class="hs-identifier hs-var">cSomeTask</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679137286"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137286"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskPriority -&gt; Down TaskPriority
+forall a. a -&gt; Down a
+</span><span class="hs-identifier hs-var">Down</span></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137286"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">priority</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; Down TaskStatus
+forall a. a -&gt; Down a
+</span><span class="hs-identifier hs-var">Down</span></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137286"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">status</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137286"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">taskId</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span>    </span><span id="local-6989586621679137227"><span class="annot"><span class="annottext">defSortRev :: SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137227"><span class="hs-identifier hs-var hs-var">defSortRev</span></a></span></span><span> </span><span id="local-6989586621679137287"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137287"><span class="hs-identifier hs-var">t1</span></a></span></span><span> </span><span id="local-6989586621679137288"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137288"><span class="hs-identifier hs-var">t2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137229"><span class="hs-identifier hs-var">defSort</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137287"><span class="hs-identifier hs-var">t1</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137288"><span class="hs-identifier hs-var">t2</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-84"></span><span>      </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">EQ</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">EQ</span></span><span>
+</span><span id="line-85"></span><span>      </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">LT</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">GT</span></span><span>
+</span><span id="line-86"></span><span>      </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">GT</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ordering
+</span><span class="hs-identifier hs-var">LT</span></span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="annot"><a href="Todo.Data.Sorted.html#sortSomeTasks"><span class="hs-identifier hs-type">sortSomeTasks</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-89"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Partition completed tasks?</span></span><span>
+</span><span id="line-90"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-91"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Reverse?</span></span><span>
+</span><span id="line-92"></span><span>  </span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier hs-type">RevSort</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-93"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Comparison function.</span></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ordering</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-95"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-96"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span>
+</span><span id="line-97"></span><span id="sortSomeTasks"><span class="annot"><span class="annottext">sortSomeTasks :: Bool
+-&gt; RevSort
+-&gt; (SomeTask -&gt; SomeTask -&gt; Ordering)
+-&gt; Seq SomeTask
+-&gt; Seq SomeTask
+</span><a href="Todo.Data.Sorted.html#sortSomeTasks"><span class="hs-identifier hs-var hs-var">sortSomeTasks</span></a></span></span><span> </span><span id="local-6989586621679137289"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679137289"><span class="hs-identifier hs-var">partitionCompleted</span></a></span></span><span> </span><span id="local-6989586621679137290"><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137290"><span class="hs-identifier hs-var">revSort</span></a></span></span><span> </span><span id="local-6989586621679137291"><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137291"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621679137292"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137292"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679137289"><span class="hs-identifier hs-var">partitionCompleted</span></a></span><span>
+</span><span id="line-99"></span><span>    </span><span class="hs-keyword">then</span><span>
+</span><span id="line-100"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137290"><span class="hs-identifier hs-var">revSort</span></a></span><span> </span><span class="annot"><span class="annottext">RevSort -&gt; Optic' An_Iso NoIx RevSort Bool -&gt; Bool
+forall k s (is :: IxList) a.
+Is k A_Getter =&gt;
+s -&gt; Optic' k is s a -&gt; a
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Operators.html#%5E."><span class="hs-operator hs-var">^.</span></a></span><span> </span><span class="annot"><span class="annottext">Optic' An_Iso NoIx RevSort Bool
+</span><span class="">#boolIso</span></span><span>
+</span><span id="line-101"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679137293"><span class="hs-identifier hs-var">sortFn</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137294"><span class="hs-identifier hs-var">completedTasks</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask -&gt; Seq SomeTask
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679137293"><span class="hs-identifier hs-var">sortFn</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137295"><span class="hs-identifier hs-var">incompleteTasks</span></a></span><span>
+</span><span id="line-102"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679137293"><span class="hs-identifier hs-var">sortFn</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137295"><span class="hs-identifier hs-var">incompleteTasks</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask -&gt; Seq SomeTask
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679137293"><span class="hs-identifier hs-var">sortFn</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137294"><span class="hs-identifier hs-var">completedTasks</span></a></span><span>
+</span><span id="line-103"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679137293"><span class="hs-identifier hs-var">sortFn</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137292"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-105"></span><span>    </span><span class="annot"><a href="#local-6989586621679137293"><span class="hs-identifier hs-type">sortFn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span>
+</span><span id="line-106"></span><span>    </span><span id="local-6989586621679137293"><span class="annot"><span class="annottext">sortFn :: Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679137293"><span class="hs-identifier hs-var hs-var">sortFn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; SomeTask) -&gt; Seq SomeTask -&gt; Seq SomeTask
+forall a b. (a -&gt; b) -&gt; Seq a -&gt; Seq b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+-&gt; RevSort
+-&gt; (SomeTask -&gt; SomeTask -&gt; Ordering)
+-&gt; SomeTask
+-&gt; SomeTask
+</span><a href="Todo.Data.Sorted.html#sortSomeTaskSubtasks"><span class="hs-identifier hs-var">sortSomeTaskSubtasks</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679137289"><span class="hs-identifier hs-var">partitionCompleted</span></a></span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137290"><span class="hs-identifier hs-var">revSort</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137291"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Seq SomeTask -&gt; Seq SomeTask)
+-&gt; (Seq SomeTask -&gt; Seq SomeTask) -&gt; Seq SomeTask -&gt; Seq SomeTask
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; SomeTask -&gt; Ordering) -&gt; Seq SomeTask -&gt; Seq SomeTask
+forall a. (a -&gt; a -&gt; Ordering) -&gt; Seq a -&gt; Seq a
+</span><span class="hs-identifier hs-var">Seq.sortBy</span></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137291"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-107"></span><span>
+</span><span id="line-108"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679137294"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137294"><span class="hs-identifier hs-var">completedTasks</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679137295"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137295"><span class="hs-identifier hs-var">incompleteTasks</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; Bool) -&gt; Seq SomeTask -&gt; (Seq SomeTask, Seq SomeTask)
+forall a. (a -&gt; Bool) -&gt; Seq a -&gt; (Seq a, Seq a)
+</span><span class="hs-identifier hs-var">Seq.partition</span></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Bool
+</span><a href="Todo.Data.Task.html#someTaskIsCompleted"><span class="hs-identifier hs-var">Task.someTaskIsCompleted</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137292"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="annot"><a href="Todo.Data.Sorted.html#sortSomeTaskSubtasks"><span class="hs-identifier hs-type">sortSomeTaskSubtasks</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier hs-type">RevSort</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ordering</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span>
+</span><span id="line-111"></span><span id="sortSomeTaskSubtasks"><span class="annot"><span class="annottext">sortSomeTaskSubtasks :: Bool
+-&gt; RevSort
+-&gt; (SomeTask -&gt; SomeTask -&gt; Ordering)
+-&gt; SomeTask
+-&gt; SomeTask
+</span><a href="Todo.Data.Sorted.html#sortSomeTaskSubtasks"><span class="hs-identifier hs-var hs-var">sortSomeTaskSubtasks</span></a></span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679137301"><span class="annot"><span class="annottext">t :: SomeTask
+</span><a href="#local-6989586621679137301"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskSingle"><span class="hs-identifier hs-type">SomeTaskSingle</span></a></span><span> </span><span class="annot"><span class="annottext">SingleTask
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137301"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-112"></span><span class="annot"><a href="Todo.Data.Sorted.html#sortSomeTaskSubtasks"><span class="hs-identifier hs-var">sortSomeTaskSubtasks</span></a></span><span> </span><span id="local-6989586621679137302"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679137302"><span class="hs-identifier hs-var">partitionCompleted</span></a></span></span><span> </span><span id="local-6989586621679137303"><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137303"><span class="hs-identifier hs-var">revSort</span></a></span></span><span> </span><span id="local-6989586621679137304"><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137304"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskGroup"><span class="hs-identifier hs-type">SomeTaskGroup</span></a></span><span> </span><span id="local-6989586621679137305"><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679137305"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-113"></span><span>  </span><span class="annot"><span class="annottext">TaskGroup -&gt; SomeTask
+</span><a href="Todo.Data.Task.html#SomeTaskGroup"><span class="hs-identifier hs-var">SomeTaskGroup</span></a></span><span> </span><span class="annot"><span class="annottext">(TaskGroup -&gt; SomeTask) -&gt; TaskGroup -&gt; SomeTask
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Bool
+-&gt; RevSort
+-&gt; (SomeTask -&gt; SomeTask -&gt; Ordering)
+-&gt; TaskGroup
+-&gt; TaskGroup
+</span><a href="Todo.Data.Sorted.html#sortTaskGroupSubtasks"><span class="hs-identifier hs-var">sortTaskGroupSubtasks</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679137302"><span class="hs-identifier hs-var">partitionCompleted</span></a></span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137303"><span class="hs-identifier hs-var">revSort</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137304"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679137305"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-114"></span><span>
+</span><span id="line-115"></span><span class="annot"><a href="Todo.Data.Sorted.html#sortTaskGroupSubtasks"><span class="hs-identifier hs-type">sortTaskGroupSubtasks</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier hs-type">RevSort</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ordering</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#TaskGroup"><span class="hs-identifier hs-type">TaskGroup</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#TaskGroup"><span class="hs-identifier hs-type">TaskGroup</span></a></span><span>
+</span><span id="line-116"></span><span id="sortTaskGroupSubtasks"><span class="annot"><span class="annottext">sortTaskGroupSubtasks :: Bool
+-&gt; RevSort
+-&gt; (SomeTask -&gt; SomeTask -&gt; Ordering)
+-&gt; TaskGroup
+-&gt; TaskGroup
+</span><a href="Todo.Data.Sorted.html#sortTaskGroupSubtasks"><span class="hs-identifier hs-var hs-var">sortTaskGroupSubtasks</span></a></span></span><span> </span><span id="local-6989586621679137307"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679137307"><span class="hs-identifier hs-var">partitionCompleted</span></a></span></span><span> </span><span id="local-6989586621679137308"><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137308"><span class="hs-identifier hs-var">revSort</span></a></span></span><span> </span><span id="local-6989586621679137309"><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137309"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621679137310"><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679137310"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679137310"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="Todo.Data.Task.html#subtasks"><span class="hs-identifier hs-var">subtasks</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621679137311"><span class="hs-identifier hs-type">subtasks'</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-118"></span><span>    </span><span class="hs-comment">-- TODO: Avoid the Seq &lt;-&gt; List conversion (Either replace a type or</span><span>
+</span><span id="line-119"></span><span>    </span><span class="hs-comment">-- use Foldable).</span><span>
+</span><span id="line-120"></span><span>    </span><span id="local-6989586621679137311"><span class="annot"><span class="annottext">subtasks' :: Seq SomeTask
+</span><a href="#local-6989586621679137311"><span class="hs-identifier hs-var hs-var">subtasks'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-121"></span><span>      </span><span class="annot"><span class="annottext">Bool
+-&gt; RevSort
+-&gt; (SomeTask -&gt; SomeTask -&gt; Ordering)
+-&gt; Seq SomeTask
+-&gt; Seq SomeTask
+</span><a href="Todo.Data.Sorted.html#sortSomeTasks"><span class="hs-identifier hs-var">sortSomeTasks</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679137307"><span class="hs-identifier hs-var">partitionCompleted</span></a></span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="#local-6989586621679137308"><span class="hs-identifier hs-var">revSort</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="#local-6989586621679137309"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679137310"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">subtasks</span><span>
+</span><span id="line-122"></span><span>
+</span><span id="line-123"></span><span id="local-6989586621679137129"><span class="annot"><a href="Todo.Data.Sorted.html#cSomeTask"><span class="hs-identifier hs-type">cSomeTask</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679137129"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679137129"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ordering</span></span></span><span>
+</span><span id="line-124"></span><span id="cSomeTask"><span class="annot"><span class="annottext">cSomeTask :: forall a.
+Ord a =&gt;
+(SomeTask -&gt; a) -&gt; SomeTask -&gt; SomeTask -&gt; Ordering
+</span><a href="Todo.Data.Sorted.html#cSomeTask"><span class="hs-identifier hs-var hs-var">cSomeTask</span></a></span></span><span> </span><span id="local-6989586621679137314"><span class="annot"><span class="annottext">SomeTask -&gt; a
+</span><a href="#local-6989586621679137314"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679137315"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137315"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679137316"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137316"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; a
+</span><a href="#local-6989586621679137314"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137315"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; Ordering
+forall a. Ord a =&gt; a -&gt; a -&gt; Ordering
+</span><span class="hs-operator hs-var">`compare`</span></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; a
+</span><a href="#local-6989586621679137314"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679137316"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><span id="line-125"></span><span>
+</span><span id="line-126"></span><span id="local-6989586621679137143"><span class="annot"><a href="Todo.Data.Sorted.html#traverseSorted"><span class="hs-identifier hs-type">traverseSorted</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SingleTask"><span class="hs-identifier hs-type">SingleTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679137143"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#TaskGroup"><span class="hs-identifier hs-type">TaskGroup</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679137143"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#SortedTasks"><span class="hs-identifier hs-type">SortedTasks</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679137143"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-127"></span><span id="traverseSorted"><span class="annot"><span class="annottext">traverseSorted :: forall a.
+(SingleTask -&gt; a) -&gt; (TaskGroup -&gt; a) -&gt; SortedTasks -&gt; Seq a
+</span><a href="Todo.Data.Sorted.html#traverseSorted"><span class="hs-identifier hs-var hs-var">traverseSorted</span></a></span></span><span> </span><span id="local-6989586621679137320"><span class="annot"><span class="annottext">SingleTask -&gt; a
+</span><a href="#local-6989586621679137320"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679137321"><span class="annot"><span class="annottext">TaskGroup -&gt; a
+</span><a href="#local-6989586621679137321"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SingleTask -&gt; a) -&gt; (TaskGroup -&gt; a) -&gt; Seq SomeTask -&gt; Seq a
+forall a.
+(SingleTask -&gt; a) -&gt; (TaskGroup -&gt; a) -&gt; Seq SomeTask -&gt; Seq a
+</span><a href="Todo.Data.Task.html#traverseSomeTasks"><span class="hs-identifier hs-var">traverseSomeTasks</span></a></span><span> </span><span class="annot"><span class="annottext">SingleTask -&gt; a
+</span><a href="#local-6989586621679137320"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">TaskGroup -&gt; a
+</span><a href="#local-6989586621679137321"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">(Seq SomeTask -&gt; Seq a)
+-&gt; (SortedTasks -&gt; Seq SomeTask) -&gt; SortedTasks -&gt; Seq a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="hs-operator">.</span><span class="hs-identifier">unSortedTasks</span><span class="hs-special">)</span><span>
+</span><span id="line-128"></span><span>
+</span><span id="line-129"></span><span id="local-6989586621679137109"><span class="annot"><a href="Todo.Data.Sorted.html#parseSortType"><span class="hs-identifier hs-type">parseSortType</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadFail</span></span><span> </span><span class="annot"><a href="#local-6989586621679137109"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679137109"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679137109"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Sorted.html#SortType"><span class="hs-identifier hs-type">SortType</span></a></span></span><span>
+</span><span id="line-130"></span><span id="parseSortType"><span class="annot"><span class="annottext">parseSortType :: forall (m :: * -&gt; *). MonadFail m =&gt; m Text -&gt; m SortType
+</span><a href="Todo.Data.Sorted.html#parseSortType"><span class="hs-identifier hs-var hs-var">parseSortType</span></a></span></span><span> </span><span id="local-6989586621679137348"><span class="annot"><span class="annottext">m Text
+</span><a href="#local-6989586621679137348"><span class="hs-identifier hs-var">mTxt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-131"></span><span>  </span><span class="annot"><span class="annottext">m Text
+</span><a href="#local-6989586621679137348"><span class="hs-identifier hs-var">mTxt</span></a></span><span> </span><span class="annot"><span class="annottext">m Text -&gt; (Text -&gt; m SortType) -&gt; m SortType
+forall a b. m a -&gt; (a -&gt; m b) -&gt; m b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-132"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;priority&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SortType -&gt; m SortType
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="Todo.Data.Sorted.html#SortPriority"><span class="hs-identifier hs-var">SortPriority</span></a></span><span>
+</span><span id="line-133"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;status&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SortType -&gt; m SortType
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="Todo.Data.Sorted.html#SortStatus"><span class="hs-identifier hs-var">SortStatus</span></a></span><span>
+</span><span id="line-134"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;priority_status&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SortType -&gt; m SortType
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="Todo.Data.Sorted.html#SortPriorityStatus"><span class="hs-identifier hs-var">SortPriorityStatus</span></a></span><span>
+</span><span id="line-135"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;status_priority&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SortType -&gt; m SortType
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">SortType
+</span><a href="Todo.Data.Sorted.html#SortStatusPriority"><span class="hs-identifier hs-var">SortStatusPriority</span></a></span><span>
+</span><span id="line-136"></span><span>    </span><span id="local-6989586621679137349"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679137349"><span class="hs-identifier hs-var">other</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; m SortType
+forall a. String -&gt; m a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; m SortType) -&gt; String -&gt; m SortType
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Unexpected sort: &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679137349"><span class="hs-identifier hs-var">other</span></a></span><span>
+</span><span id="line-137"></span></pre></body></html>

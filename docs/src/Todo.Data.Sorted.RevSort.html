@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Data.Sorted.RevSort</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier">RevSort</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Configuration.Default.html"><span class="hs-identifier">Todo.Configuration.Default</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Configuration.Default.html#Default"><span class="hs-identifier">Default</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Configuration.Default.html#def"><span class="hs-identifier">def</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">data</span><span> </span><span id="RevSort"><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier hs-var">RevSort</span></a></span></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="RevSortOff"><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSortOff"><span class="hs-identifier hs-var">RevSortOff</span></a></span></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RevSortOn"><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSortOn"><span class="hs-identifier hs-var">RevSortOn</span></a></span></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679134281"><span id="local-6989586621679134283"><span class="annot"><span class="annottext">RevSort -&gt; RevSort -&gt; Bool
+(RevSort -&gt; RevSort -&gt; Bool)
+-&gt; (RevSort -&gt; RevSort -&gt; Bool) -&gt; Eq RevSort
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RevSort -&gt; RevSort -&gt; Bool
+== :: RevSort -&gt; RevSort -&gt; Bool
+$c/= :: RevSort -&gt; RevSort -&gt; Bool
+/= :: RevSort -&gt; RevSort -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679134288"><span id="local-6989586621679134290"><span id="local-6989586621679134294"><span class="annot"><span class="annottext">Int -&gt; RevSort -&gt; ShowS
+[RevSort] -&gt; ShowS
+RevSort -&gt; String
+(Int -&gt; RevSort -&gt; ShowS)
+-&gt; (RevSort -&gt; String) -&gt; ([RevSort] -&gt; ShowS) -&gt; Show RevSort
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RevSort -&gt; ShowS
+showsPrec :: Int -&gt; RevSort -&gt; ShowS
+$cshow :: RevSort -&gt; String
+show :: RevSort -&gt; String
+$cshowList :: [RevSort] -&gt; ShowS
+showList :: [RevSort] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">instance</span><span>
+</span><span id="line-17"></span><span>  </span><span id="local-6989586621679134264"><span id="local-6989586621679134265"><span id="local-6989586621679134266"><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134264"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">~</span></span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Types.html#An_Iso"><span class="hs-identifier hs-type">An_Iso</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679134265"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">~</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679134266"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">~</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-18"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Label.html#LabelOptic"><span class="hs-identifier hs-type">LabelOptic</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;boolIso&quot;</span></span><span> </span><span class="annot"><a href="#local-6989586621679134264"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier hs-type">RevSort</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier hs-type">RevSort</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134265"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134266"><span class="hs-identifier hs-type">b</span></a></span></span></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-20"></span><span>  </span><span id="local-6989586621679134306"><span class="annot"><span class="annottext">labelOptic :: Optic k NoIx RevSort RevSort a b
+</span><a href="#local-6989586621679134306"><span class="hs-identifier hs-var hs-var hs-var hs-var">labelOptic</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><span class="annottext">(RevSort -&gt; a) -&gt; (b -&gt; RevSort) -&gt; Iso RevSort RevSort a b
+forall s a b t. (s -&gt; a) -&gt; (b -&gt; t) -&gt; Iso s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Iso.html#iso"><span class="hs-identifier hs-var">iso</span></a></span><span>
+</span><span id="line-22"></span><span>      </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="Todo.Data.Sorted.RevSort.html#RevSortOff"><span class="hs-identifier hs-var">RevSortOff</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a
+Bool
+</span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">;</span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="Todo.Data.Sorted.RevSort.html#RevSortOn"><span class="hs-identifier hs-var">RevSortOn</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a
+Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>      </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span> </span><span class="annot"><span class="annottext">b
+Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="Todo.Data.Sorted.RevSort.html#RevSortOff"><span class="hs-identifier hs-var">RevSortOff</span></a></span><span class="hs-special">;</span><span> </span><span class="annot"><span class="annottext">b
+Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="Todo.Data.Sorted.RevSort.html#RevSortOn"><span class="hs-identifier hs-var">RevSortOn</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Todo.Configuration.Default.html#Default"><span class="hs-identifier hs-type">Default</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Sorted.RevSort.html#RevSort"><span class="hs-identifier hs-type">RevSort</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-26"></span><span>  </span><span id="local-6989586621679134312"><span class="annot"><span class="annottext">def :: RevSort
+</span><a href="Todo.Configuration.Default.html#def"><span class="hs-identifier hs-var hs-var hs-var hs-var">def</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RevSort
+</span><a href="Todo.Data.Sorted.RevSort.html#RevSortOff"><span class="hs-identifier hs-var">RevSortOff</span></a></span><span>
+</span><span id="line-27"></span></pre></body></html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-unused-top-binds #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Index.Internal</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Types</span></span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier">Index</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Todo.Index.Internal.html#IndexState"><span class="hs-identifier">IndexState</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier">Index&#120140;</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54D"><span class="hs-identifier">Index&#120141;</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Misc,</span></span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Todo.Index.Internal.html#unverify"><span class="hs-identifier">unverify</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Todo.Index.Internal.html#lookup"><span class="hs-identifier">lookup</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Todo.Index.Internal.html#replaceAtId"><span class="hs-identifier">replaceAtId</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.Task.html"><span class="hs-identifier">Todo.Data.Task</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SingleTask"><span class="hs-identifier">SingleTask</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#taskId"><span class="hs-identifier">taskId</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier">SomeTask</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskGroup"><span class="hs-identifier">SomeTaskGroup</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskSingle"><span class="hs-identifier">SomeTaskSingle</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><a href="Todo.Data.Task.html#TaskGroup"><span class="hs-identifier">TaskGroup</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#subtasks"><span class="hs-identifier">subtasks</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#taskId"><span class="hs-identifier">taskId</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.html"><span class="hs-identifier">Todo.Data.TaskId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier">TaskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-comment">-- | The possible verification states w.r.t internal invariants. These are:</span><span>
+</span><span id="line-27"></span><span class="hs-comment">--</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- 1. All task ids unique.</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- 2. All id references exist.</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="IndexState"><span class="annot"><a href="Todo.Index.Internal.html#IndexState"><span class="hs-identifier hs-var">IndexState</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-comment">-- | Invariants unverified.</span></span><span>
+</span><span id="line-32"></span><span>    </span><span id="IndexStateUnverified"><span class="annot"><a href="Todo.Index.Internal.html#IndexStateUnverified"><span class="hs-identifier hs-var">IndexStateUnverified</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | Invariants verified.</span></span><span>
+</span><span id="line-34"></span><span>    </span><span id="IndexStateVerified"><span class="annot"><a href="Todo.Index.Internal.html#IndexStateVerified"><span class="hs-identifier hs-var">IndexStateVerified</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679135753"><span id="local-6989586621679135755"><span class="annot"><span class="annottext">IndexState -&gt; IndexState -&gt; Bool
+(IndexState -&gt; IndexState -&gt; Bool)
+-&gt; (IndexState -&gt; IndexState -&gt; Bool) -&gt; Eq IndexState
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: IndexState -&gt; IndexState -&gt; Bool
+== :: IndexState -&gt; IndexState -&gt; Bool
+$c/= :: IndexState -&gt; IndexState -&gt; Bool
+/= :: IndexState -&gt; IndexState -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679135760"><span id="local-6989586621679135762"><span id="local-6989586621679135766"><span class="annot"><span class="annottext">Int -&gt; IndexState -&gt; ShowS
+[IndexState] -&gt; ShowS
+IndexState -&gt; String
+(Int -&gt; IndexState -&gt; ShowS)
+-&gt; (IndexState -&gt; String)
+-&gt; ([IndexState] -&gt; ShowS)
+-&gt; Show IndexState
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; IndexState -&gt; ShowS
+showsPrec :: Int -&gt; IndexState -&gt; ShowS
+$cshow :: IndexState -&gt; String
+show :: IndexState -&gt; String
+$cshowList :: [IndexState] -&gt; ShowS
+showList :: [IndexState] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Unverified index. U+1D54C</span></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">type</span><span> </span><span id="Index%1D54C"><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier hs-var">Index&#120140;</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#IndexStateUnverified"><span class="hs-identifier hs-type">IndexStateUnverified</span></a></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><span class="hs-comment">-- | Verified index. U+1D54D</span></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">type</span><span> </span><span id="Index%1D54D"><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54D"><span class="hs-identifier hs-var">Index&#120141;</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#IndexStateVerified"><span class="hs-identifier hs-type">IndexStateVerified</span></a></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><span class="hs-comment">-- | Todo index.</span></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">type</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#IndexState"><span class="hs-identifier hs-type">IndexState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Type</span></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">data</span><span> </span><span id="Index"><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-var">Index</span></a></span></span><span> </span><span id="local-6989586621679135728"><span class="annot"><a href="#local-6989586621679135728"><span class="hs-identifier hs-type">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UnsafeIndex"><span class="annot"><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-identifier hs-var">UnsafeIndex</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/filepath-1.5.3.0-6011b464ca6ac2c82d72f2055d231d555c21bae02133f2f163ecc16363fdb1f7/share/doc/html/src/System.OsPath.Types.html#OsPath"><span class="hs-identifier hs-type">OsPath</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679135771"><span id="local-6989586621679135778"><span class="annot"><span class="annottext">Index s -&gt; Index s -&gt; Bool
+(Index s -&gt; Index s -&gt; Bool)
+-&gt; (Index s -&gt; Index s -&gt; Bool) -&gt; Eq (Index s)
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+forall (s :: IndexState). Index s -&gt; Index s -&gt; Bool
+$c== :: forall (s :: IndexState). Index s -&gt; Index s -&gt; Bool
+== :: Index s -&gt; Index s -&gt; Bool
+$c/= :: forall (s :: IndexState). Index s -&gt; Index s -&gt; Bool
+/= :: Index s -&gt; Index s -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679135783"><span id="local-6989586621679135792"><span id="local-6989586621679135796"><span class="annot"><span class="annottext">Int -&gt; Index s -&gt; ShowS
+[Index s] -&gt; ShowS
+Index s -&gt; String
+(Int -&gt; Index s -&gt; ShowS)
+-&gt; (Index s -&gt; String) -&gt; ([Index s] -&gt; ShowS) -&gt; Show (Index s)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall (s :: IndexState). Int -&gt; Index s -&gt; ShowS
+forall (s :: IndexState). [Index s] -&gt; ShowS
+forall (s :: IndexState). Index s -&gt; String
+$cshowsPrec :: forall (s :: IndexState). Int -&gt; Index s -&gt; ShowS
+showsPrec :: Int -&gt; Index s -&gt; ShowS
+$cshow :: forall (s :: IndexState). Index s -&gt; String
+show :: Index s -&gt; String
+$cshowList :: forall (s :: IndexState). [Index s] -&gt; ShowS
+showList :: [Index s] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679135700"><span class="annot"><span class="hs-identifier hs-type">HasField</span></span><span> </span><span class="annot"><span class="hs-string">&quot;taskList&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679135700"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-49"></span><span>  </span><span id="local-6989586621679135802"><span class="annot"><span class="annottext">getField :: Index s -&gt; Seq SomeTask
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">getField</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-identifier hs-type">UnsafeIndex</span></a></span><span> </span><span id="local-6989586621679135803"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135803"><span class="hs-identifier hs-var">tl</span></a></span></span><span> </span><span class="annot"><span class="annottext">OsPath
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135803"><span class="hs-identifier hs-var">tl</span></a></span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679135702"><span class="annot"><span class="hs-identifier hs-type">HasField</span></span><span> </span><span class="annot"><span class="hs-string">&quot;path&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679135702"><span class="hs-identifier hs-type">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/filepath-1.5.3.0-6011b464ca6ac2c82d72f2055d231d555c21bae02133f2f163ecc16363fdb1f7/share/doc/html/src/System.OsPath.Types.html#OsPath"><span class="hs-identifier hs-type">OsPath</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-52"></span><span>  </span><span id="local-6989586621679135806"><span class="annot"><span class="annottext">getField :: Index s -&gt; OsPath
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">getField</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-identifier hs-type">UnsafeIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679135807"><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679135807"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679135807"><span class="hs-identifier hs-var">p</span></a></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="annot"><span class="hs-comment">-- | Looks up the TaskId in the Index.</span></span><span>
+</span><span id="line-55"></span><span id="local-6989586621679135704"><span class="annot"><a href="Todo.Index.Internal.html#lookup"><span class="hs-identifier hs-type">lookup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679135704"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span></span><span>
+</span><span id="line-56"></span><span id="lookup"><span class="annot"><span class="annottext">lookup :: forall (s :: IndexState). TaskId -&gt; Index s -&gt; Maybe SomeTask
+</span><a href="Todo.Index.Internal.html#lookup"><span class="hs-identifier hs-var hs-var">lookup</span></a></span></span><span> </span><span id="local-6989586621679135820"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679135820"><span class="hs-identifier hs-var">taskId</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-identifier hs-type">UnsafeIndex</span></a></span><span> </span><span id="local-6989586621679135821"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135821"><span class="hs-identifier hs-var">taskList</span></a></span></span><span> </span><span class="annot"><span class="annottext">OsPath
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; Maybe SomeTask) -&gt; Seq SomeTask -&gt; Maybe SomeTask
+forall (t :: * -&gt; *) (f :: * -&gt; *) a b.
+(Alternative f, Foldable t) =&gt;
+(a -&gt; f b) -&gt; t a -&gt; f b
+</span><a href="Todo.Prelude.html#foldMapAlt"><span class="hs-identifier hs-var">foldMapAlt</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Maybe SomeTask
+</span><a href="#local-6989586621679135823"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135821"><span class="hs-identifier hs-var">taskList</span></a></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-58"></span><span>    </span><span id="local-6989586621679135823"><span class="annot"><span class="annottext">go :: SomeTask -&gt; Maybe SomeTask
+</span><a href="#local-6989586621679135823"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskSingle"><span class="hs-identifier hs-type">SomeTaskSingle</span></a></span><span> </span><span id="local-6989586621679135824"><span class="annot"><span class="annottext">SingleTask
+</span><a href="#local-6989586621679135824"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-59"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">SingleTask
+</span><a href="#local-6989586621679135824"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">taskId</span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; TaskId -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679135820"><span class="hs-identifier hs-var">taskId</span></a></span><span>
+</span><span id="line-60"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Maybe SomeTask
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; Maybe SomeTask) -&gt; SomeTask -&gt; Maybe SomeTask
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">SingleTask -&gt; SomeTask
+</span><a href="Todo.Data.Task.html#SomeTaskSingle"><span class="hs-identifier hs-var">SomeTaskSingle</span></a></span><span> </span><span class="annot"><span class="annottext">SingleTask
+</span><a href="#local-6989586621679135824"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-61"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe SomeTask
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><a href="#local-6989586621679135823"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskGroup"><span class="hs-identifier hs-type">SomeTaskGroup</span></a></span><span> </span><span id="local-6989586621679135825"><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679135825"><span class="hs-identifier hs-var">tg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-63"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679135825"><span class="hs-identifier hs-var">tg</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">taskId</span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; TaskId -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679135820"><span class="hs-identifier hs-var">taskId</span></a></span><span>
+</span><span id="line-64"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Maybe SomeTask
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; Maybe SomeTask) -&gt; SomeTask -&gt; Maybe SomeTask
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TaskGroup -&gt; SomeTask
+</span><a href="Todo.Data.Task.html#SomeTaskGroup"><span class="hs-identifier hs-var">SomeTaskGroup</span></a></span><span> </span><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679135825"><span class="hs-identifier hs-var">tg</span></a></span><span>
+</span><span id="line-65"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; Maybe SomeTask) -&gt; Seq SomeTask -&gt; Maybe SomeTask
+forall (t :: * -&gt; *) (f :: * -&gt; *) a b.
+(Alternative f, Foldable t) =&gt;
+(a -&gt; f b) -&gt; t a -&gt; f b
+</span><a href="Todo.Prelude.html#foldMapAlt"><span class="hs-identifier hs-var">foldMapAlt</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Maybe SomeTask
+</span><a href="#local-6989586621679135823"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679135825"><span class="hs-identifier hs-var">tg</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">subtasks</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- | @replaceAtId taskId index newTask@ replaces all tasks corresponding to</span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- @taskId@ in @index@ with @newTask@.</span><span>
+</span><span id="line-69"></span><span id="local-6989586621679135718"><span class="annot"><a href="Todo.Index.Internal.html#replaceAtId"><span class="hs-identifier hs-type">replaceAtId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679135718"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier hs-type">Index&#120140;</span></a></span></span><span>
+</span><span id="line-70"></span><span id="replaceAtId"><span class="annot"><span class="annottext">replaceAtId :: forall (s :: IndexState).
+TaskId -&gt; Index s -&gt; Maybe SomeTask -&gt; Index&#120140;
+</span><a href="Todo.Index.Internal.html#replaceAtId"><span class="hs-identifier hs-var hs-var">replaceAtId</span></a></span></span><span> </span><span id="local-6989586621679135834"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679135834"><span class="hs-identifier hs-var">taskId</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-identifier hs-type">UnsafeIndex</span></a></span><span> </span><span id="local-6989586621679135835"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135835"><span class="hs-identifier hs-var">taskList</span></a></span></span><span> </span><span id="local-6989586621679135836"><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679135836"><span class="hs-identifier hs-var">path</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679135837"><span class="annot"><span class="annottext">Maybe SomeTask
+</span><a href="#local-6989586621679135837"><span class="hs-identifier hs-var">mNewTask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Seq SomeTask -&gt; OsPath -&gt; Index&#120140;
+forall (s :: IndexState). Seq SomeTask -&gt; OsPath -&gt; Index s
+</span><a href="Todo.Index.Internal.html#UnsafeIndex"><span class="hs-operator hs-var">`UnsafeIndex`</span></a></span><span> </span><span class="annot"><span class="annottext">OsPath
+</span><a href="#local-6989586621679135836"><span class="hs-identifier hs-var">path</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Seq SomeTask -&gt; Index&#120140;) -&gt; Seq SomeTask -&gt; Index&#120140;
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; Seq SomeTask -&gt; Seq SomeTask)
+-&gt; Seq SomeTask -&gt; Seq SomeTask -&gt; Seq SomeTask
+forall a b. (a -&gt; b -&gt; b) -&gt; b -&gt; Seq a -&gt; b
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldr</span></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679135839"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+forall a. Seq a
+</span><span class="hs-identifier hs-var">Empty</span></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135835"><span class="hs-identifier hs-var">taskList</span></a></span><span>
+</span><span id="line-72"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-73"></span><span>    </span><span class="annot"><a href="#local-6989586621679135839"><span class="hs-identifier hs-type">go</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span>
+</span><span id="line-74"></span><span>    </span><span id="local-6989586621679135839"><span class="annot"><span class="annottext">go :: SomeTask -&gt; Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679135839"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span id="local-6989586621679135841"><span class="annot"><span class="annottext">st :: SomeTask
+</span><a href="#local-6989586621679135841"><span class="hs-identifier hs-var">st</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskSingle"><span class="hs-identifier hs-type">SomeTaskSingle</span></a></span><span> </span><span id="local-6989586621679135842"><span class="annot"><span class="annottext">SingleTask
+</span><a href="#local-6989586621679135842"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679135843"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135843"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-75"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">SingleTask
+</span><a href="#local-6989586621679135842"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">taskId</span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; TaskId -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679135834"><span class="hs-identifier hs-var">taskId</span></a></span><span>
+</span><span id="line-76"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679135844"><span class="hs-identifier hs-var">prependNewTask</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135843"><span class="hs-identifier hs-var">acc</span></a></span><span>
+</span><span id="line-77"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679135841"><span class="hs-identifier hs-var">st</span></a></span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Seq SomeTask -&gt; Seq SomeTask
+forall a. a -&gt; Seq a -&gt; Seq a
+</span><span class="hs-operator hs-var">:&lt;|</span></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135843"><span class="hs-identifier hs-var">acc</span></a></span><span>
+</span><span id="line-78"></span><span>    </span><span class="annot"><a href="#local-6989586621679135839"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTaskGroup"><span class="hs-identifier hs-type">SomeTaskGroup</span></a></span><span> </span><span id="local-6989586621679135846"><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679135846"><span class="hs-identifier hs-var">tg</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679135847"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135847"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-79"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679135846"><span class="hs-identifier hs-var">tg</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">taskId</span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; TaskId -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679135834"><span class="hs-identifier hs-var">taskId</span></a></span><span>
+</span><span id="line-80"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679135844"><span class="hs-identifier hs-var">prependNewTask</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135847"><span class="hs-identifier hs-var">acc</span></a></span><span>
+</span><span id="line-81"></span><span>        </span><span class="hs-keyword">else</span><span>
+</span><span id="line-82"></span><span>          </span><span class="hs-comment">-- TODO: This will technically replace all with the matching</span><span>
+</span><span id="line-83"></span><span>          </span><span class="hs-comment">-- ids, though it should be fine as task ids should be unique.</span><span>
+</span><span id="line-84"></span><span>          </span><span class="hs-comment">-- Maybe we could improve this.</span><span>
+</span><span id="line-85"></span><span>          </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679135848"><span class="annot"><span class="annottext">subtasks' :: Seq SomeTask
+</span><a href="#local-6989586621679135848"><span class="hs-identifier hs-var hs-var">subtasks'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SomeTask -&gt; Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679135839"><span class="hs-operator hs-var">`go`</span></a></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+forall a. Seq a
+</span><span class="hs-identifier hs-var">Empty</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(SomeTask -&gt; Seq SomeTask) -&gt; Seq SomeTask -&gt; Seq SomeTask
+forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
+</span><span class="hs-operator hs-var">=&lt;&lt;</span></span><span> </span><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679135846"><span class="hs-identifier hs-var">tg</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">subtasks</span><span>
+</span><span id="line-86"></span><span>           </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">TaskGroup -&gt; SomeTask
+</span><a href="Todo.Data.Task.html#SomeTaskGroup"><span class="hs-identifier hs-var">SomeTaskGroup</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskGroup
+</span><a href="#local-6989586621679135846"><span class="hs-identifier hs-var">tg</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="Todo.Data.Task.html#subtasks"><span class="hs-identifier hs-var">subtasks</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621679135848"><span class="hs-identifier hs-type">subtasks'</span></a></span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SomeTask -&gt; Seq SomeTask -&gt; Seq SomeTask
+forall a. a -&gt; Seq a -&gt; Seq a
+</span><span class="hs-operator hs-var">:&lt;|</span></span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679135847"><span class="hs-identifier hs-var">acc</span></a></span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span>    </span><span id="local-6989586621679135844"><span class="annot"><span class="annottext">prependNewTask :: Seq SomeTask -&gt; Seq SomeTask
+</span><a href="#local-6989586621679135844"><span class="hs-identifier hs-var hs-var">prependNewTask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe SomeTask
+</span><a href="#local-6989586621679135837"><span class="hs-identifier hs-var">mNewTask</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-89"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679135850"><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679135850"><span class="hs-identifier hs-var">newTask</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SomeTask
+</span><a href="#local-6989586621679135850"><span class="hs-identifier hs-var">newTask</span></a></span><span> </span><span class="hs-operator">:&lt;|</span><span class="hs-special">)</span><span>
+</span><span id="line-90"></span><span>      </span><span class="annot"><span class="annottext">Maybe SomeTask
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask -&gt; Seq SomeTask
+forall a. a -&gt; a
+</span><a href="Todo.Prelude.html#identity"><span class="hs-identifier hs-var">identity</span></a></span><span>
+</span><span id="line-91"></span><span>
+</span><span id="line-92"></span><span class="annot"><span class="hs-comment">-- | Forgets verification status on an Index.</span></span><span>
+</span><span id="line-93"></span><span id="local-6989586621679135738"><span class="annot"><a href="Todo.Index.Internal.html#unverify"><span class="hs-identifier hs-type">unverify</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679135738"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Index.Internal.html#Index%1D54C"><span class="hs-identifier hs-type">Index&#120140;</span></a></span></span><span>
+</span><span id="line-94"></span><span id="unverify"><span class="annot"><span class="annottext">unverify :: forall (s :: IndexState). Index s -&gt; Index&#120140;
+</span><a href="Todo.Index.Internal.html#unverify"><span class="hs-identifier hs-var hs-var">unverify</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Index s -&gt; Index&#120140;
+forall a b. Coercible a b =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">coerce</span></span><span>
+</span><span id="line-95"></span></pre></body></html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679132840"><span id="local-6989586621679132841"></span></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Data.TaskPriority</span><span>
+</span><span id="line-2"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Todo.Data.TaskPriority.html#TaskPriority"><span class="hs-identifier">TaskPriority</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-3"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskPriority.html#parseTaskPriority"><span class="hs-identifier">parseTaskPriority</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskPriority.html#metavar"><span class="hs-identifier">metavar</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Asn</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="annot"><span class="hs-comment">-- | Task priority</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">data</span><span> </span><span id="TaskPriority"><span class="annot"><a href="Todo.Data.TaskPriority.html#TaskPriority"><span class="hs-identifier hs-var">TaskPriority</span></a></span></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Low"><span class="annot"><a href="Todo.Data.TaskPriority.html#Low"><span class="hs-identifier hs-var">Low</span></a></span></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Normal"><span class="annot"><a href="Todo.Data.TaskPriority.html#Normal"><span class="hs-identifier hs-var">Normal</span></a></span></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="High"><span class="annot"><a href="Todo.Data.TaskPriority.html#High"><span class="hs-identifier hs-var">High</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679132848"><span id="local-6989586621679132850"><span class="annot"><span class="annottext">TaskPriority
+TaskPriority -&gt; TaskPriority -&gt; Bounded TaskPriority
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: TaskPriority
+minBound :: TaskPriority
+$cmaxBound :: TaskPriority
+maxBound :: TaskPriority
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679132854"><span id="local-6989586621679132862"><span id="local-6989586621679132868"><span id="local-6989586621679132882"><span id="local-6989586621679132884"><span id="local-6989586621679132888"><span id="local-6989586621679132892"><span id="local-6989586621679132896"><span class="annot"><span class="annottext">Int -&gt; TaskPriority
+TaskPriority -&gt; Int
+TaskPriority -&gt; [TaskPriority]
+TaskPriority -&gt; TaskPriority
+TaskPriority -&gt; TaskPriority -&gt; [TaskPriority]
+TaskPriority -&gt; TaskPriority -&gt; TaskPriority -&gt; [TaskPriority]
+(TaskPriority -&gt; TaskPriority)
+-&gt; (TaskPriority -&gt; TaskPriority)
+-&gt; (Int -&gt; TaskPriority)
+-&gt; (TaskPriority -&gt; Int)
+-&gt; (TaskPriority -&gt; [TaskPriority])
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; [TaskPriority])
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; [TaskPriority])
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; TaskPriority -&gt; [TaskPriority])
+-&gt; Enum TaskPriority
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: TaskPriority -&gt; TaskPriority
+succ :: TaskPriority -&gt; TaskPriority
+$cpred :: TaskPriority -&gt; TaskPriority
+pred :: TaskPriority -&gt; TaskPriority
+$ctoEnum :: Int -&gt; TaskPriority
+toEnum :: Int -&gt; TaskPriority
+$cfromEnum :: TaskPriority -&gt; Int
+fromEnum :: TaskPriority -&gt; Int
+$cenumFrom :: TaskPriority -&gt; [TaskPriority]
+enumFrom :: TaskPriority -&gt; [TaskPriority]
+$cenumFromThen :: TaskPriority -&gt; TaskPriority -&gt; [TaskPriority]
+enumFromThen :: TaskPriority -&gt; TaskPriority -&gt; [TaskPriority]
+$cenumFromTo :: TaskPriority -&gt; TaskPriority -&gt; [TaskPriority]
+enumFromTo :: TaskPriority -&gt; TaskPriority -&gt; [TaskPriority]
+$cenumFromThenTo :: TaskPriority -&gt; TaskPriority -&gt; TaskPriority -&gt; [TaskPriority]
+enumFromThenTo :: TaskPriority -&gt; TaskPriority -&gt; TaskPriority -&gt; [TaskPriority]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679132900"><span id="local-6989586621679132902"><span class="annot"><span class="annottext">TaskPriority -&gt; TaskPriority -&gt; Bool
+(TaskPriority -&gt; TaskPriority -&gt; Bool)
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; Bool) -&gt; Eq TaskPriority
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TaskPriority -&gt; TaskPriority -&gt; Bool
+== :: TaskPriority -&gt; TaskPriority -&gt; Bool
+$c/= :: TaskPriority -&gt; TaskPriority -&gt; Bool
+/= :: TaskPriority -&gt; TaskPriority -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679132909"><span id="local-6989586621679132911"><span id="local-6989586621679132913"><span id="local-6989586621679132917"><span id="local-6989586621679132920"><span id="local-6989586621679132923"><span id="local-6989586621679132926"><span class="annot"><span class="annottext">Eq TaskPriority
+Eq TaskPriority =&gt;
+(TaskPriority -&gt; TaskPriority -&gt; Ordering)
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; Bool)
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; Bool)
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; Bool)
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; Bool)
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; TaskPriority)
+-&gt; (TaskPriority -&gt; TaskPriority -&gt; TaskPriority)
+-&gt; Ord TaskPriority
+TaskPriority -&gt; TaskPriority -&gt; Bool
+TaskPriority -&gt; TaskPriority -&gt; Ordering
+TaskPriority -&gt; TaskPriority -&gt; TaskPriority
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: TaskPriority -&gt; TaskPriority -&gt; Ordering
+compare :: TaskPriority -&gt; TaskPriority -&gt; Ordering
+$c&lt; :: TaskPriority -&gt; TaskPriority -&gt; Bool
+&lt; :: TaskPriority -&gt; TaskPriority -&gt; Bool
+$c&lt;= :: TaskPriority -&gt; TaskPriority -&gt; Bool
+&lt;= :: TaskPriority -&gt; TaskPriority -&gt; Bool
+$c&gt; :: TaskPriority -&gt; TaskPriority -&gt; Bool
+&gt; :: TaskPriority -&gt; TaskPriority -&gt; Bool
+$c&gt;= :: TaskPriority -&gt; TaskPriority -&gt; Bool
+&gt;= :: TaskPriority -&gt; TaskPriority -&gt; Bool
+$cmax :: TaskPriority -&gt; TaskPriority -&gt; TaskPriority
+max :: TaskPriority -&gt; TaskPriority -&gt; TaskPriority
+$cmin :: TaskPriority -&gt; TaskPriority -&gt; TaskPriority
+min :: TaskPriority -&gt; TaskPriority -&gt; TaskPriority
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679132930"><span id="local-6989586621679132932"><span id="local-6989586621679132936"><span class="annot"><span class="annottext">Int -&gt; TaskPriority -&gt; ShowS
+[TaskPriority] -&gt; ShowS
+TaskPriority -&gt; [Char]
+(Int -&gt; TaskPriority -&gt; ShowS)
+-&gt; (TaskPriority -&gt; [Char])
+-&gt; ([TaskPriority] -&gt; ShowS)
+-&gt; Show TaskPriority
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; [Char]) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TaskPriority -&gt; ShowS
+showsPrec :: Int -&gt; TaskPriority -&gt; ShowS
+$cshow :: TaskPriority -&gt; [Char]
+show :: TaskPriority -&gt; [Char]
+$cshowList :: [TaskPriority] -&gt; ShowS
+showList :: [TaskPriority] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679132941"><span id="local-6989586621679132945"><span class="annot"><span class="hs-identifier hs-type">Semigroup</span></span><span> </span><span class="annot"><a href="Todo.Data.TaskPriority.html#TaskPriority"><span class="hs-identifier hs-type">TaskPriority</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>  </span><span id="local-6989586621679132951"><span class="annot"><span class="annottext">&lt;&gt; :: TaskPriority -&gt; TaskPriority -&gt; TaskPriority
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">(&lt;&gt;)</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskPriority -&gt; TaskPriority -&gt; TaskPriority
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679132957"><span id="local-6989586621679132961"><span class="annot"><span class="hs-identifier hs-type">Monoid</span></span><span> </span><span class="annot"><a href="Todo.Data.TaskPriority.html#TaskPriority"><span class="hs-identifier hs-type">TaskPriority</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-22"></span><span>  </span><span id="local-6989586621679132964"><span class="annot"><span class="annottext">mempty :: TaskPriority
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">mempty</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskPriority
+</span><a href="Todo.Data.TaskPriority.html#Low"><span class="hs-identifier hs-var">Low</span></a></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679132967"><span id="local-6989586621679132971"><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskPriority.html#TaskPriority"><span class="hs-identifier hs-type">TaskPriority</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-25"></span><span>  </span><span id="local-6989586621679132976"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser TaskPriority
+</span><a href="#local-6989586621679132976"><span class="hs-identifier hs-var hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char]
+-&gt; (Text -&gt; Parser TaskPriority) -&gt; Value -&gt; Parser TaskPriority
+forall a. [Char] -&gt; (Text -&gt; Parser a) -&gt; Value -&gt; Parser a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.FromJSON.html#withText"><span class="hs-identifier hs-var">Asn.withText</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;TaskPriority&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Parser TaskPriority
+forall (f :: * -&gt; *). MonadFail f =&gt; Text -&gt; f TaskPriority
+</span><a href="Todo.Data.TaskPriority.html#parseTaskPriority"><span class="hs-identifier hs-var">parseTaskPriority</span></a></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span id="local-6989586621679132823"><span class="annot"><a href="Todo.Data.TaskPriority.html#parseTaskPriority"><span class="hs-identifier hs-type">parseTaskPriority</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadFail</span></span><span> </span><span class="annot"><a href="#local-6989586621679132823"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679132823"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskPriority.html#TaskPriority"><span class="hs-identifier hs-type">TaskPriority</span></a></span></span><span>
+</span><span id="line-28"></span><span id="parseTaskPriority"><span class="annot"><span class="annottext">parseTaskPriority :: forall (f :: * -&gt; *). MonadFail f =&gt; Text -&gt; f TaskPriority
+</span><a href="Todo.Data.TaskPriority.html#parseTaskPriority"><span class="hs-identifier hs-var hs-var">parseTaskPriority</span></a></span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;low&quot;</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskPriority -&gt; f TaskPriority
+forall a. a -&gt; f a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">TaskPriority
+</span><a href="Todo.Data.TaskPriority.html#Low"><span class="hs-identifier hs-var">Low</span></a></span><span>
+</span><span id="line-29"></span><span class="annot"><a href="Todo.Data.TaskPriority.html#parseTaskPriority"><span class="hs-identifier hs-var">parseTaskPriority</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;normal&quot;</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskPriority -&gt; f TaskPriority
+forall a. a -&gt; f a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">TaskPriority
+</span><a href="Todo.Data.TaskPriority.html#Normal"><span class="hs-identifier hs-var">Normal</span></a></span><span>
+</span><span id="line-30"></span><span class="annot"><a href="Todo.Data.TaskPriority.html#parseTaskPriority"><span class="hs-identifier hs-var">parseTaskPriority</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;high&quot;</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskPriority -&gt; f TaskPriority
+forall a. a -&gt; f a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">TaskPriority
+</span><a href="Todo.Data.TaskPriority.html#High"><span class="hs-identifier hs-var">High</span></a></span><span>
+</span><span id="line-31"></span><span class="annot"><a href="Todo.Data.TaskPriority.html#parseTaskPriority"><span class="hs-identifier hs-var">parseTaskPriority</span></a></span><span> </span><span id="local-6989586621679133000"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133000"><span class="hs-identifier hs-var">other</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; f TaskPriority
+forall a. [Char] -&gt; f a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; [Char] -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; f TaskPriority) -&gt; [Char] -&gt; f TaskPriority
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;Unexpected priority value: &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Char]
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133000"><span class="hs-identifier hs-var">other</span></a></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133004"><span id="local-6989586621679133008"><span id="local-6989586621679133011"><span id="local-6989586621679133014"><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskPriority.html#TaskPriority"><span class="hs-identifier hs-type">TaskPriority</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-34"></span><span>  </span><span id="local-6989586621679133021"><span class="annot"><span class="annottext">toJSON :: TaskPriority -&gt; Value
+</span><a href="#local-6989586621679133021"><span class="hs-identifier hs-var hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="annot"><span class="annottext">TaskPriority
+</span><a href="Todo.Data.TaskPriority.html#Low"><span class="hs-identifier hs-var">Low</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Value
+</span><span class="hs-string">&quot;low&quot;</span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">TaskPriority
+</span><a href="Todo.Data.TaskPriority.html#Normal"><span class="hs-identifier hs-var">Normal</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Value
+</span><span class="hs-string">&quot;normal&quot;</span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">TaskPriority
+</span><a href="Todo.Data.TaskPriority.html#High"><span class="hs-identifier hs-var">High</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Value
+</span><span class="hs-string">&quot;high&quot;</span></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span id="local-6989586621679132838"><span class="annot"><a href="Todo.Data.TaskPriority.html#metavar"><span class="hs-identifier hs-type">metavar</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="annot"><a href="#local-6989586621679132838"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679132838"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-39"></span><span id="metavar"><span class="annot"><span class="annottext">metavar :: forall a. IsString a =&gt; a
+</span><a href="Todo.Data.TaskPriority.html#metavar"><span class="hs-identifier hs-var hs-var">metavar</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-string">&quot;(low | normal | high)&quot;</span></span><span>
+</span><span id="line-40"></span></pre></body></html>

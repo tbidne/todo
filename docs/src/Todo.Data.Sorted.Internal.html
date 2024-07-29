@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Data.Sorted.Internal</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#SortedTasks"><span class="hs-identifier">SortedTasks</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.Task.html"><span class="hs-identifier">Todo.Data.Task</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier">SomeTask</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="annot"><span class="hs-comment">-- | Sorted tasks.</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">newtype</span><span> </span><span id="SortedTasks"><span class="annot"><a href="Todo.Data.Sorted.Internal.html#SortedTasks"><span class="hs-identifier hs-var">SortedTasks</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UnsafeSortedTasks"><span class="annot"><a href="Todo.Data.Sorted.Internal.html#UnsafeSortedTasks"><span class="hs-identifier hs-var">UnsafeSortedTasks</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679137030"><span id="local-6989586621679137035"><span class="annot"><span class="annottext">SortedTasks -&gt; SortedTasks -&gt; Bool
+(SortedTasks -&gt; SortedTasks -&gt; Bool)
+-&gt; (SortedTasks -&gt; SortedTasks -&gt; Bool) -&gt; Eq SortedTasks
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SortedTasks -&gt; SortedTasks -&gt; Bool
+== :: SortedTasks -&gt; SortedTasks -&gt; Bool
+$c/= :: SortedTasks -&gt; SortedTasks -&gt; Bool
+/= :: SortedTasks -&gt; SortedTasks -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679137041"><span id="local-6989586621679137048"><span id="local-6989586621679137052"><span class="annot"><span class="annottext">Int -&gt; SortedTasks -&gt; ShowS
+[SortedTasks] -&gt; ShowS
+SortedTasks -&gt; String
+(Int -&gt; SortedTasks -&gt; ShowS)
+-&gt; (SortedTasks -&gt; String)
+-&gt; ([SortedTasks] -&gt; ShowS)
+-&gt; Show SortedTasks
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SortedTasks -&gt; ShowS
+showsPrec :: Int -&gt; SortedTasks -&gt; ShowS
+$cshow :: SortedTasks -&gt; String
+show :: SortedTasks -&gt; String
+$cshowList :: [SortedTasks] -&gt; ShowS
+showList :: [SortedTasks] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HasField</span></span><span> </span><span class="annot"><span class="hs-string">&quot;unSortedTasks&quot;</span></span><span> </span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#SortedTasks"><span class="hs-identifier hs-type">SortedTasks</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-16"></span><span>  </span><span id="local-6989586621679137059"><span class="annot"><span class="annottext">getField :: SortedTasks -&gt; Seq SomeTask
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">getField</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#UnsafeSortedTasks"><span class="hs-identifier hs-type">UnsafeSortedTasks</span></a></span><span> </span><span id="local-6989586621679137060"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137060"><span class="hs-identifier hs-var">tl</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137060"><span class="hs-identifier hs-var">tl</span></a></span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">instance</span><span>
+</span><span id="line-19"></span><span>  </span><span id="local-6989586621679137019"><span id="local-6989586621679137020"><span id="local-6989586621679137021"><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679137019"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">~</span></span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Types.html#A_Getter"><span class="hs-identifier hs-type">A_Getter</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679137020"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">~</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679137021"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">~</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="Todo.Data.Task.html#SomeTask"><span class="hs-identifier hs-type">SomeTask</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-20"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Label.html#LabelOptic"><span class="hs-identifier hs-type">LabelOptic</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;unSortedTasks&quot;</span></span><span> </span><span class="annot"><a href="#local-6989586621679137019"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#SortedTasks"><span class="hs-identifier hs-type">SortedTasks</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#SortedTasks"><span class="hs-identifier hs-type">SortedTasks</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679137020"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679137021"><span class="hs-identifier hs-type">b</span></a></span></span></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-22"></span><span>  </span><span id="local-6989586621679137070"><span class="annot"><span class="annottext">labelOptic :: Optic k NoIx SortedTasks SortedTasks a b
+</span><a href="#local-6989586621679137070"><span class="hs-identifier hs-var hs-var hs-var hs-var">labelOptic</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(SortedTasks -&gt; a) -&gt; Getter SortedTasks a
+forall s a. (s -&gt; a) -&gt; Getter s a
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Getter.html#to"><span class="hs-identifier hs-var">to</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Sorted.Internal.html#UnsafeSortedTasks"><span class="hs-identifier hs-type">UnsafeSortedTasks</span></a></span><span> </span><span id="local-6989586621679137073"><span class="annot"><span class="annottext">Seq SomeTask
+</span><a href="#local-6989586621679137073"><span class="hs-identifier hs-var">tl</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a
+Seq SomeTask
+</span><a href="#local-6989586621679137073"><span class="hs-identifier hs-var">tl</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Label.html#labelOptic"><span class="hs-pragma hs-type">labelOptic</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-24"></span></pre></body></html>

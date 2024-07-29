@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Data.Timestamp</span><span>
+</span><span id="line-2"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Todo.Data.Timestamp.html#Timestamp"><span class="hs-identifier">Timestamp</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-3"></span><span>    </span><span class="annot"><a href="Todo.Data.Timestamp.html#parseTimestamp"><span class="hs-identifier">parseTimestamp</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Todo.Data.Timestamp.html#formatTimestamp"><span class="hs-identifier">formatTimestamp</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Todo.Data.Timestamp.html#metavar"><span class="hs-identifier">metavar</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.html"><span class="hs-identifier">Data.Aeson.Types</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Asn</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Calendar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Format</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Format</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.LocalTime</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">LocalTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ZonedTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.LocalTime</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">LT</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-time-0.1-af549761a237a929bc19e09d424540be2f3e3150cc963677227f9d970d95f1b5/share/doc/html/src/Effects.Time.html"><span class="hs-identifier">Effects.Time</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Time</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="annot"><span class="hs-comment">-- | Task timestamps.</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="Timestamp"><span class="annot"><a href="Todo.Data.Timestamp.html#Timestamp"><span class="hs-identifier hs-var">Timestamp</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Date"><span class="annot"><a href="Todo.Data.Timestamp.html#Date"><span class="hs-identifier hs-var">Date</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Local"><span class="annot"><a href="Todo.Data.Timestamp.html#Local"><span class="hs-identifier hs-var">Local</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">LocalTime</span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Zoned"><span class="annot"><a href="Todo.Data.Timestamp.html#Zoned"><span class="hs-identifier hs-var">Zoned</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ZonedTime</span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679132681"><span id="local-6989586621679132693"><span id="local-6989586621679132697"><span class="annot"><span class="annottext">Int -&gt; Timestamp -&gt; ShowS
+[Timestamp] -&gt; ShowS
+Timestamp -&gt; String
+(Int -&gt; Timestamp -&gt; ShowS)
+-&gt; (Timestamp -&gt; String)
+-&gt; ([Timestamp] -&gt; ShowS)
+-&gt; Show Timestamp
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Timestamp -&gt; ShowS
+showsPrec :: Int -&gt; Timestamp -&gt; ShowS
+$cshow :: Timestamp -&gt; String
+show :: Timestamp -&gt; String
+$cshowList :: [Timestamp] -&gt; ShowS
+showList :: [Timestamp] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679132702"><span class="annot"><span class="hs-identifier hs-type">Eq</span></span><span> </span><span class="annot"><a href="Todo.Data.Timestamp.html#Timestamp"><span class="hs-identifier hs-type">Timestamp</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-25"></span><span>  </span><span class="annot"><a href="Todo.Data.Timestamp.html#Date"><span class="hs-identifier hs-type">Date</span></a></span><span> </span><span id="local-6989586621679132712"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679132712"><span class="hs-identifier hs-var">d1</span></a></span></span><span> </span><span id="local-6989586621679132713"><span class="annot"><span class="annottext">== :: Timestamp -&gt; Timestamp -&gt; Bool
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">==</span></span></span><span> </span><span class="annot"><a href="Todo.Data.Timestamp.html#Date"><span class="hs-identifier hs-type">Date</span></a></span><span> </span><span id="local-6989586621679132714"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679132714"><span class="hs-identifier hs-var">d2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679132712"><span class="hs-identifier hs-var">d1</span></a></span><span> </span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679132714"><span class="hs-identifier hs-var">d2</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="annot"><a href="Todo.Data.Timestamp.html#Local"><span class="hs-identifier hs-type">Local</span></a></span><span> </span><span id="local-6989586621679132715"><span class="annot"><span class="annottext">LocalTime
+</span><a href="#local-6989586621679132715"><span class="hs-identifier hs-var">lt1</span></a></span></span><span> </span><span class="annot"><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><a href="Todo.Data.Timestamp.html#Local"><span class="hs-identifier hs-type">Local</span></a></span><span> </span><span id="local-6989586621679132716"><span class="annot"><span class="annottext">LocalTime
+</span><a href="#local-6989586621679132716"><span class="hs-identifier hs-var">lt2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">LocalTime
+</span><a href="#local-6989586621679132715"><span class="hs-identifier hs-var">lt1</span></a></span><span> </span><span class="annot"><span class="annottext">LocalTime -&gt; LocalTime -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">LocalTime
+</span><a href="#local-6989586621679132716"><span class="hs-identifier hs-var">lt2</span></a></span><span>
+</span><span id="line-27"></span><span>  </span><span class="annot"><a href="Todo.Data.Timestamp.html#Zoned"><span class="hs-identifier hs-type">Zoned</span></a></span><span> </span><span id="local-6989586621679132717"><span class="annot"><span class="annottext">ZonedTime
+</span><a href="#local-6989586621679132717"><span class="hs-identifier hs-var">zt1</span></a></span></span><span> </span><span class="annot"><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><a href="Todo.Data.Timestamp.html#Zoned"><span class="hs-identifier hs-type">Zoned</span></a></span><span> </span><span id="local-6989586621679132718"><span class="annot"><span class="annottext">ZonedTime
+</span><a href="#local-6989586621679132718"><span class="hs-identifier hs-var">zt2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ZonedTime -&gt; UTCTime
+</span><span class="hs-identifier hs-var">LT.zonedTimeToUTC</span></span><span> </span><span class="annot"><span class="annottext">ZonedTime
+</span><a href="#local-6989586621679132717"><span class="hs-identifier hs-var">zt1</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; UTCTime -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">ZonedTime -&gt; UTCTime
+</span><span class="hs-identifier hs-var">LT.zonedTimeToUTC</span></span><span> </span><span class="annot"><span class="annottext">ZonedTime
+</span><a href="#local-6989586621679132718"><span class="hs-identifier hs-var">zt2</span></a></span><span>
+</span><span id="line-28"></span><span>  </span><span class="annot"><span class="annottext">Timestamp
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Timestamp
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679132722"><span id="local-6989586621679132726"><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Timestamp.html#Timestamp"><span class="hs-identifier hs-type">Timestamp</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-31"></span><span>  </span><span id="local-6989586621679132731"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser Timestamp
+</span><a href="#local-6989586621679132731"><span class="hs-identifier hs-var hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; (Text -&gt; Parser Timestamp) -&gt; Value -&gt; Parser Timestamp
+forall a. String -&gt; (Text -&gt; Parser a) -&gt; Value -&gt; Parser a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.FromJSON.html#withText"><span class="hs-identifier hs-var">Asn.withText</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Timestamp&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Parser Timestamp
+forall (m :: * -&gt; *). MonadFail m =&gt; String -&gt; m Timestamp
+</span><a href="Todo.Data.Timestamp.html#parseTimestamp"><span class="hs-identifier hs-var">parseTimestamp</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Parser Timestamp)
+-&gt; (Text -&gt; String) -&gt; Text -&gt; Parser Timestamp
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679132738"><span id="local-6989586621679132742"><span id="local-6989586621679132745"><span id="local-6989586621679132748"><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Timestamp.html#Timestamp"><span class="hs-identifier hs-type">Timestamp</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-34"></span><span>  </span><span id="local-6989586621679132755"><span class="annot"><span class="annottext">toJSON :: Timestamp -&gt; Value
+</span><a href="#local-6989586621679132755"><span class="hs-identifier hs-var hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Value) -&gt; (Timestamp -&gt; String) -&gt; Timestamp -&gt; Value
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Timestamp -&gt; String
+</span><a href="Todo.Data.Timestamp.html#formatTimestamp"><span class="hs-identifier hs-var">formatTimestamp</span></a></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span id="local-6989586621679132632"><span class="annot"><a href="Todo.Data.Timestamp.html#parseTimestamp"><span class="hs-identifier hs-type">parseTimestamp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadFail</span></span><span> </span><span class="annot"><a href="#local-6989586621679132632"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679132632"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="Todo.Data.Timestamp.html#Timestamp"><span class="hs-identifier hs-type">Timestamp</span></a></span></span><span>
+</span><span id="line-37"></span><span id="parseTimestamp"><span class="annot"><span class="annottext">parseTimestamp :: forall (m :: * -&gt; *). MonadFail m =&gt; String -&gt; m Timestamp
+</span><a href="Todo.Data.Timestamp.html#parseTimestamp"><span class="hs-identifier hs-var hs-var">parseTimestamp</span></a></span></span><span> </span><span id="local-6989586621679132783"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679132783"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679132784"><span class="annot"><span class="annottext">mParsed :: Maybe Timestamp
+</span><a href="#local-6989586621679132784"><span class="hs-identifier hs-var hs-var">mParsed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-39"></span><span>        </span><span class="annot"><span class="annottext">[Maybe Timestamp] -&gt; Maybe Timestamp
+forall (t :: * -&gt; *) (f :: * -&gt; *) a.
+(Foldable t, Alternative f) =&gt;
+t (f a) -&gt; f a
+</span><span class="hs-identifier hs-var">asum</span></span><span>
+</span><span id="line-40"></span><span>          </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Day -&gt; Timestamp
+</span><a href="Todo.Data.Timestamp.html#Date"><span class="hs-identifier hs-var">Date</span></a></span><span> </span><span class="annot"><span class="annottext">(Day -&gt; Timestamp) -&gt; Maybe Day -&gt; Maybe Timestamp
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; TimeLocale -&gt; String -&gt; String -&gt; Maybe Day
+forall (m :: * -&gt; *) t.
+(MonadFail m, ParseTime t) =&gt;
+Bool -&gt; TimeLocale -&gt; String -&gt; String -&gt; m t
+</span><span class="hs-identifier hs-var">Format.parseTimeM</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">TimeLocale
+</span><span class="hs-identifier hs-var">Format.defaultTimeLocale</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="Todo.Data.Timestamp.html#dateFormat"><span class="hs-identifier hs-var">dateFormat</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679132783"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>            </span><span class="annot"><span class="annottext">LocalTime -&gt; Timestamp
+</span><a href="Todo.Data.Timestamp.html#Local"><span class="hs-identifier hs-var">Local</span></a></span><span> </span><span class="annot"><span class="annottext">(LocalTime -&gt; Timestamp) -&gt; Maybe LocalTime -&gt; Maybe Timestamp
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe LocalTime
+forall (f :: * -&gt; *). MonadFail f =&gt; String -&gt; f LocalTime
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-time-0.1-af549761a237a929bc19e09d424540be2f3e3150cc963677227f9d970d95f1b5/share/doc/html/src/Effects.Time.html#parseLocalTime"><span class="hs-identifier hs-var">Time.parseLocalTime</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679132783"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>            </span><span class="annot"><span class="annottext">ZonedTime -&gt; Timestamp
+</span><a href="Todo.Data.Timestamp.html#Zoned"><span class="hs-identifier hs-var">Zoned</span></a></span><span> </span><span class="annot"><span class="annottext">(ZonedTime -&gt; Timestamp) -&gt; Maybe ZonedTime -&gt; Maybe Timestamp
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe ZonedTime
+forall (f :: * -&gt; *). MonadFail f =&gt; String -&gt; f ZonedTime
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-time-0.1-af549761a237a929bc19e09d424540be2f3e3150cc963677227f9d970d95f1b5/share/doc/html/src/Effects.Time.html#parseZonedTime"><span class="hs-identifier hs-var">Time.parseZonedTime</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679132783"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-43"></span><span>          </span><span class="hs-special">]</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe Timestamp
+</span><a href="#local-6989586621679132784"><span class="hs-identifier hs-var">mParsed</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-45"></span><span>    </span><span class="annot"><span class="annottext">Maybe Timestamp
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; m Timestamp
+forall a. String -&gt; m a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; m Timestamp) -&gt; String -&gt; m Timestamp
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Could not parse timestamp: &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679132783"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-46"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679132792"><span class="annot"><span class="annottext">Timestamp
+</span><a href="#local-6989586621679132792"><span class="hs-identifier hs-var">parsed</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Timestamp -&gt; m Timestamp
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Timestamp
+</span><a href="#local-6989586621679132792"><span class="hs-identifier hs-var">parsed</span></a></span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="annot"><a href="Todo.Data.Timestamp.html#formatTimestamp"><span class="hs-identifier hs-type">formatTimestamp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Data.Timestamp.html#Timestamp"><span class="hs-identifier hs-type">Timestamp</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-49"></span><span id="formatTimestamp"><span class="annot"><span class="annottext">formatTimestamp :: Timestamp -&gt; String
+</span><a href="Todo.Data.Timestamp.html#formatTimestamp"><span class="hs-identifier hs-var hs-var">formatTimestamp</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Timestamp.html#Date"><span class="hs-identifier hs-type">Date</span></a></span><span> </span><span id="local-6989586621679132793"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679132793"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TimeLocale -&gt; String -&gt; Day -&gt; String
+forall t. FormatTime t =&gt; TimeLocale -&gt; String -&gt; t -&gt; String
+</span><span class="hs-identifier hs-var">Format.formatTime</span></span><span> </span><span class="annot"><span class="annottext">TimeLocale
+</span><span class="hs-identifier hs-var">Format.defaultTimeLocale</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="Todo.Data.Timestamp.html#dateFormat"><span class="hs-identifier hs-var">dateFormat</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679132793"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="Todo.Data.Timestamp.html#formatTimestamp"><span class="hs-identifier hs-var">formatTimestamp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Timestamp.html#Local"><span class="hs-identifier hs-type">Local</span></a></span><span> </span><span id="local-6989586621679132795"><span class="annot"><span class="annottext">LocalTime
+</span><a href="#local-6989586621679132795"><span class="hs-identifier hs-var">lt</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">LocalTime -&gt; String
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-time-0.1-af549761a237a929bc19e09d424540be2f3e3150cc963677227f9d970d95f1b5/share/doc/html/src/Effects.Time.html#formatLocalTime"><span class="hs-identifier hs-var">Time.formatLocalTime</span></a></span><span> </span><span class="annot"><span class="annottext">LocalTime
+</span><a href="#local-6989586621679132795"><span class="hs-identifier hs-var">lt</span></a></span><span>
+</span><span id="line-51"></span><span class="annot"><a href="Todo.Data.Timestamp.html#formatTimestamp"><span class="hs-identifier hs-var">formatTimestamp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.Timestamp.html#Zoned"><span class="hs-identifier hs-type">Zoned</span></a></span><span> </span><span id="local-6989586621679132797"><span class="annot"><span class="annottext">ZonedTime
+</span><a href="#local-6989586621679132797"><span class="hs-identifier hs-var">zt</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ZonedTime -&gt; String
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/effects-time-0.1-af549761a237a929bc19e09d424540be2f3e3150cc963677227f9d970d95f1b5/share/doc/html/src/Effects.Time.html#formatZonedTime"><span class="hs-identifier hs-var">Time.formatZonedTime</span></a></span><span> </span><span class="annot"><span class="annottext">ZonedTime
+</span><a href="#local-6989586621679132797"><span class="hs-identifier hs-var">zt</span></a></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="Todo.Data.Timestamp.html#dateFormat"><span class="hs-identifier hs-type">dateFormat</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-54"></span><span id="dateFormat"><span class="annot"><span class="annottext">dateFormat :: String
+</span><a href="Todo.Data.Timestamp.html#dateFormat"><span class="hs-identifier hs-var hs-var">dateFormat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;%0Y-%m-%d&quot;</span></span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span id="local-6989586621679132670"><span class="annot"><a href="Todo.Data.Timestamp.html#metavar"><span class="hs-identifier hs-type">metavar</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="annot"><a href="#local-6989586621679132670"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679132670"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-57"></span><span id="metavar"><span class="annot"><span class="annottext">metavar :: forall a. IsString a =&gt; a
+</span><a href="Todo.Data.Timestamp.html#metavar"><span class="hs-identifier hs-var hs-var">metavar</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-string">&quot;(YYYY-MM-DD [HH:MM:SS] [TZ])&quot;</span></span><span>
+</span><span id="line-58"></span></pre></body></html>

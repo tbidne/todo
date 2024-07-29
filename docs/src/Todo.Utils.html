@@ -1,0 +1,882 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Utils</span><span>
+</span><span id="line-2"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Monadic Combinators</span></span><span>
+</span><span id="line-3"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#whileM"><span class="hs-identifier">whileM</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#whileApplyM"><span class="hs-identifier">whileApplyM</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#whileApplySetM"><span class="hs-identifier">whileApplySetM</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#whileM_"><span class="hs-identifier">whileM_</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Optics</span></span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#traversal"><span class="hs-identifier">traversal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#listTraversal"><span class="hs-identifier">listTraversal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#listPredTraversal"><span class="hs-identifier">listPredTraversal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#seqTraversal"><span class="hs-identifier">seqTraversal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#seqPredTraversal"><span class="hs-identifier">seqPredTraversal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#neSetTraversal"><span class="hs-identifier">neSetTraversal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Preview + Over</span></span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#overPreview%27"><span class="hs-identifier">overPreview'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#setPreview%27"><span class="hs-identifier">setPreview'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#overPreviewNode%27"><span class="hs-identifier">overPreviewNode'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#setPreviewNode%27"><span class="hs-identifier">setPreviewNode'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#MatchResult"><span class="hs-identifier">MatchResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#overPreviewPartialNode%27"><span class="hs-identifier">overPreviewPartialNode'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#setPreviewPartialNode%27"><span class="hs-identifier">setPreviewPartialNode'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span>    </span><span class="annot"><span class="hs-comment">-- *** Optics</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#_MatchSuccess"><span class="hs-identifier">_MatchSuccess</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#_MatchPartial"><span class="hs-identifier">_MatchPartial</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#_MatchFailure"><span class="hs-identifier">_MatchFailure</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Aeson</span></span><span>
+</span><span id="line-31"></span><span>    </span><span class="annot"><a href="Todo.Utils.html#validateKeys"><span class="hs-identifier">validateKeys</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.Internal.html#Object"><span class="hs-identifier">Object</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Key.html"><span class="hs-identifier">Data.Aeson.Key</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">K</span></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.KeyMap.html"><span class="hs-identifier">Data.Aeson.KeyMap</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Key.html#Key"><span class="hs-identifier">Key</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.KeyMap.html"><span class="hs-identifier">Data.Aeson.KeyMap</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">KM</span></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.html"><span class="hs-identifier">Data.Aeson.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.Internal.html#Parser"><span class="hs-identifier">Parser</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Bifunctor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Bifunctor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">second</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Set</span></span><span>
+</span><span id="line-42"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.html"><span class="hs-identifier">Data.Set.NonEmpty</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">NESet</span></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span id="local-6989586621679134320"><span id="local-6989586621679134321"><span class="annot"><a href="Todo.Utils.html#whileM"><span class="hs-identifier hs-type">whileM</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679134320"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134320"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134320"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134321"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134320"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679134321"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-47"></span><span id="whileM"><span class="annot"><span class="annottext">whileM :: forall (m :: * -&gt; *) a. Monad m =&gt; m Bool -&gt; m a -&gt; m (Seq a)
+</span><a href="Todo.Utils.html#whileM"><span class="hs-identifier hs-var hs-var">whileM</span></a></span></span><span> </span><span id="local-6989586621679134578"><span class="annot"><span class="annottext">m Bool
+</span><a href="#local-6989586621679134578"><span class="hs-identifier hs-var">mb</span></a></span></span><span> </span><span id="local-6989586621679134579"><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679134579"><span class="hs-identifier hs-var">mx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m (Seq a)
+</span><a href="#local-6989586621679134580"><span class="hs-identifier hs-var">go</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-49"></span><span>    </span><span id="local-6989586621679134580"><span class="annot"><span class="annottext">go :: m (Seq a)
+</span><a href="#local-6989586621679134580"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-50"></span><span>      </span><span id="local-6989586621679134581"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679134581"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">m Bool
+</span><a href="#local-6989586621679134578"><span class="hs-identifier hs-var">mb</span></a></span><span>
+</span><span id="line-51"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679134581"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-52"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-53"></span><span>          </span><span id="local-6989586621679134582"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134582"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679134579"><span class="hs-identifier hs-var">mx</span></a></span><span>
+</span><span id="line-54"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134582"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="hs-operator">:&lt;|</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Seq a -&gt; Seq a) -&gt; m (Seq a) -&gt; m (Seq a)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">m (Seq a)
+</span><a href="#local-6989586621679134580"><span class="hs-identifier hs-var">go</span></a></span><span>
+</span><span id="line-55"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Seq a -&gt; m (Seq a)
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Seq a
+forall a. Seq a
+</span><span class="hs-identifier hs-var">Empty</span></span><span>
+</span><span id="line-56"></span><span class="hs-pragma">{-# INLINEABLE</span><span> </span><span class="annot"><a href="Todo.Utils.html#whileM"><span class="hs-pragma hs-type">whileM</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="Todo.Utils.html#whileApplyM"><span class="hs-identifier hs-type">whileApplyM</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134332"><span class="annot"><a href="#local-6989586621679134332"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679134333"><span class="annot"><a href="#local-6989586621679134333"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679134334"><span class="annot"><a href="#local-6989586621679134334"><span class="hs-identifier hs-type">b</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679134332"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-61"></span><span>  </span><span class="annot"><a href="#local-6989586621679134333"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-62"></span><span>  </span><span class="annot"><a href="#local-6989586621679134332"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134333"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134332"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134333"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679134334"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-64"></span><span>  </span><span class="annot"><a href="#local-6989586621679134332"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134333"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679134334"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span id="whileApplyM"><span class="annot"><span class="annottext">whileApplyM :: forall (m :: * -&gt; *) a b.
+Monad m =&gt;
+a -&gt; m Bool -&gt; (a -&gt; m (a, b)) -&gt; m (a, Seq b)
+</span><a href="Todo.Utils.html#whileApplyM"><span class="hs-identifier hs-var hs-var">whileApplyM</span></a></span></span><span> </span><span id="local-6989586621679134594"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134594"><span class="hs-identifier hs-var">initVal</span></a></span></span><span> </span><span id="local-6989586621679134595"><span class="annot"><span class="annottext">m Bool
+</span><a href="#local-6989586621679134595"><span class="hs-identifier hs-var">mb</span></a></span></span><span> </span><span id="local-6989586621679134596"><span class="annot"><span class="annottext">a -&gt; m (a, b)
+</span><a href="#local-6989586621679134596"><span class="hs-identifier hs-var">mx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; m (a, Seq b)
+</span><a href="#local-6989586621679134597"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134594"><span class="hs-identifier hs-var">initVal</span></a></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-67"></span><span>    </span><span class="annot"><a href="#local-6989586621679134597"><span class="hs-identifier hs-type">go</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679134333"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134332"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134333"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679134334"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>    </span><span id="local-6989586621679134597"><span class="annot"><span class="annottext">go :: a -&gt; m (a, Seq b)
+</span><a href="#local-6989586621679134597"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span id="local-6989586621679134598"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134598"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-69"></span><span>      </span><span id="local-6989586621679134599"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679134599"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">m Bool
+</span><a href="#local-6989586621679134595"><span class="hs-identifier hs-var">mb</span></a></span><span>
+</span><span id="line-70"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679134599"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-71"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-72"></span><span>          </span><span class="hs-special">(</span><span id="local-6989586621679134600"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134600"><span class="hs-identifier hs-var">next</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679134601"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134601"><span class="hs-identifier hs-var">acc</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">a -&gt; m (a, b)
+</span><a href="#local-6989586621679134596"><span class="hs-identifier hs-var">mx</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134598"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-73"></span><span>          </span><span class="annot"><span class="annottext">(Seq b -&gt; Seq b) -&gt; (a, Seq b) -&gt; (a, Seq b)
+forall b c a. (b -&gt; c) -&gt; (a, b) -&gt; (a, c)
+forall (p :: * -&gt; * -&gt; *) b c a.
+Bifunctor p =&gt;
+(b -&gt; c) -&gt; p a b -&gt; p a c
+</span><span class="hs-identifier hs-var">second</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134601"><span class="hs-identifier hs-var">acc</span></a></span><span> </span><span class="hs-operator">:&lt;|</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">((a, Seq b) -&gt; (a, Seq b)) -&gt; m (a, Seq b) -&gt; m (a, Seq b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; m (a, Seq b)
+</span><a href="#local-6989586621679134597"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134600"><span class="hs-identifier hs-var">next</span></a></span><span>
+</span><span id="line-74"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">(a, Seq b) -&gt; m (a, Seq b)
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134598"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Seq b
+forall a. Seq a
+</span><span class="hs-identifier hs-var">Empty</span></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span class="hs-pragma">{-# INLINEABLE</span><span> </span><span class="annot"><a href="Todo.Utils.html#whileApplyM"><span class="hs-pragma hs-type">whileApplyM</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="annot"><a href="Todo.Utils.html#whileApplySetM"><span class="hs-identifier hs-type">whileApplySetM</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134343"><span class="annot"><a href="#local-6989586621679134343"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621679134345"><span class="annot"><a href="#local-6989586621679134345"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679134344"><span class="annot"><a href="#local-6989586621679134344"><span class="hs-identifier hs-type">b</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679134343"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679134344"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-80"></span><span>  </span><span class="annot"><a href="#local-6989586621679134345"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-81"></span><span>  </span><span class="annot"><a href="#local-6989586621679134343"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-82"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134345"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134343"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134345"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679134344"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-83"></span><span>  </span><span class="annot"><a href="#local-6989586621679134343"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134345"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="annot"><a href="#local-6989586621679134344"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span id="whileApplySetM"><span class="annot"><span class="annottext">whileApplySetM :: forall (m :: * -&gt; *) a b.
+(Monad m, Ord b) =&gt;
+a -&gt; m Bool -&gt; (a -&gt; m (a, b)) -&gt; m (a, Set b)
+</span><a href="Todo.Utils.html#whileApplySetM"><span class="hs-identifier hs-var hs-var">whileApplySetM</span></a></span></span><span> </span><span id="local-6989586621679134612"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134612"><span class="hs-identifier hs-var">initVal</span></a></span></span><span> </span><span id="local-6989586621679134613"><span class="annot"><span class="annottext">m Bool
+</span><a href="#local-6989586621679134613"><span class="hs-identifier hs-var">mb</span></a></span></span><span> </span><span id="local-6989586621679134614"><span class="annot"><span class="annottext">a -&gt; m (a, b)
+</span><a href="#local-6989586621679134614"><span class="hs-identifier hs-var">mx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; m (a, Set b)
+</span><a href="#local-6989586621679134615"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134612"><span class="hs-identifier hs-var">initVal</span></a></span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-86"></span><span>    </span><span class="annot"><a href="#local-6989586621679134615"><span class="hs-identifier hs-type">go</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679134345"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134343"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134345"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="annot"><a href="#local-6989586621679134344"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>    </span><span id="local-6989586621679134615"><span class="annot"><span class="annottext">go :: a -&gt; m (a, Set b)
+</span><a href="#local-6989586621679134615"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span id="local-6989586621679134616"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134616"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-88"></span><span>      </span><span id="local-6989586621679134617"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679134617"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">m Bool
+</span><a href="#local-6989586621679134613"><span class="hs-identifier hs-var">mb</span></a></span><span>
+</span><span id="line-89"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679134617"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-90"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-91"></span><span>          </span><span class="hs-special">(</span><span id="local-6989586621679134618"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134618"><span class="hs-identifier hs-var">next</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679134619"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134619"><span class="hs-identifier hs-var">acc</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">a -&gt; m (a, b)
+</span><a href="#local-6989586621679134614"><span class="hs-identifier hs-var">mx</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134616"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-92"></span><span>          </span><span class="annot"><span class="annottext">(Set b -&gt; Set b) -&gt; (a, Set b) -&gt; (a, Set b)
+forall b c a. (b -&gt; c) -&gt; (a, b) -&gt; (a, c)
+forall (p :: * -&gt; * -&gt; *) b c a.
+Bifunctor p =&gt;
+(b -&gt; c) -&gt; p a b -&gt; p a c
+</span><span class="hs-identifier hs-var">second</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">b -&gt; Set b -&gt; Set b
+forall a. Ord a =&gt; a -&gt; Set a -&gt; Set a
+</span><span class="hs-identifier hs-var">Set.insert</span></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134619"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">((a, Set b) -&gt; (a, Set b)) -&gt; m (a, Set b) -&gt; m (a, Set b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; m (a, Set b)
+</span><a href="#local-6989586621679134615"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134618"><span class="hs-identifier hs-var">next</span></a></span><span>
+</span><span id="line-93"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">(a, Set b) -&gt; m (a, Set b)
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134616"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Set b
+forall a. Set a
+</span><span class="hs-identifier hs-var">Set.empty</span></span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span class="hs-pragma">{-# INLINEABLE</span><span> </span><span class="annot"><a href="Todo.Utils.html#whileApplySetM"><span class="hs-pragma hs-type">whileApplySetM</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span id="local-6989586621679134352"><span id="local-6989586621679134353"><span class="annot"><a href="Todo.Utils.html#whileM_"><span class="hs-identifier hs-type">whileM_</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621679134352"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134352"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134352"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134353"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134352"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-97"></span><span id="whileM_"><span class="annot"><span class="annottext">whileM_ :: forall (m :: * -&gt; *) a. Monad m =&gt; m Bool -&gt; m a -&gt; m ()
+</span><a href="Todo.Utils.html#whileM_"><span class="hs-identifier hs-var hs-var">whileM_</span></a></span></span><span> </span><span id="local-6989586621679134627"><span class="annot"><span class="annottext">m Bool
+</span><a href="#local-6989586621679134627"><span class="hs-identifier hs-var">mb</span></a></span></span><span> </span><span id="local-6989586621679134628"><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679134628"><span class="hs-identifier hs-var">mx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">m ()
+</span><a href="#local-6989586621679134629"><span class="hs-identifier hs-var">go</span></a></span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-99"></span><span>    </span><span id="local-6989586621679134629"><span class="annot"><span class="annottext">go :: m ()
+</span><a href="#local-6989586621679134629"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-100"></span><span>      </span><span id="local-6989586621679134630"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679134630"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">m Bool
+</span><a href="#local-6989586621679134627"><span class="hs-identifier hs-var">mb</span></a></span><span>
+</span><span id="line-101"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; m () -&gt; m ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679134630"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">m a
+</span><a href="#local-6989586621679134628"><span class="hs-identifier hs-var">mx</span></a></span><span> </span><span class="annot"><span class="annottext">m a -&gt; m () -&gt; m ()
+forall a b. m a -&gt; m b -&gt; m b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b -&gt; f b
+</span><span class="hs-operator hs-var">*&gt;</span></span><span> </span><span class="annot"><span class="annottext">m ()
+</span><a href="#local-6989586621679134629"><span class="hs-identifier hs-var">go</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-102"></span><span class="hs-pragma">{-# INLINEABLE</span><span> </span><span class="annot"><a href="Todo.Utils.html#whileM_"><span class="hs-pragma hs-type">whileM_</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-comment">-- | Like 'over'', except we run the 'set'' on the result of a 'preview'.</span><span>
+</span><span id="line-105"></span><span class="hs-comment">-- This is intended for updates that can fail. For example, we want @Index@</span><span>
+</span><span id="line-106"></span><span class="hs-comment">-- update to fail if we do not find a task with the desired id. The</span><span>
+</span><span id="line-107"></span><span class="hs-comment">-- 'Ixed' class, however, provides an @AffineTraversal' s a@ i.e sets always</span><span>
+</span><span id="line-108"></span><span class="hs-comment">-- succeed.</span><span>
+</span><span id="line-109"></span><span class="hs-comment">--</span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- We therefore generalize to AffineFold and Setter, and run the set on the</span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- preview.</span><span>
+</span><span id="line-112"></span><span class="annot"><a href="Todo.Utils.html#overPreview%27"><span class="hs-identifier hs-type">overPreview'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-113"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134360"><span class="annot"><a href="#local-6989586621679134360"><span class="hs-identifier hs-type">k</span></a></span></span><span> </span><span id="local-6989586621679134364"><span class="annot"><a href="#local-6989586621679134364"><span class="hs-identifier hs-type">is</span></a></span></span><span> </span><span id="local-6989586621679134365"><span class="annot"><a href="#local-6989586621679134365"><span class="hs-identifier hs-type">s</span></a></span></span><span> </span><span id="local-6989586621679134366"><span class="annot"><a href="#local-6989586621679134366"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-114"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Subtyping.html#Is"><span class="hs-identifier hs-type">Is</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134360"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Types.html#An_AffineFold"><span class="hs-identifier hs-type">An_AffineFold</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-115"></span><span>    </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Subtyping.html#Is"><span class="hs-identifier hs-type">Is</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134360"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Types.html#A_Setter"><span class="hs-identifier hs-type">A_Setter</span></a></span><span>
+</span><span id="line-116"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-117"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.html#Optic"><span class="hs-identifier hs-type">Optic</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134360"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134364"><span class="hs-identifier hs-type">is</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134365"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134365"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134366"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134366"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134366"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134366"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-119"></span><span>  </span><span class="annot"><a href="#local-6989586621679134365"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-120"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621679134365"><span class="hs-identifier hs-type">s</span></a></span><span>
+</span><span id="line-121"></span><span id="overPreview%27"><span class="annot"><span class="annottext">overPreview' :: forall k (is :: IxList) s a.
+(Is k An_AffineFold, Is k A_Setter) =&gt;
+Optic k is s s a a -&gt; (a -&gt; a) -&gt; s -&gt; Maybe s
+</span><a href="Todo.Utils.html#overPreview%27"><span class="hs-identifier hs-var hs-var">overPreview'</span></a></span></span><span> </span><span id="local-6989586621679134639"><span class="annot"><span class="annottext">Optic k is s s a a
+</span><a href="#local-6989586621679134639"><span class="hs-identifier hs-var">o</span></a></span></span><span> </span><span id="local-6989586621679134640"><span class="annot"><span class="annottext">a -&gt; a
+</span><a href="#local-6989586621679134640"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679134641"><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134641"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Optic k is s s a a -&gt; s -&gt; Maybe a
+forall k (is :: IxList) s a.
+Is k An_AffineFold =&gt;
+Optic' k is s a -&gt; s -&gt; Maybe a
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineFold.html#preview"><span class="hs-identifier hs-var">preview</span></a></span><span> </span><span class="annot"><span class="annottext">Optic k is s s a a
+</span><a href="#local-6989586621679134639"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134641"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-122"></span><span>  </span><span class="annot"><span class="annottext">Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe s
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-123"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679134642"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134642"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">s -&gt; Maybe s
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Optic k is s s a a -&gt; a -&gt; s -&gt; s
+forall k (is :: IxList) s t a b.
+Is k A_Setter =&gt;
+Optic k is s t a b -&gt; b -&gt; s -&gt; t
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Setter.html#set%27"><span class="hs-identifier hs-var">set'</span></a></span><span> </span><span class="annot"><span class="annottext">Optic k is s s a a
+</span><a href="#local-6989586621679134639"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; a
+</span><a href="#local-6989586621679134640"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134642"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134641"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-124"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Utils.html#overPreview%27"><span class="hs-pragma hs-type">overPreview'</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-125"></span><span>
+</span><span id="line-126"></span><span class="annot"><span class="hs-comment">-- | 'set'' with 'overPreview''.</span></span><span>
+</span><span id="line-127"></span><span id="local-6989586621679134383"><span id="local-6989586621679134384"><span id="local-6989586621679134385"><span id="local-6989586621679134386"><span class="annot"><a href="Todo.Utils.html#setPreview%27"><span class="hs-identifier hs-type">setPreview'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-128"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Subtyping.html#Is"><span class="hs-identifier hs-type">Is</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134383"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Types.html#An_AffineFold"><span class="hs-identifier hs-type">An_AffineFold</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-129"></span><span>    </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Subtyping.html#Is"><span class="hs-identifier hs-type">Is</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134383"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.Types.html#A_Setter"><span class="hs-identifier hs-type">A_Setter</span></a></span><span>
+</span><span id="line-130"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-131"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Internal.Optic.html#Optic"><span class="hs-identifier hs-type">Optic</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134383"><span class="hs-identifier hs-type">k</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134384"><span class="hs-identifier hs-type">is</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134385"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134385"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134386"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134386"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-132"></span><span>  </span><span class="annot"><a href="#local-6989586621679134386"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-133"></span><span>  </span><span class="annot"><a href="#local-6989586621679134385"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-134"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621679134385"><span class="hs-identifier hs-type">s</span></a></span></span></span></span></span><span>
+</span><span id="line-135"></span><span id="setPreview%27"><span class="annot"><span class="annottext">setPreview' :: forall k (is :: IxList) s a.
+(Is k An_AffineFold, Is k A_Setter) =&gt;
+Optic k is s s a a -&gt; a -&gt; s -&gt; Maybe s
+</span><a href="Todo.Utils.html#setPreview%27"><span class="hs-identifier hs-var hs-var">setPreview'</span></a></span></span><span> </span><span id="local-6989586621679134647"><span class="annot"><span class="annottext">Optic k is s s a a
+</span><a href="#local-6989586621679134647"><span class="hs-identifier hs-var">o</span></a></span></span><span> </span><span id="local-6989586621679134648"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134648"><span class="hs-identifier hs-var">newA</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Optic k is s s a a -&gt; (a -&gt; a) -&gt; s -&gt; Maybe s
+forall k (is :: IxList) s a.
+(Is k An_AffineFold, Is k A_Setter) =&gt;
+Optic k is s s a a -&gt; (a -&gt; a) -&gt; s -&gt; Maybe s
+</span><a href="Todo.Utils.html#overPreview%27"><span class="hs-identifier hs-var">overPreview'</span></a></span><span> </span><span class="annot"><span class="annottext">Optic k is s s a a
+</span><a href="#local-6989586621679134647"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134648"><span class="hs-identifier hs-var">newA</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-136"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Utils.html#setPreview%27"><span class="hs-pragma hs-type">setPreview'</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-137"></span><span>
+</span><span id="line-138"></span><span class="annot"><span class="hs-comment">-- | 'overPreviewNode'' that sets the field.</span></span><span>
+</span><span id="line-139"></span><span id="local-6989586621679134393"><span id="local-6989586621679134394"><span id="local-6989586621679134396"><span class="annot"><a href="Todo.Utils.html#setPreviewNode%27"><span class="hs-identifier hs-type">setPreviewNode'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-140"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineTraversal.html#AffineTraversal%27"><span class="hs-identifier hs-type">AffineTraversal'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134393"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134394"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-141"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Lens.html#Lens%27"><span class="hs-identifier hs-type">Lens'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134394"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134396"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-142"></span><span>  </span><span class="annot"><a href="#local-6989586621679134396"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-143"></span><span>  </span><span class="annot"><a href="#local-6989586621679134393"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-144"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#Tuple2"><span class="hs-identifier hs-type">Tuple2</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134393"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134394"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-145"></span><span id="setPreviewNode%27"><span class="annot"><span class="annottext">setPreviewNode' :: forall s a b.
+AffineTraversal' s a -&gt; Lens' a b -&gt; b -&gt; s -&gt; Maybe (Tuple2 s a)
+</span><a href="Todo.Utils.html#setPreviewNode%27"><span class="hs-identifier hs-var hs-var">setPreviewNode'</span></a></span></span><span> </span><span id="local-6989586621679134650"><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134650"><span class="hs-identifier hs-var">o1</span></a></span></span><span> </span><span id="local-6989586621679134651"><span class="annot"><span class="annottext">Lens' a b
+</span><a href="#local-6989586621679134651"><span class="hs-identifier hs-var">o2</span></a></span></span><span> </span><span id="local-6989586621679134652"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134652"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AffineTraversal' s a
+-&gt; Lens' a b -&gt; (b -&gt; b) -&gt; s -&gt; Maybe (Tuple2 s a)
+forall s a b.
+AffineTraversal' s a
+-&gt; Lens' a b -&gt; (b -&gt; b) -&gt; s -&gt; Maybe (Tuple2 s a)
+</span><a href="Todo.Utils.html#overPreviewNode%27"><span class="hs-identifier hs-var">overPreviewNode'</span></a></span><span> </span><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134650"><span class="hs-identifier hs-var">o1</span></a></span><span> </span><span class="annot"><span class="annottext">Lens' a b
+</span><a href="#local-6989586621679134651"><span class="hs-identifier hs-var">o2</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">b -&gt; b -&gt; b
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134652"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span class="hs-comment">-- | Like 'overPreview'', except we also return the updated &quot;inner node&quot;,</span><span>
+</span><span id="line-148"></span><span class="hs-comment">-- if the update succeeds.</span><span>
+</span><span id="line-149"></span><span class="annot"><a href="Todo.Utils.html#overPreviewNode%27"><span class="hs-identifier hs-type">overPreviewNode'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-150"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134402"><span class="annot"><a href="#local-6989586621679134402"><span class="hs-identifier hs-type">s</span></a></span></span><span> </span><span id="local-6989586621679134403"><span class="annot"><a href="#local-6989586621679134403"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679134404"><span class="annot"><a href="#local-6989586621679134404"><span class="hs-identifier hs-type">b</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-151"></span><span>  </span><span class="annot"><span class="hs-comment">-- | AffineTraversal from a &quot;root type&quot; @s@ to node @a@.</span></span><span>
+</span><span id="line-152"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineTraversal.html#AffineTraversal%27"><span class="hs-identifier hs-type">AffineTraversal'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134402"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134403"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-153"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Lens from node @a@ to leaf @l@.</span></span><span>
+</span><span id="line-154"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Lens.html#Lens%27"><span class="hs-identifier hs-type">Lens'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134403"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134404"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-155"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Leaf modifier.</span></span><span>
+</span><span id="line-156"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134404"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134404"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-157"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Root to modify.</span></span><span>
+</span><span id="line-158"></span><span>  </span><span class="annot"><a href="#local-6989586621679134402"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-159"></span><span>  </span><span class="annot"><span class="hs-comment">-- | The new root @s'@ and inner node @a'@, if the update was successful.</span></span><span>
+</span><span id="line-160"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#Tuple2"><span class="hs-identifier hs-type">Tuple2</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134402"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134403"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-161"></span><span id="overPreviewNode%27"><span class="annot"><span class="annottext">overPreviewNode' :: forall s a b.
+AffineTraversal' s a
+-&gt; Lens' a b -&gt; (b -&gt; b) -&gt; s -&gt; Maybe (Tuple2 s a)
+</span><a href="Todo.Utils.html#overPreviewNode%27"><span class="hs-identifier hs-var hs-var">overPreviewNode'</span></a></span></span><span> </span><span id="local-6989586621679134661"><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134661"><span class="hs-identifier hs-var">rootToNode</span></a></span></span><span> </span><span id="local-6989586621679134662"><span class="annot"><span class="annottext">Lens' a b
+</span><a href="#local-6989586621679134662"><span class="hs-identifier hs-var">nodeToLeaf</span></a></span></span><span> </span><span id="local-6989586621679134663"><span class="annot"><span class="annottext">b -&gt; b
+</span><a href="#local-6989586621679134663"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679134664"><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134664"><span class="hs-identifier hs-var">root</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">AffineTraversal' s a -&gt; s -&gt; Maybe a
+forall k (is :: IxList) s a.
+Is k An_AffineFold =&gt;
+Optic' k is s a -&gt; s -&gt; Maybe a
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineFold.html#preview"><span class="hs-identifier hs-var">preview</span></a></span><span> </span><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134661"><span class="hs-identifier hs-var">rootToNode</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134664"><span class="hs-identifier hs-var">root</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-162"></span><span>  </span><span class="annot"><span class="annottext">Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe (Tuple2 s a)
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-163"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679134665"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134665"><span class="hs-identifier hs-var">node</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-164"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679134666"><span class="annot"><span class="annottext">leaf :: b
+</span><a href="#local-6989586621679134666"><span class="hs-identifier hs-var hs-var">leaf</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Lens' a b -&gt; a -&gt; b
+forall k (is :: IxList) s a.
+Is k A_Getter =&gt;
+Optic' k is s a -&gt; s -&gt; a
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Getter.html#view"><span class="hs-identifier hs-var">view</span></a></span><span> </span><span class="annot"><span class="annottext">Lens' a b
+</span><a href="#local-6989586621679134662"><span class="hs-identifier hs-var">nodeToLeaf</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134665"><span class="hs-identifier hs-var">node</span></a></span><span>
+</span><span id="line-165"></span><span>        </span><span id="local-6989586621679134668"><span class="annot"><span class="annottext">leaf' :: b
+</span><a href="#local-6989586621679134668"><span class="hs-identifier hs-var hs-var">leaf'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b -&gt; b
+</span><a href="#local-6989586621679134663"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134666"><span class="hs-identifier hs-var">leaf</span></a></span><span>
+</span><span id="line-166"></span><span>        </span><span id="local-6989586621679134669"><span class="annot"><span class="annottext">node' :: a
+</span><a href="#local-6989586621679134669"><span class="hs-identifier hs-var hs-var">node'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Lens' a b -&gt; b -&gt; a -&gt; a
+forall k (is :: IxList) s t a b.
+Is k A_Setter =&gt;
+Optic k is s t a b -&gt; b -&gt; s -&gt; t
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Setter.html#set%27"><span class="hs-identifier hs-var">set'</span></a></span><span> </span><span class="annot"><span class="annottext">Lens' a b
+</span><a href="#local-6989586621679134662"><span class="hs-identifier hs-var">nodeToLeaf</span></a></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134668"><span class="hs-identifier hs-var">leaf'</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134665"><span class="hs-identifier hs-var">node</span></a></span><span>
+</span><span id="line-167"></span><span>     </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Tuple2 s a -&gt; Maybe (Tuple2 s a)
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AffineTraversal' s a -&gt; a -&gt; s -&gt; s
+forall k (is :: IxList) s t a b.
+Is k A_Setter =&gt;
+Optic k is s t a b -&gt; b -&gt; s -&gt; t
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Setter.html#set%27"><span class="hs-identifier hs-var">set'</span></a></span><span> </span><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134661"><span class="hs-identifier hs-var">rootToNode</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134669"><span class="hs-identifier hs-var">node'</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134664"><span class="hs-identifier hs-var">root</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134669"><span class="hs-identifier hs-var">node'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-168"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Utils.html#overPreviewNode%27"><span class="hs-pragma hs-type">overPreviewNode'</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-169"></span><span>
+</span><span id="line-170"></span><span id="local-6989586621679134415"><span id="local-6989586621679134416"><span id="local-6989586621679134417"><span class="annot"><a href="Todo.Utils.html#setPreviewPartialNode%27"><span class="hs-identifier hs-type">setPreviewPartialNode'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-171"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineTraversal.html#AffineTraversal%27"><span class="hs-identifier hs-type">AffineTraversal'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134415"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134416"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-172"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineTraversal.html#AffineTraversal%27"><span class="hs-identifier hs-type">AffineTraversal'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134416"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134417"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-173"></span><span>  </span><span class="annot"><a href="#local-6989586621679134417"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-174"></span><span>  </span><span class="annot"><a href="#local-6989586621679134415"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-175"></span><span>  </span><span class="annot"><a href="Todo.Utils.html#MatchResult"><span class="hs-identifier hs-type">MatchResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134415"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134416"><span class="hs-identifier hs-type">a</span></a></span></span></span></span><span>
+</span><span id="line-176"></span><span id="setPreviewPartialNode%27"><span class="annot"><span class="annottext">setPreviewPartialNode' :: forall s a b.
+AffineTraversal' s a
+-&gt; AffineTraversal' a b -&gt; b -&gt; s -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#setPreviewPartialNode%27"><span class="hs-identifier hs-var hs-var">setPreviewPartialNode'</span></a></span></span><span> </span><span id="local-6989586621679134670"><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134670"><span class="hs-identifier hs-var">rootToNode</span></a></span></span><span> </span><span id="local-6989586621679134671"><span class="annot"><span class="annottext">AffineTraversal' a b
+</span><a href="#local-6989586621679134671"><span class="hs-identifier hs-var">nodeToLeaf</span></a></span></span><span> </span><span id="local-6989586621679134672"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134672"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-177"></span><span>  </span><span class="annot"><span class="annottext">AffineTraversal' s a
+-&gt; AffineTraversal' a b -&gt; (b -&gt; b) -&gt; s -&gt; MatchResult s a
+forall s a b.
+AffineTraversal' s a
+-&gt; AffineTraversal' a b -&gt; (b -&gt; b) -&gt; s -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#overPreviewPartialNode%27"><span class="hs-identifier hs-var">overPreviewPartialNode'</span></a></span><span> </span><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134670"><span class="hs-identifier hs-var">rootToNode</span></a></span><span> </span><span class="annot"><span class="annottext">AffineTraversal' a b
+</span><a href="#local-6989586621679134671"><span class="hs-identifier hs-var">nodeToLeaf</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">b -&gt; b -&gt; b
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134672"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-178"></span><span>
+</span><span id="line-179"></span><span class="hs-comment">-- | Like 'overPreviewNode'', except the inner optic is an AffineTraversal,</span><span>
+</span><span id="line-180"></span><span class="hs-comment">-- not a Lens. The overall AffineTraversal is split so that we can</span><span>
+</span><span id="line-181"></span><span class="hs-comment">-- distinguish between a complete failure ('MatchFailure') and a partial</span><span>
+</span><span id="line-182"></span><span class="hs-comment">-- failures ('MatchParial').</span><span>
+</span><span id="line-183"></span><span class="hs-comment">--</span><span>
+</span><span id="line-184"></span><span class="hs-comment">-- This is used, for instance, to distinguish between:</span><span>
+</span><span id="line-185"></span><span class="hs-comment">--</span><span>
+</span><span id="line-186"></span><span class="hs-comment">--   - Failing to find a Task given a TaskId.</span><span>
+</span><span id="line-187"></span><span class="hs-comment">--   - Finding a TaskGroup with the TaskId when we wanted a SingleTask.</span><span>
+</span><span id="line-188"></span><span class="hs-comment">--</span><span>
+</span><span id="line-189"></span><span class="hs-comment">-- for the purposes of giving a better error message.</span><span>
+</span><span id="line-190"></span><span class="annot"><a href="Todo.Utils.html#overPreviewPartialNode%27"><span class="hs-identifier hs-type">overPreviewPartialNode'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-191"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134422"><span class="annot"><a href="#local-6989586621679134422"><span class="hs-identifier hs-type">s</span></a></span></span><span> </span><span id="local-6989586621679134423"><span class="annot"><a href="#local-6989586621679134423"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679134424"><span class="annot"><a href="#local-6989586621679134424"><span class="hs-identifier hs-type">b</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-192"></span><span>  </span><span class="annot"><span class="hs-comment">-- | AffineTraversal from a &quot;root type&quot; @s@ to node @a@.</span></span><span>
+</span><span id="line-193"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineTraversal.html#AffineTraversal%27"><span class="hs-identifier hs-type">AffineTraversal'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134422"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134423"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-194"></span><span>  </span><span class="annot"><span class="hs-comment">-- | AffineTraversal from node @a@ to leaf @l@.</span></span><span>
+</span><span id="line-195"></span><span>  </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineTraversal.html#AffineTraversal%27"><span class="hs-identifier hs-type">AffineTraversal'</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134423"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134424"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-196"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Leaf modifier.</span></span><span>
+</span><span id="line-197"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134424"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134424"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-198"></span><span>  </span><span class="annot"><span class="hs-comment">-- | Root to modify.</span></span><span>
+</span><span id="line-199"></span><span>  </span><span class="annot"><a href="#local-6989586621679134422"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-200"></span><span>  </span><span class="annot"><span class="hs-comment">-- | The new root @s'@ and inner node @a'@, if the update was successful.</span></span><span>
+</span><span id="line-201"></span><span>  </span><span class="annot"><a href="Todo.Utils.html#MatchResult"><span class="hs-identifier hs-type">MatchResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134422"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134423"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-202"></span><span id="overPreviewPartialNode%27"><span class="annot"><span class="annottext">overPreviewPartialNode' :: forall s a b.
+AffineTraversal' s a
+-&gt; AffineTraversal' a b -&gt; (b -&gt; b) -&gt; s -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#overPreviewPartialNode%27"><span class="hs-identifier hs-var hs-var">overPreviewPartialNode'</span></a></span></span><span> </span><span id="local-6989586621679134678"><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134678"><span class="hs-identifier hs-var">rootToNode</span></a></span></span><span> </span><span id="local-6989586621679134679"><span class="annot"><span class="annottext">AffineTraversal' a b
+</span><a href="#local-6989586621679134679"><span class="hs-identifier hs-var">nodeToLeaf</span></a></span></span><span> </span><span id="local-6989586621679134680"><span class="annot"><span class="annottext">b -&gt; b
+</span><a href="#local-6989586621679134680"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679134681"><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134681"><span class="hs-identifier hs-var">root</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">AffineTraversal' s a -&gt; s -&gt; Maybe a
+forall k (is :: IxList) s a.
+Is k An_AffineFold =&gt;
+Optic' k is s a -&gt; s -&gt; Maybe a
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineFold.html#preview"><span class="hs-identifier hs-var">preview</span></a></span><span> </span><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134678"><span class="hs-identifier hs-var">rootToNode</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134681"><span class="hs-identifier hs-var">root</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-203"></span><span>  </span><span class="annot"><span class="annottext">Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MatchResult s a
+forall s a. MatchResult s a
+</span><a href="Todo.Utils.html#MatchFailure"><span class="hs-identifier hs-var">MatchFailure</span></a></span><span>
+</span><span id="line-204"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679134682"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134682"><span class="hs-identifier hs-var">node</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">AffineTraversal' a b -&gt; a -&gt; Maybe b
+forall k (is :: IxList) s a.
+Is k An_AffineFold =&gt;
+Optic' k is s a -&gt; s -&gt; Maybe a
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.AffineFold.html#preview"><span class="hs-identifier hs-var">preview</span></a></span><span> </span><span class="annot"><span class="annottext">AffineTraversal' a b
+</span><a href="#local-6989586621679134679"><span class="hs-identifier hs-var">nodeToLeaf</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134682"><span class="hs-identifier hs-var">node</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-205"></span><span>    </span><span class="annot"><span class="annottext">Maybe b
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a -&gt; MatchResult s a
+forall s a. a -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#MatchPartial"><span class="hs-identifier hs-var">MatchPartial</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134682"><span class="hs-identifier hs-var">node</span></a></span><span>
+</span><span id="line-206"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679134684"><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134684"><span class="hs-identifier hs-var">leaf</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-207"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679134685"><span class="annot"><span class="annottext">leaf' :: b
+</span><a href="#local-6989586621679134685"><span class="hs-identifier hs-var hs-var">leaf'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">b -&gt; b
+</span><a href="#local-6989586621679134680"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134684"><span class="hs-identifier hs-var">leaf</span></a></span><span>
+</span><span id="line-208"></span><span>          </span><span id="local-6989586621679134686"><span class="annot"><span class="annottext">node' :: a
+</span><a href="#local-6989586621679134686"><span class="hs-identifier hs-var hs-var">node'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AffineTraversal' a b -&gt; b -&gt; a -&gt; a
+forall k (is :: IxList) s t a b.
+Is k A_Setter =&gt;
+Optic k is s t a b -&gt; b -&gt; s -&gt; t
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Setter.html#set%27"><span class="hs-identifier hs-var">set'</span></a></span><span> </span><span class="annot"><span class="annottext">AffineTraversal' a b
+</span><a href="#local-6989586621679134679"><span class="hs-identifier hs-var">nodeToLeaf</span></a></span><span> </span><span class="annot"><span class="annottext">b
+</span><a href="#local-6989586621679134685"><span class="hs-identifier hs-var">leaf'</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134682"><span class="hs-identifier hs-var">node</span></a></span><span>
+</span><span id="line-209"></span><span>       </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">s -&gt; a -&gt; MatchResult s a
+forall s a. s -&gt; a -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#MatchSuccess"><span class="hs-identifier hs-var">MatchSuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AffineTraversal' s a -&gt; a -&gt; s -&gt; s
+forall k (is :: IxList) s t a b.
+Is k A_Setter =&gt;
+Optic k is s t a b -&gt; b -&gt; s -&gt; t
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Setter.html#set%27"><span class="hs-identifier hs-var">set'</span></a></span><span> </span><span class="annot"><span class="annottext">AffineTraversal' s a
+</span><a href="#local-6989586621679134678"><span class="hs-identifier hs-var">rootToNode</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134686"><span class="hs-identifier hs-var">node'</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134681"><span class="hs-identifier hs-var">root</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134686"><span class="hs-identifier hs-var">node'</span></a></span><span>
+</span><span id="line-210"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Utils.html#overPreviewPartialNode%27"><span class="hs-pragma hs-type">overPreviewPartialNode'</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-211"></span><span>
+</span><span id="line-212"></span><span class="annot"><span class="hs-comment">-- | Optics matching result.</span></span><span>
+</span><span id="line-213"></span><span class="hs-keyword">data</span><span> </span><span id="MatchResult"><span class="annot"><a href="Todo.Utils.html#MatchResult"><span class="hs-identifier hs-var">MatchResult</span></a></span></span><span> </span><span id="local-6989586621679134428"><span class="annot"><a href="#local-6989586621679134428"><span class="hs-identifier hs-type">s</span></a></span></span><span> </span><span id="local-6989586621679134429"><span class="annot"><a href="#local-6989586621679134429"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-214"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-comment">-- | Match completed failed.</span></span><span>
+</span><span id="line-215"></span><span>    </span><span id="MatchFailure"><span class="annot"><a href="Todo.Utils.html#MatchFailure"><span class="hs-identifier hs-var">MatchFailure</span></a></span></span><span>
+</span><span id="line-216"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | Match &quot;partially&quot; succeeded (context-dependent).</span></span><span>
+</span><span id="line-217"></span><span>    </span><span id="MatchPartial"><span class="annot"><a href="Todo.Utils.html#MatchPartial"><span class="hs-identifier hs-var">MatchPartial</span></a></span></span><span> </span><span class="annot"><a href="#local-6989586621679134429"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-218"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | Match completely succeeded.</span></span><span>
+</span><span id="line-219"></span><span>    </span><span id="MatchSuccess"><span class="annot"><a href="Todo.Utils.html#MatchSuccess"><span class="hs-identifier hs-var">MatchSuccess</span></a></span></span><span> </span><span class="annot"><a href="#local-6989586621679134428"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134429"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-220"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679134691"><span id="local-6989586621679134696"><span class="annot"><span class="annottext">MatchResult s a -&gt; MatchResult s a -&gt; Bool
+(MatchResult s a -&gt; MatchResult s a -&gt; Bool)
+-&gt; (MatchResult s a -&gt; MatchResult s a -&gt; Bool)
+-&gt; Eq (MatchResult s a)
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+forall s a.
+(Eq s, Eq a) =&gt;
+MatchResult s a -&gt; MatchResult s a -&gt; Bool
+$c== :: forall s a.
+(Eq s, Eq a) =&gt;
+MatchResult s a -&gt; MatchResult s a -&gt; Bool
+== :: MatchResult s a -&gt; MatchResult s a -&gt; Bool
+$c/= :: forall s a.
+(Eq s, Eq a) =&gt;
+MatchResult s a -&gt; MatchResult s a -&gt; Bool
+/= :: MatchResult s a -&gt; MatchResult s a -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679134703"><span id="local-6989586621679134711"><span id="local-6989586621679134715"><span class="annot"><span class="annottext">Int -&gt; MatchResult s a -&gt; ShowS
+[MatchResult s a] -&gt; ShowS
+MatchResult s a -&gt; String
+(Int -&gt; MatchResult s a -&gt; ShowS)
+-&gt; (MatchResult s a -&gt; String)
+-&gt; ([MatchResult s a] -&gt; ShowS)
+-&gt; Show (MatchResult s a)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall s a. (Show s, Show a) =&gt; Int -&gt; MatchResult s a -&gt; ShowS
+forall s a. (Show s, Show a) =&gt; [MatchResult s a] -&gt; ShowS
+forall s a. (Show s, Show a) =&gt; MatchResult s a -&gt; String
+$cshowsPrec :: forall s a. (Show s, Show a) =&gt; Int -&gt; MatchResult s a -&gt; ShowS
+showsPrec :: Int -&gt; MatchResult s a -&gt; ShowS
+$cshow :: forall s a. (Show s, Show a) =&gt; MatchResult s a -&gt; String
+show :: MatchResult s a -&gt; String
+$cshowList :: forall s a. (Show s, Show a) =&gt; [MatchResult s a] -&gt; ShowS
+showList :: [MatchResult s a] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-221"></span><span>
+</span><span id="line-222"></span><span id="local-6989586621679134441"><span id="local-6989586621679134442"><span class="annot"><a href="Todo.Utils.html#_MatchFailure"><span class="hs-identifier hs-type">_MatchFailure</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#Prism%27"><span class="hs-identifier hs-type">Prism'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Utils.html#MatchResult"><span class="hs-identifier hs-type">MatchResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134441"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134442"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-223"></span><span id="_MatchFailure"><span class="annot"><span class="annottext">_MatchFailure :: forall s a. Prism' (MatchResult s a) ()
+</span><a href="Todo.Utils.html#_MatchFailure"><span class="hs-identifier hs-var hs-var">_MatchFailure</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-224"></span><span>  </span><span class="annot"><span class="annottext">(() -&gt; MatchResult s a)
+-&gt; (MatchResult s a -&gt; Either (MatchResult s a) ())
+-&gt; Prism (MatchResult s a) (MatchResult s a) () ()
+forall b t s a. (b -&gt; t) -&gt; (s -&gt; Either t a) -&gt; Prism s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#prism"><span class="hs-identifier hs-var">prism</span></a></span><span>
+</span><span id="line-225"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">MatchResult s a -&gt; () -&gt; MatchResult s a
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">MatchResult s a
+forall s a. MatchResult s a
+</span><a href="Todo.Utils.html#MatchFailure"><span class="hs-identifier hs-var">MatchFailure</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-226"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-227"></span><span>        </span><span class="annot"><a href="Todo.Utils.html#MatchSuccess"><span class="hs-identifier hs-type">MatchSuccess</span></a></span><span> </span><span id="local-6989586621679134719"><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134719"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679134720"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134720"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MatchResult s a -&gt; Either (MatchResult s a) ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(MatchResult s a -&gt; Either (MatchResult s a) ())
+-&gt; MatchResult s a -&gt; Either (MatchResult s a) ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">s -&gt; a -&gt; MatchResult s a
+forall s a. s -&gt; a -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#MatchSuccess"><span class="hs-identifier hs-var">MatchSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134719"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134720"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-228"></span><span>        </span><span class="annot"><a href="Todo.Utils.html#MatchPartial"><span class="hs-identifier hs-type">MatchPartial</span></a></span><span> </span><span id="local-6989586621679134721"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134721"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MatchResult s a -&gt; Either (MatchResult s a) ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(MatchResult s a -&gt; Either (MatchResult s a) ())
+-&gt; MatchResult s a -&gt; Either (MatchResult s a) ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; MatchResult s a
+forall s a. a -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#MatchPartial"><span class="hs-identifier hs-var">MatchPartial</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134721"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-229"></span><span>        </span><span class="annot"><span class="annottext">MatchResult s a
+</span><a href="Todo.Utils.html#MatchFailure"><span class="hs-identifier hs-var">MatchFailure</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Either (MatchResult s a) ()
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-230"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-231"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Utils.html#_MatchFailure"><span class="hs-pragma hs-type">_MatchFailure</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-232"></span><span>
+</span><span id="line-233"></span><span id="local-6989586621679134457"><span id="local-6989586621679134458"><span class="annot"><a href="Todo.Utils.html#_MatchPartial"><span class="hs-identifier hs-type">_MatchPartial</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#Prism%27"><span class="hs-identifier hs-type">Prism'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Utils.html#MatchResult"><span class="hs-identifier hs-type">MatchResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134457"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134458"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679134458"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-234"></span><span id="_MatchPartial"><span class="annot"><span class="annottext">_MatchPartial :: forall s a. Prism' (MatchResult s a) a
+</span><a href="Todo.Utils.html#_MatchPartial"><span class="hs-identifier hs-var hs-var">_MatchPartial</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-235"></span><span>  </span><span class="annot"><span class="annottext">(a -&gt; MatchResult s a)
+-&gt; (MatchResult s a -&gt; Either (MatchResult s a) a)
+-&gt; Prism (MatchResult s a) (MatchResult s a) a a
+forall b t s a. (b -&gt; t) -&gt; (s -&gt; Either t a) -&gt; Prism s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#prism"><span class="hs-identifier hs-var">prism</span></a></span><span>
+</span><span id="line-236"></span><span>    </span><span class="annot"><span class="annottext">a -&gt; MatchResult s a
+forall s a. a -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#MatchPartial"><span class="hs-identifier hs-var">MatchPartial</span></a></span><span>
+</span><span id="line-237"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-238"></span><span>        </span><span class="annot"><a href="Todo.Utils.html#MatchSuccess"><span class="hs-identifier hs-type">MatchSuccess</span></a></span><span> </span><span id="local-6989586621679134722"><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134722"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679134723"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134723"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MatchResult s a -&gt; Either (MatchResult s a) a
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(MatchResult s a -&gt; Either (MatchResult s a) a)
+-&gt; MatchResult s a -&gt; Either (MatchResult s a) a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">s -&gt; a -&gt; MatchResult s a
+forall s a. s -&gt; a -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#MatchSuccess"><span class="hs-identifier hs-var">MatchSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134722"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134723"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-239"></span><span>        </span><span class="annot"><a href="Todo.Utils.html#MatchPartial"><span class="hs-identifier hs-type">MatchPartial</span></a></span><span> </span><span id="local-6989586621679134724"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134724"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MatchResult s a -&gt; Either (MatchResult s a) a
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(MatchResult s a -&gt; Either (MatchResult s a) a)
+-&gt; MatchResult s a -&gt; Either (MatchResult s a) a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; MatchResult s a
+forall s a. a -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#MatchPartial"><span class="hs-identifier hs-var">MatchPartial</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134724"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-240"></span><span>        </span><span class="annot"><span class="annottext">MatchResult s a
+</span><a href="Todo.Utils.html#MatchFailure"><span class="hs-identifier hs-var">MatchFailure</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MatchResult s a -&gt; Either (MatchResult s a) a
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">MatchResult s a
+forall s a. MatchResult s a
+</span><a href="Todo.Utils.html#MatchFailure"><span class="hs-identifier hs-var">MatchFailure</span></a></span><span>
+</span><span id="line-241"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-242"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Utils.html#_MatchPartial"><span class="hs-pragma hs-type">_MatchPartial</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-243"></span><span>
+</span><span id="line-244"></span><span id="local-6989586621679134461"><span id="local-6989586621679134462"><span id="local-6989586621679134463"><span class="annot"><a href="Todo.Utils.html#_MatchSuccess"><span class="hs-identifier hs-type">_MatchSuccess</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#Prism"><span class="hs-identifier hs-type">Prism</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Utils.html#MatchResult"><span class="hs-identifier hs-type">MatchResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134461"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134462"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Utils.html#MatchResult"><span class="hs-identifier hs-type">MatchResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134463"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134462"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#Tuple2"><span class="hs-identifier hs-type">Tuple2</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134461"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134462"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#Tuple2"><span class="hs-identifier hs-type">Tuple2</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134463"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134462"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-245"></span><span id="_MatchSuccess"><span class="annot"><span class="annottext">_MatchSuccess :: forall s a t.
+Prism (MatchResult s a) (MatchResult t a) (Tuple2 s a) (Tuple2 t a)
+</span><a href="Todo.Utils.html#_MatchSuccess"><span class="hs-identifier hs-var hs-var">_MatchSuccess</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-246"></span><span>  </span><span class="annot"><span class="annottext">(Tuple2 t a -&gt; MatchResult t a)
+-&gt; (MatchResult s a -&gt; Either (MatchResult t a) (Tuple2 s a))
+-&gt; Prism
+     (MatchResult s a) (MatchResult t a) (Tuple2 s a) (Tuple2 t a)
+forall b t s a. (b -&gt; t) -&gt; (s -&gt; Either t a) -&gt; Prism s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#prism"><span class="hs-identifier hs-var">prism</span></a></span><span>
+</span><span id="line-247"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(t -&gt; a -&gt; MatchResult t a) -&gt; Tuple2 t a -&gt; MatchResult t a
+forall a b c. (a -&gt; b -&gt; c) -&gt; (a, b) -&gt; c
+</span><span class="hs-identifier hs-var">uncurry</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; a -&gt; MatchResult t a
+forall s a. s -&gt; a -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#MatchSuccess"><span class="hs-identifier hs-var">MatchSuccess</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-248"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-249"></span><span>        </span><span class="annot"><a href="Todo.Utils.html#MatchSuccess"><span class="hs-identifier hs-type">MatchSuccess</span></a></span><span> </span><span id="local-6989586621679134726"><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134726"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621679134727"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134727"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tuple2 s a -&gt; Either (MatchResult t a) (Tuple2 s a)
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">s
+</span><a href="#local-6989586621679134726"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134727"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-250"></span><span>        </span><span class="annot"><a href="Todo.Utils.html#MatchPartial"><span class="hs-identifier hs-type">MatchPartial</span></a></span><span> </span><span id="local-6989586621679134728"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134728"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MatchResult t a -&gt; Either (MatchResult t a) (Tuple2 s a)
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(MatchResult t a -&gt; Either (MatchResult t a) (Tuple2 s a))
+-&gt; MatchResult t a -&gt; Either (MatchResult t a) (Tuple2 s a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; MatchResult t a
+forall s a. a -&gt; MatchResult s a
+</span><a href="Todo.Utils.html#MatchPartial"><span class="hs-identifier hs-var">MatchPartial</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134728"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-251"></span><span>        </span><span class="annot"><span class="annottext">MatchResult s a
+</span><a href="Todo.Utils.html#MatchFailure"><span class="hs-identifier hs-var">MatchFailure</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MatchResult t a -&gt; Either (MatchResult t a) (Tuple2 s a)
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">MatchResult t a
+forall s a. MatchResult s a
+</span><a href="Todo.Utils.html#MatchFailure"><span class="hs-identifier hs-var">MatchFailure</span></a></span><span>
+</span><span id="line-252"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-253"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Utils.html#_MatchSuccess"><span class="hs-pragma hs-type">_MatchSuccess</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-254"></span><span>
+</span><span id="line-255"></span><span class="annot"><span class="hs-comment">-- | Traversal for any Traversable.</span></span><span>
+</span><span id="line-256"></span><span id="local-6989586621679134470"><span id="local-6989586621679134471"><span id="local-6989586621679134472"><span class="annot"><a href="Todo.Utils.html#traversal"><span class="hs-identifier hs-type">traversal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Traversable</span></span><span> </span><span class="annot"><a href="#local-6989586621679134470"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#Traversal"><span class="hs-identifier hs-type">Traversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134470"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134471"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134470"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134472"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679134471"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134472"><span class="hs-identifier hs-type">b</span></a></span></span></span></span><span>
+</span><span id="line-257"></span><span id="traversal"><span class="annot"><span class="annottext">traversal :: forall (f :: * -&gt; *) a b.
+Traversable f =&gt;
+Traversal (f a) (f b) a b
+</span><a href="Todo.Utils.html#traversal"><span class="hs-identifier hs-var hs-var">traversal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TraversalVL (f a) (f b) a b -&gt; Traversal (f a) (f b) a b
+forall s t a b. TraversalVL s t a b -&gt; Traversal s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#traversalVL"><span class="hs-identifier hs-var">traversalVL</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; f b) -&gt; f a -&gt; f (f b)
+TraversalVL (f a) (f b) a b
+forall (t :: * -&gt; *) (f :: * -&gt; *) a b.
+(Traversable t, Applicative f) =&gt;
+(a -&gt; f b) -&gt; t a -&gt; f (t b)
+forall (f :: * -&gt; *) a b.
+Applicative f =&gt;
+(a -&gt; f b) -&gt; f a -&gt; f (f b)
+</span><span class="hs-identifier hs-var">traverse</span></span><span>
+</span><span id="line-258"></span><span>
+</span><span id="line-259"></span><span id="local-6989586621679134487"><span id="local-6989586621679134489"><span class="annot"><a href="Todo.Utils.html#listTraversal"><span class="hs-identifier hs-type">listTraversal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#Traversal"><span class="hs-identifier hs-type">Traversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#List"><span class="hs-identifier hs-type">List</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134487"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#List"><span class="hs-identifier hs-type">List</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134489"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679134487"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134489"><span class="hs-identifier hs-type">b</span></a></span></span></span><span>
+</span><span id="line-260"></span><span id="listTraversal"><span class="annot"><span class="annottext">listTraversal :: forall a b. Traversal (List a) (List b) a b
+</span><a href="Todo.Utils.html#listTraversal"><span class="hs-identifier hs-var hs-var">listTraversal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; Bool) -&gt; Traversal (List a) (List b) a b
+forall a b. (a -&gt; Bool) -&gt; Traversal (List a) (List b) a b
+</span><a href="Todo.Utils.html#listPredTraversal"><span class="hs-identifier hs-var">listPredTraversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; a -&gt; Bool
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span>
+</span><span id="line-261"></span><span>
+</span><span id="line-262"></span><span class="annot"><a href="Todo.Utils.html#listPredTraversal"><span class="hs-identifier hs-type">listPredTraversal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134492"><span class="annot"><a href="#local-6989586621679134492"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679134493"><span class="annot"><a href="#local-6989586621679134493"><span class="hs-identifier hs-type">b</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134492"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#Traversal"><span class="hs-identifier hs-type">Traversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#List"><span class="hs-identifier hs-type">List</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134492"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#List"><span class="hs-identifier hs-type">List</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134493"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679134492"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134493"><span class="hs-identifier hs-type">b</span></a></span><span>
+</span><span id="line-263"></span><span id="listPredTraversal"><span class="annot"><span class="annottext">listPredTraversal :: forall a b. (a -&gt; Bool) -&gt; Traversal (List a) (List b) a b
+</span><a href="Todo.Utils.html#listPredTraversal"><span class="hs-identifier hs-var hs-var">listPredTraversal</span></a></span></span><span> </span><span id="local-6989586621679134735"><span class="annot"><span class="annottext">a -&gt; Bool
+</span><a href="#local-6989586621679134735"><span class="hs-identifier hs-var">pred</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TraversalVL (List a) (List b) a b
+-&gt; Traversal (List a) (List b) a b
+forall s t a b. TraversalVL s t a b -&gt; Traversal s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#traversalVL"><span class="hs-identifier hs-var">traversalVL</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; f b) -&gt; List a -&gt; f (List b)
+TraversalVL (List a) (List b) a b
+</span><a href="#local-6989586621679134736"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-264"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-265"></span><span>    </span><span class="hs-comment">--</span><span>
+</span><span id="line-266"></span><span>    </span><span class="annot"><a href="#local-6989586621679134736"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134739"><span class="annot"><a href="#local-6989586621679134739"><span class="hs-identifier hs-type">f</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="#local-6989586621679134739"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134492"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134739"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134493"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Prelude.html#List"><span class="hs-identifier hs-type">List</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134492"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134739"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Prelude.html#List"><span class="hs-identifier hs-type">List</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134493"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-267"></span><span>    </span><span id="local-6989586621679134736"><span class="annot"><span class="annottext">f :: TraversalVL (List a) (List b) a b
+</span><a href="#local-6989586621679134736"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679134745"><span class="annot"><span class="annottext">a -&gt; f b
+</span><a href="#local-6989586621679134745"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">List a -&gt; f (List b)
+</span><a href="#local-6989586621679134746"><span class="hs-identifier hs-var">go</span></a></span><span>
+</span><span id="line-268"></span><span>      </span><span class="hs-keyword">where</span><span>
+</span><span id="line-269"></span><span>        </span><span id="local-6989586621679134746"><span class="annot"><span class="annottext">go :: List a -&gt; f (List b)
+</span><a href="#local-6989586621679134746"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">List b -&gt; f (List b)
+forall a. a -&gt; f a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-270"></span><span>        </span><span class="annot"><a href="#local-6989586621679134746"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679134747"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134747"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679134748"><span class="annot"><span class="annottext">List a
+</span><a href="#local-6989586621679134748"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-271"></span><span>          </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">a -&gt; Bool
+</span><a href="#local-6989586621679134735"><span class="hs-identifier hs-var">pred</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134747"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-272"></span><span>            </span><span class="hs-keyword">then</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">:</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(b -&gt; List b -&gt; List b) -&gt; f b -&gt; f (List b -&gt; List b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; f b
+</span><a href="#local-6989586621679134745"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134747"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">f (List b -&gt; List b) -&gt; f (List b) -&gt; f (List b)
+forall a b. f (a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">List a -&gt; f (List b)
+</span><a href="#local-6989586621679134746"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">List a
+</span><a href="#local-6989586621679134748"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-273"></span><span>            </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">List a -&gt; f (List b)
+</span><a href="#local-6989586621679134746"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">List a
+</span><a href="#local-6989586621679134748"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-274"></span><span>
+</span><span id="line-275"></span><span id="local-6989586621679134500"><span id="local-6989586621679134501"><span class="annot"><a href="Todo.Utils.html#seqTraversal"><span class="hs-identifier hs-type">seqTraversal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#Traversal"><span class="hs-identifier hs-type">Traversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679134500"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679134501"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679134500"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134501"><span class="hs-identifier hs-type">b</span></a></span></span></span><span>
+</span><span id="line-276"></span><span id="seqTraversal"><span class="annot"><span class="annottext">seqTraversal :: forall a b. Traversal (Seq a) (Seq b) a b
+</span><a href="Todo.Utils.html#seqTraversal"><span class="hs-identifier hs-var hs-var">seqTraversal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; Bool) -&gt; Traversal (Seq a) (Seq b) a b
+forall a b. (a -&gt; Bool) -&gt; Traversal (Seq a) (Seq b) a b
+</span><a href="Todo.Utils.html#seqPredTraversal"><span class="hs-identifier hs-var">seqPredTraversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; a -&gt; Bool
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">)</span><span>
+</span><span id="line-277"></span><span>
+</span><span id="line-278"></span><span class="annot"><a href="Todo.Utils.html#seqPredTraversal"><span class="hs-identifier hs-type">seqPredTraversal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134504"><span class="annot"><a href="#local-6989586621679134504"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679134505"><span class="annot"><a href="#local-6989586621679134505"><span class="hs-identifier hs-type">b</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134504"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#Traversal"><span class="hs-identifier hs-type">Traversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679134504"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679134505"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679134504"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134505"><span class="hs-identifier hs-type">b</span></a></span><span>
+</span><span id="line-279"></span><span id="seqPredTraversal"><span class="annot"><span class="annottext">seqPredTraversal :: forall a b. (a -&gt; Bool) -&gt; Traversal (Seq a) (Seq b) a b
+</span><a href="Todo.Utils.html#seqPredTraversal"><span class="hs-identifier hs-var hs-var">seqPredTraversal</span></a></span></span><span> </span><span id="local-6989586621679134749"><span class="annot"><span class="annottext">a -&gt; Bool
+</span><a href="#local-6989586621679134749"><span class="hs-identifier hs-var">pred</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TraversalVL (Seq a) (Seq b) a b -&gt; Traversal (Seq a) (Seq b) a b
+forall s t a b. TraversalVL s t a b -&gt; Traversal s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#traversalVL"><span class="hs-identifier hs-var">traversalVL</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; f b) -&gt; Seq a -&gt; f (Seq b)
+TraversalVL (Seq a) (Seq b) a b
+</span><a href="#local-6989586621679134750"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-280"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-281"></span><span>    </span><span class="hs-comment">--</span><span>
+</span><span id="line-282"></span><span>    </span><span class="annot"><a href="#local-6989586621679134750"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134753"><span class="annot"><a href="#local-6989586621679134753"><span class="hs-identifier hs-type">f</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="#local-6989586621679134753"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134504"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134753"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134505"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679134504"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134753"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Seq</span></span><span> </span><span class="annot"><a href="#local-6989586621679134505"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-283"></span><span>    </span><span id="local-6989586621679134750"><span class="annot"><span class="annottext">f :: TraversalVL (Seq a) (Seq b) a b
+</span><a href="#local-6989586621679134750"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679134759"><span class="annot"><span class="annottext">a -&gt; f b
+</span><a href="#local-6989586621679134759"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Seq a -&gt; f (Seq b)
+</span><a href="#local-6989586621679134760"><span class="hs-identifier hs-var">go</span></a></span><span>
+</span><span id="line-284"></span><span>      </span><span class="hs-keyword">where</span><span>
+</span><span id="line-285"></span><span>        </span><span id="local-6989586621679134760"><span class="annot"><span class="annottext">go :: Seq a -&gt; f (Seq b)
+</span><a href="#local-6989586621679134760"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span class="annot"><span class="annottext">Seq a
+</span><span class="hs-identifier hs-var">Empty</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Seq b -&gt; f (Seq b)
+forall a. a -&gt; f a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Seq b
+forall a. Seq a
+</span><span class="hs-identifier hs-var">Empty</span></span><span>
+</span><span id="line-286"></span><span>        </span><span class="annot"><a href="#local-6989586621679134760"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679134761"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134761"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><span class="hs-operator hs-type">:&lt;|</span></span><span> </span><span id="local-6989586621679134763"><span class="annot"><span class="annottext">Seq a
+</span><a href="#local-6989586621679134763"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-287"></span><span>          </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">a -&gt; Bool
+</span><a href="#local-6989586621679134749"><span class="hs-identifier hs-var">pred</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134761"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-288"></span><span>            </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">b -&gt; Seq b -&gt; Seq b
+forall a. a -&gt; Seq a -&gt; Seq a
+</span><span class="hs-operator hs-var">(:&lt;|)</span></span><span> </span><span class="annot"><span class="annottext">(b -&gt; Seq b -&gt; Seq b) -&gt; f b -&gt; f (Seq b -&gt; Seq b)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; f b
+</span><a href="#local-6989586621679134759"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134761"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">f (Seq b -&gt; Seq b) -&gt; f (Seq b) -&gt; f (Seq b)
+forall a b. f (a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Seq a -&gt; f (Seq b)
+</span><a href="#local-6989586621679134760"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">Seq a
+</span><a href="#local-6989586621679134763"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-289"></span><span>            </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Seq a -&gt; f (Seq b)
+</span><a href="#local-6989586621679134760"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">Seq a
+</span><a href="#local-6989586621679134763"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-290"></span><span>
+</span><span id="line-291"></span><span class="annot"><span class="hs-comment">-- | Traverses an NESet.</span></span><span>
+</span><span id="line-292"></span><span class="annot"><a href="Todo.Utils.html#neSetTraversal"><span class="hs-identifier hs-type">neSetTraversal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134512"><span class="annot"><a href="#local-6989586621679134512"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679134511"><span class="annot"><a href="#local-6989586621679134511"><span class="hs-identifier hs-type">b</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621679134511"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#Traversal"><span class="hs-identifier hs-type">Traversal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134512"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134511"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679134512"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134511"><span class="hs-identifier hs-type">b</span></a></span><span>
+</span><span id="line-293"></span><span id="neSetTraversal"><span class="annot"><span class="annottext">neSetTraversal :: forall a b. Ord b =&gt; Traversal (NESet a) (NESet b) a b
+</span><a href="Todo.Utils.html#neSetTraversal"><span class="hs-identifier hs-var hs-var">neSetTraversal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TraversalVL (NESet a) (NESet b) a b
+-&gt; Traversal (NESet a) (NESet b) a b
+forall s t a b. TraversalVL s t a b -&gt; Traversal s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Traversal.html#traversalVL"><span class="hs-identifier hs-var">traversalVL</span></a></span><span> </span><span class="annot"><span class="annottext">(a -&gt; f b) -&gt; NESet a -&gt; f (NESet b)
+TraversalVL (NESet a) (NESet b) a b
+</span><a href="#local-6989586621679134765"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><span id="line-294"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-295"></span><span>    </span><span class="annot"><a href="#local-6989586621679134765"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679134768"><span class="annot"><a href="#local-6989586621679134768"><span class="hs-identifier hs-type">f</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="#local-6989586621679134768"><span class="hs-identifier hs-type">f</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679134512"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134768"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134511"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134512"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679134768"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679134511"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-296"></span><span>    </span><span id="local-6989586621679134765"><span class="annot"><span class="annottext">f :: TraversalVL (NESet a) (NESet b) a b
+</span><a href="#local-6989586621679134765"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679134776"><span class="annot"><span class="annottext">a -&gt; f b
+</span><a href="#local-6989586621679134776"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-297"></span><span>      </span><span class="annot"><span class="annottext">(NonEmpty b -&gt; NESet b) -&gt; f (NonEmpty b) -&gt; f (NESet b)
+forall a b. (a -&gt; b) -&gt; f a -&gt; f b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">NonEmpty b -&gt; NESet b
+forall a. Ord a =&gt; NonEmpty a -&gt; NESet a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#fromList"><span class="hs-identifier hs-var">NESet.fromList</span></a></span><span>
+</span><span id="line-298"></span><span>        </span><span class="annot"><span class="annottext">(f (NonEmpty b) -&gt; f (NESet b))
+-&gt; (NESet a -&gt; f (NonEmpty b)) -&gt; NESet a -&gt; f (NESet b)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; f b) -&gt; NonEmpty a -&gt; f (NonEmpty b)
+forall (t :: * -&gt; *) (f :: * -&gt; *) a b.
+(Traversable t, Applicative f) =&gt;
+(a -&gt; f b) -&gt; t a -&gt; f (t b)
+forall (f :: * -&gt; *) a b.
+Applicative f =&gt;
+(a -&gt; f b) -&gt; NonEmpty a -&gt; f (NonEmpty b)
+</span><span class="hs-identifier hs-var">traverse</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; f b
+</span><a href="#local-6989586621679134776"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-299"></span><span>        </span><span class="annot"><span class="annottext">(NonEmpty a -&gt; f (NonEmpty b))
+-&gt; (NESet a -&gt; NonEmpty a) -&gt; NESet a -&gt; f (NonEmpty b)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">NESet a -&gt; NonEmpty a
+forall a. NESet a -&gt; NonEmpty a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#toList"><span class="hs-identifier hs-var">NESet.toList</span></a></span><span>
+</span><span id="line-300"></span><span>
+</span><span id="line-301"></span><span class="hs-comment">-- | Validates that the keys in the object are only those we expect i.e.</span><span>
+</span><span id="line-302"></span><span class="hs-comment">-- fails if the Object contains unexpected keys.</span><span>
+</span><span id="line-303"></span><span class="annot"><a href="Todo.Utils.html#validateKeys"><span class="hs-identifier hs-type">validateKeys</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Key.html#Key"><span class="hs-identifier hs-type">Key</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.Internal.html#Object"><span class="hs-identifier hs-type">Object</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.Internal.html#Parser"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-304"></span><span id="validateKeys"><span class="annot"><span class="annottext">validateKeys :: Set Key -&gt; Object -&gt; Parser ()
+</span><a href="Todo.Utils.html#validateKeys"><span class="hs-identifier hs-var hs-var">validateKeys</span></a></span></span><span> </span><span id="local-6989586621679134780"><span class="annot"><span class="annottext">Set Key
+</span><a href="#local-6989586621679134780"><span class="hs-identifier hs-var">expectedKeys</span></a></span></span><span> </span><span id="local-6989586621679134781"><span class="annot"><span class="annottext">Object
+</span><a href="#local-6989586621679134781"><span class="hs-identifier hs-var">o</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-305"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">(Key -&gt; Bool) -&gt; [Key] -&gt; [Key]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Key -&gt; Set Key -&gt; Bool
+forall a. Ord a =&gt; a -&gt; Set a -&gt; Bool
+</span><span class="hs-operator hs-var">`Set.notMember`</span></span><span> </span><span class="annot"><span class="annottext">Set Key
+</span><a href="#local-6989586621679134780"><span class="hs-identifier hs-var">expectedKeys</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Object -&gt; [Key]
+forall v. KeyMap v -&gt; [Key]
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.KeyMap.html#keys"><span class="hs-identifier hs-var">KM.keys</span></a></span><span> </span><span class="annot"><span class="annottext">Object
+</span><a href="#local-6989586621679134781"><span class="hs-identifier hs-var">o</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-306"></span><span>    </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Parser ()
+forall a. a -&gt; Parser a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-307"></span><span>    </span><span id="local-6989586621679134784"><span class="annot"><span class="annottext">ks :: [Key]
+</span><a href="#local-6989586621679134784"><span class="hs-identifier hs-var">ks</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Key
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><span class="annottext">[Key]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-308"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Parser ()
+forall a. String -&gt; Parser a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span>
+</span><span id="line-309"></span><span>        </span><span class="annot"><span class="annottext">(String -&gt; Parser ()) -&gt; String -&gt; Parser ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-310"></span><span>          </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Found unexpected json key(s): &quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-311"></span><span>            </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; String) -&gt; Text -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Key] -&gt; Text
+</span><a href="#local-6989586621679134786"><span class="hs-identifier hs-var">displayKeys</span></a></span><span> </span><span class="annot"><span class="annottext">[Key]
+</span><a href="#local-6989586621679134784"><span class="hs-identifier hs-var">ks</span></a></span><span>
+</span><span id="line-312"></span><span>          </span><span class="hs-special">]</span><span>
+</span><span id="line-313"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-314"></span><span>    </span><span id="local-6989586621679134786"><span class="annot"><span class="annottext">displayKeys :: [Key] -&gt; Text
+</span><a href="#local-6989586621679134786"><span class="hs-identifier hs-var hs-var">displayKeys</span></a></span></span><span> </span><span id="local-6989586621679134794"><span class="annot"><span class="annottext">[Key]
+</span><a href="#local-6989586621679134794"><span class="hs-identifier hs-var">ks</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-315"></span><span>      </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; Text
+</span><span class="hs-identifier hs-var">T.intercalate</span></span><span>
+</span><span id="line-316"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;, &quot;</span></span><span>
+</span><span id="line-317"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text
+forall {a}. (Semigroup a, IsString a) =&gt; a -&gt; a
+</span><a href="#local-6989586621679134796"><span class="hs-identifier hs-var">quote</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Text) -&gt; (Key -&gt; Text) -&gt; Key -&gt; Text
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Text
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Key.html#toText"><span class="hs-identifier hs-var">K.toText</span></a></span><span> </span><span class="annot"><span class="annottext">(Key -&gt; Text) -&gt; [Key] -&gt; [Text]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Key]
+</span><a href="#local-6989586621679134794"><span class="hs-identifier hs-var">ks</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-318"></span><span>
+</span><span id="line-319"></span><span>    </span><span id="local-6989586621679134796"><span class="annot"><span class="annottext">quote :: a -&gt; a
+</span><a href="#local-6989586621679134796"><span class="hs-identifier hs-var hs-var">quote</span></a></span></span><span> </span><span id="local-6989586621679134804"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134804"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-string">&quot;'&quot;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134804"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-string">&quot;'&quot;</span></span><span>
+</span><span id="line-320"></span></pre></body></html>

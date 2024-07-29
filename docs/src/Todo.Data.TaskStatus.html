@@ -1,0 +1,781 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE ViewPatterns #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Todo.Data.TaskStatus</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Status</span></span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier">TaskStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#parseTaskStatus"><span class="hs-identifier">parseTaskStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#filterBlockingIds"><span class="hs-identifier">filterBlockingIds</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#isCompleted"><span class="hs-identifier">isCompleted</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#metavar"><span class="hs-identifier">metavar</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Optics</span></span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_Completed"><span class="hs-identifier">_Completed</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_NotStarted"><span class="hs-identifier">_NotStarted</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_InProgress"><span class="hs-identifier">_InProgress</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_Blocked"><span class="hs-identifier">_Blocked</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Blocker</span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier">Blocker</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#parseBlockedTarget"><span class="hs-identifier">parseBlockedTarget</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Optics</span></span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_BlockerId"><span class="hs-identifier">_BlockerId</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_BlockerText"><span class="hs-identifier">_BlockerText</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Asn</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Set</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.html"><span class="hs-identifier">Data.Set.NonEmpty</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">NESet</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.html"><span class="hs-identifier">Todo.Data.TaskId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier">TaskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Data.TaskId.html"><span class="hs-identifier">Todo.Data.TaskId</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">TaskId</span></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Todo.Prelude.html"><span class="hs-identifier">Todo.Prelude</span></a></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><span class="hs-comment">-- | Something that blocks another task.</span></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">data</span><span> </span><span id="Blocker"><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-var">Blocker</span></a></span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-comment">-- | A task that blocks another task. The task is is the blocker.</span></span><span>
+</span><span id="line-38"></span><span>    </span><span id="BlockerId"><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerId"><span class="hs-identifier hs-var">BlockerId</span></a></span></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-comment">-- | General description that blocks a task.</span></span><span>
+</span><span id="line-40"></span><span>    </span><span id="BlockerText"><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerText"><span class="hs-identifier hs-var">BlockerText</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133860"><span id="local-6989586621679133866"><span class="annot"><span class="annottext">Blocker -&gt; Blocker -&gt; Bool
+(Blocker -&gt; Blocker -&gt; Bool)
+-&gt; (Blocker -&gt; Blocker -&gt; Bool) -&gt; Eq Blocker
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Blocker -&gt; Blocker -&gt; Bool
+== :: Blocker -&gt; Blocker -&gt; Bool
+$c/= :: Blocker -&gt; Blocker -&gt; Bool
+/= :: Blocker -&gt; Blocker -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133873"><span id="local-6989586621679133879"><span id="local-6989586621679133883"><span id="local-6989586621679133887"><span id="local-6989586621679133890"><span id="local-6989586621679133893"><span id="local-6989586621679133896"><span class="annot"><span class="annottext">Eq Blocker
+Eq Blocker =&gt;
+(Blocker -&gt; Blocker -&gt; Ordering)
+-&gt; (Blocker -&gt; Blocker -&gt; Bool)
+-&gt; (Blocker -&gt; Blocker -&gt; Bool)
+-&gt; (Blocker -&gt; Blocker -&gt; Bool)
+-&gt; (Blocker -&gt; Blocker -&gt; Bool)
+-&gt; (Blocker -&gt; Blocker -&gt; Blocker)
+-&gt; (Blocker -&gt; Blocker -&gt; Blocker)
+-&gt; Ord Blocker
+Blocker -&gt; Blocker -&gt; Bool
+Blocker -&gt; Blocker -&gt; Ordering
+Blocker -&gt; Blocker -&gt; Blocker
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: Blocker -&gt; Blocker -&gt; Ordering
+compare :: Blocker -&gt; Blocker -&gt; Ordering
+$c&lt; :: Blocker -&gt; Blocker -&gt; Bool
+&lt; :: Blocker -&gt; Blocker -&gt; Bool
+$c&lt;= :: Blocker -&gt; Blocker -&gt; Bool
+&lt;= :: Blocker -&gt; Blocker -&gt; Bool
+$c&gt; :: Blocker -&gt; Blocker -&gt; Bool
+&gt; :: Blocker -&gt; Blocker -&gt; Bool
+$c&gt;= :: Blocker -&gt; Blocker -&gt; Bool
+&gt;= :: Blocker -&gt; Blocker -&gt; Bool
+$cmax :: Blocker -&gt; Blocker -&gt; Blocker
+max :: Blocker -&gt; Blocker -&gt; Blocker
+$cmin :: Blocker -&gt; Blocker -&gt; Blocker
+min :: Blocker -&gt; Blocker -&gt; Blocker
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133900"><span id="local-6989586621679133909"><span id="local-6989586621679133913"><span class="annot"><span class="annottext">Int -&gt; Blocker -&gt; ShowS
+[Blocker] -&gt; ShowS
+Blocker -&gt; String
+(Int -&gt; Blocker -&gt; ShowS)
+-&gt; (Blocker -&gt; String) -&gt; ([Blocker] -&gt; ShowS) -&gt; Show Blocker
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Blocker -&gt; ShowS
+showsPrec :: Int -&gt; Blocker -&gt; ShowS
+$cshow :: Blocker -&gt; String
+show :: Blocker -&gt; String
+$cshowList :: [Blocker] -&gt; ShowS
+showList :: [Blocker] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133918"><span id="local-6989586621679133922"><span id="local-6989586621679133925"><span id="local-6989586621679133928"><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-44"></span><span>  </span><span id="local-6989586621679133939"><span class="annot"><span class="annottext">toJSON :: Blocker -&gt; Value
+</span><a href="#local-6989586621679133939"><span class="hs-identifier hs-var hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerId"><span class="hs-identifier hs-type">BlockerId</span></a></span><span> </span><span id="local-6989586621679133941"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133941"><span class="hs-identifier hs-var">taskId</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-45"></span><span>    </span><span class="hs-comment">-- TaskId's ToJSON derives from its underlying Text, so this is fine.</span><span>
+</span><span id="line-46"></span><span>    </span><span class="annot"><span class="annottext">Text -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Value) -&gt; Text -&gt; Value
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text
+forall a. (IsString a, Semigroup a) =&gt; a -&gt; a
+</span><a href="Todo.Data.TaskStatus.html#angleBracket"><span class="hs-identifier hs-var">angleBracket</span></a></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679133941"><span class="hs-identifier hs-var">taskId</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">unTaskId</span><span>
+</span><span id="line-47"></span><span>  </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerText"><span class="hs-identifier hs-type">BlockerText</span></a></span><span> </span><span id="local-6989586621679133943"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133943"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133943"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679133946"><span id="local-6989586621679133950"><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-50"></span><span>  </span><span id="local-6989586621679133955"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser Blocker
+</span><a href="#local-6989586621679133955"><span class="hs-identifier hs-var hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; (Text -&gt; Parser Blocker) -&gt; Value -&gt; Parser Blocker
+forall a. String -&gt; (Text -&gt; Parser a) -&gt; Value -&gt; Parser a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.FromJSON.html#withText"><span class="hs-identifier hs-var">Asn.withText</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Blocker&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Parser Blocker
+forall (m :: * -&gt; *). MonadFail m =&gt; Text -&gt; m Blocker
+</span><a href="Todo.Data.TaskStatus.html#parseBlockedTarget"><span class="hs-identifier hs-var">parseBlockedTarget</span></a></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-53"></span><span>  </span><span id="local-6989586621679133965"><span class="annot"><span class="annottext">fromString :: String -&gt; Blocker
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fromString</span></span></span><span> </span><span id="local-6989586621679133966"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133966"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; EitherString Blocker
+forall (m :: * -&gt; *). MonadFail m =&gt; Text -&gt; m Blocker
+</span><a href="Todo.Data.TaskStatus.html#parseBlockedTarget"><span class="hs-identifier hs-var">parseBlockedTarget</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">pack</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133966"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-54"></span><span>    </span><span class="annot"><a href="Todo.Prelude.html#EitherRight"><span class="hs-identifier hs-type">EitherRight</span></a></span><span> </span><span id="local-6989586621679133969"><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679133969"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679133969"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><span id="line-55"></span><span>    </span><span class="annot"><a href="Todo.Prelude.html#EitherLeft"><span class="hs-identifier hs-type">EitherLeft</span></a></span><span> </span><span id="local-6989586621679133971"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133971"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Blocker
+forall a. HasCallStack =&gt; String -&gt; a
+</span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133971"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span id="local-6989586621679133764"><span class="annot"><a href="Todo.Data.TaskStatus.html#parseBlockedTarget"><span class="hs-identifier hs-type">parseBlockedTarget</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadFail</span></span><span> </span><span class="annot"><a href="#local-6989586621679133764"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133764"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span></span><span>
+</span><span id="line-58"></span><span id="parseBlockedTarget"><span class="annot"><span class="annottext">parseBlockedTarget :: forall (m :: * -&gt; *). MonadFail m =&gt; Text -&gt; m Blocker
+</span><a href="Todo.Data.TaskStatus.html#parseBlockedTarget"><span class="hs-identifier hs-var hs-var">parseBlockedTarget</span></a></span></span><span> </span><span id="local-6989586621679133994"><span class="annot"><span class="annottext">orig :: Text
+</span><a href="#local-6989586621679133994"><span class="hs-identifier hs-var">orig</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
+</span><span class="hs-identifier hs-var">T.stripPrefix</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&lt;&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679133996"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133996"><span class="hs-identifier hs-var">start</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
+</span><span class="hs-identifier hs-var">T.stripSuffix</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&gt;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133996"><span class="hs-identifier hs-var">start</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-60"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679133998"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133998"><span class="hs-identifier hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; Blocker
+</span><a href="Todo.Data.TaskStatus.html#BlockerId"><span class="hs-identifier hs-var">BlockerId</span></a></span><span> </span><span class="annot"><span class="annottext">(TaskId -&gt; Blocker) -&gt; m TaskId -&gt; m Blocker
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; m TaskId
+forall (m :: * -&gt; *). MonadFail m =&gt; Text -&gt; m TaskId
+</span><a href="Todo.Data.TaskId.Internal.html#parseTaskId"><span class="hs-identifier hs-var">TaskId.parseTaskId</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133998"><span class="hs-identifier hs-var">txt</span></a></span><span>
+</span><span id="line-61"></span><span>    </span><span class="annot"><span class="annottext">Maybe Text
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-62"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; m Blocker
+forall a. String -&gt; m a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span>
+</span><span id="line-63"></span><span>        </span><span class="annot"><span class="annottext">(String -&gt; m Blocker) -&gt; String -&gt; m Blocker
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[String] -&gt; String
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-64"></span><span>          </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Blocker task id started with '&lt;' but did not end with '&gt;': '&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-65"></span><span>            </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679133994"><span class="hs-identifier hs-var">orig</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-66"></span><span>            </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;'&quot;</span></span><span>
+</span><span id="line-67"></span><span>          </span><span class="hs-special">]</span><span>
+</span><span id="line-68"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#parseBlockedTarget"><span class="hs-identifier hs-var">parseBlockedTarget</span></a></span><span> </span><span id="local-6989586621679134002"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134002"><span class="hs-identifier hs-var">other</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; (Text -&gt; Blocker) -&gt; Text -&gt; Either String Blocker
+forall a. Text -&gt; (Text -&gt; a) -&gt; Text -&gt; Either String a
+</span><a href="Todo.Data.TaskId.Internal.html#mkA"><span class="hs-identifier hs-var">TaskId.mkA</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Blocker text&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Blocker
+</span><a href="Todo.Data.TaskStatus.html#BlockerText"><span class="hs-identifier hs-var">BlockerText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134002"><span class="hs-identifier hs-var">other</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-69"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679134004"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679134004"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; m Blocker
+forall a. String -&gt; m a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679134004"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-70"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679134005"><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679134005"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Blocker -&gt; m Blocker
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679134005"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="hs-comment">-- | Task status. The (commutative) semigroup is based roughly  on the ordering</span><span>
+</span><span id="line-73"></span><span class="hs-comment">--</span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-75"></span><span class="hs-comment">--   Completed &lt; NotStarted &lt; InProgress &lt; Blocked</span><span>
+</span><span id="line-76"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-77"></span><span class="hs-comment">--</span><span>
+</span><span id="line-78"></span><span class="hs-comment">-- where we take the max. There are exceptionals cases for</span><span>
+</span><span id="line-79"></span><span class="hs-comment">--</span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-81"></span><span class="hs-comment">--   Completed &lt;&gt; NotStarted == InProgress</span><span>
+</span><span id="line-82"></span><span class="hs-comment">--   Blocked l &lt;&gt; Blocked r == Blocked (l &lt;&gt; r)</span><span>
+</span><span id="line-83"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-84"></span><span class="hs-comment">--</span><span>
+</span><span id="line-85"></span><span class="hs-comment">-- The first line is why we do not have a monoid.</span><span>
+</span><span id="line-86"></span><span class="hs-keyword">data</span><span> </span><span id="TaskStatus"><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-var">TaskStatus</span></a></span></span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Completed"><span class="annot"><a href="Todo.Data.TaskStatus.html#Completed"><span class="hs-identifier hs-var">Completed</span></a></span></span><span>
+</span><span id="line-88"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="NotStarted"><span class="annot"><a href="Todo.Data.TaskStatus.html#NotStarted"><span class="hs-identifier hs-var">NotStarted</span></a></span></span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InProgress"><span class="annot"><a href="Todo.Data.TaskStatus.html#InProgress"><span class="hs-identifier hs-var">InProgress</span></a></span></span><span>
+</span><span id="line-90"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- | Task is blocked, where the blockers can be another task (represented</span><span>
+</span><span id="line-91"></span><span>    </span><span class="hs-comment">-- by TaskId) or a general text description.</span><span>
+</span><span id="line-92"></span><span>    </span><span id="Blocked"><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocked"><span class="hs-identifier hs-var">Blocked</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679134011"><span id="local-6989586621679134016"><span class="annot"><span class="annottext">TaskStatus -&gt; TaskStatus -&gt; Bool
+(TaskStatus -&gt; TaskStatus -&gt; Bool)
+-&gt; (TaskStatus -&gt; TaskStatus -&gt; Bool) -&gt; Eq TaskStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TaskStatus -&gt; TaskStatus -&gt; Bool
+== :: TaskStatus -&gt; TaskStatus -&gt; Bool
+$c/= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+/= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679134022"><span id="local-6989586621679134027"><span id="local-6989586621679134031"><span id="local-6989586621679134034"><span id="local-6989586621679134037"><span id="local-6989586621679134040"><span id="local-6989586621679134043"><span class="annot"><span class="annottext">Eq TaskStatus
+Eq TaskStatus =&gt;
+(TaskStatus -&gt; TaskStatus -&gt; Ordering)
+-&gt; (TaskStatus -&gt; TaskStatus -&gt; Bool)
+-&gt; (TaskStatus -&gt; TaskStatus -&gt; Bool)
+-&gt; (TaskStatus -&gt; TaskStatus -&gt; Bool)
+-&gt; (TaskStatus -&gt; TaskStatus -&gt; Bool)
+-&gt; (TaskStatus -&gt; TaskStatus -&gt; TaskStatus)
+-&gt; (TaskStatus -&gt; TaskStatus -&gt; TaskStatus)
+-&gt; Ord TaskStatus
+TaskStatus -&gt; TaskStatus -&gt; Bool
+TaskStatus -&gt; TaskStatus -&gt; Ordering
+TaskStatus -&gt; TaskStatus -&gt; TaskStatus
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: TaskStatus -&gt; TaskStatus -&gt; Ordering
+compare :: TaskStatus -&gt; TaskStatus -&gt; Ordering
+$c&lt; :: TaskStatus -&gt; TaskStatus -&gt; Bool
+&lt; :: TaskStatus -&gt; TaskStatus -&gt; Bool
+$c&lt;= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+&lt;= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+$c&gt; :: TaskStatus -&gt; TaskStatus -&gt; Bool
+&gt; :: TaskStatus -&gt; TaskStatus -&gt; Bool
+$c&gt;= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+&gt;= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+$cmax :: TaskStatus -&gt; TaskStatus -&gt; TaskStatus
+max :: TaskStatus -&gt; TaskStatus -&gt; TaskStatus
+$cmin :: TaskStatus -&gt; TaskStatus -&gt; TaskStatus
+min :: TaskStatus -&gt; TaskStatus -&gt; TaskStatus
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679134046"><span id="local-6989586621679134052"><span id="local-6989586621679134056"><span class="annot"><span class="annottext">Int -&gt; TaskStatus -&gt; ShowS
+[TaskStatus] -&gt; ShowS
+TaskStatus -&gt; String
+(Int -&gt; TaskStatus -&gt; ShowS)
+-&gt; (TaskStatus -&gt; String)
+-&gt; ([TaskStatus] -&gt; ShowS)
+-&gt; Show TaskStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TaskStatus -&gt; ShowS
+showsPrec :: Int -&gt; TaskStatus -&gt; ShowS
+$cshow :: TaskStatus -&gt; String
+show :: TaskStatus -&gt; String
+$cshowList :: [TaskStatus] -&gt; ShowS
+showList :: [TaskStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#filterBlockingIds"><span class="hs-identifier hs-type">filterBlockingIds</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span>
+</span><span id="line-96"></span><span id="filterBlockingIds"><span class="annot"><span class="annottext">filterBlockingIds :: NESet Blocker -&gt; Set TaskId
+</span><a href="Todo.Data.TaskStatus.html#filterBlockingIds"><span class="hs-identifier hs-var hs-var">filterBlockingIds</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Set TaskId -&gt; Blocker -&gt; Set TaskId)
+-&gt; Set TaskId -&gt; NESet Blocker -&gt; Set TaskId
+forall a b. (a -&gt; b -&gt; a) -&gt; a -&gt; NESet b -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#foldl%27"><span class="hs-identifier hs-var">NESet.foldl'</span></a></span><span> </span><span class="annot"><span class="annottext">Set TaskId -&gt; Blocker -&gt; Set TaskId
+</span><a href="#local-6989586621679134059"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Set TaskId
+forall a. Set a
+</span><span class="hs-identifier hs-var">Set.empty</span></span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-98"></span><span>    </span><span id="local-6989586621679134059"><span class="annot"><span class="annottext">f :: Set TaskId -&gt; Blocker -&gt; Set TaskId
+</span><a href="#local-6989586621679134059"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679134062"><span class="annot"><span class="annottext">Set TaskId
+</span><a href="#local-6989586621679134062"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerText"><span class="hs-identifier hs-type">BlockerText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Set TaskId
+</span><a href="#local-6989586621679134062"><span class="hs-identifier hs-var">acc</span></a></span><span>
+</span><span id="line-99"></span><span>    </span><span class="annot"><a href="#local-6989586621679134059"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span id="local-6989586621679134063"><span class="annot"><span class="annottext">Set TaskId
+</span><a href="#local-6989586621679134063"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerId"><span class="hs-identifier hs-type">BlockerId</span></a></span><span> </span><span id="local-6989586621679134064"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679134064"><span class="hs-identifier hs-var">id</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; Set TaskId -&gt; Set TaskId
+forall a. Ord a =&gt; a -&gt; Set a -&gt; Set a
+</span><span class="hs-identifier hs-var">Set.insert</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679134064"><span class="hs-identifier hs-var">id</span></a></span><span> </span><span class="annot"><span class="annottext">Set TaskId
+</span><a href="#local-6989586621679134063"><span class="hs-identifier hs-var">acc</span></a></span><span>
+</span><span id="line-100"></span><span>
+</span><span id="line-101"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679134068"><span id="local-6989586621679134072"><span class="annot"><span class="hs-identifier hs-type">Semigroup</span></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-102"></span><span>  </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocked"><span class="hs-identifier hs-type">Blocked</span></a></span><span> </span><span id="local-6989586621679134081"><span class="annot"><span class="annottext">NESet Blocker
+</span><a href="#local-6989586621679134081"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span id="local-6989586621679134082"><span class="annot"><span class="annottext">&lt;&gt; :: TaskStatus -&gt; TaskStatus -&gt; TaskStatus
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;&gt;</span></span></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocked"><span class="hs-identifier hs-type">Blocked</span></a></span><span> </span><span id="local-6989586621679134083"><span class="annot"><span class="annottext">NESet Blocker
+</span><a href="#local-6989586621679134083"><span class="hs-identifier hs-var">ys</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NESet Blocker -&gt; TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Blocked"><span class="hs-identifier hs-var">Blocked</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NESet Blocker
+</span><a href="#local-6989586621679134081"><span class="hs-identifier hs-var">xs</span></a></span><span> </span><span class="annot"><span class="annottext">NESet Blocker -&gt; NESet Blocker -&gt; NESet Blocker
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">NESet Blocker
+</span><a href="#local-6989586621679134083"><span class="hs-identifier hs-var">ys</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-103"></span><span>  </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Completed"><span class="hs-identifier hs-var">Completed</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#NotStarted"><span class="hs-identifier hs-var">NotStarted</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#InProgress"><span class="hs-identifier hs-var">InProgress</span></a></span><span>
+</span><span id="line-104"></span><span>  </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#NotStarted"><span class="hs-identifier hs-var">NotStarted</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Completed"><span class="hs-identifier hs-var">Completed</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#InProgress"><span class="hs-identifier hs-var">InProgress</span></a></span><span>
+</span><span id="line-105"></span><span>  </span><span id="local-6989586621679134084"><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134084"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="annot"><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span id="local-6989586621679134085"><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134085"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; TaskStatus -&gt; TaskStatus
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134084"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134085"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679134089"><span id="local-6989586621679134093"><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-108"></span><span>  </span><span id="local-6989586621679134096"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser TaskStatus
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; (Text -&gt; Parser TaskStatus) -&gt; Value -&gt; Parser TaskStatus
+forall a. String -&gt; (Text -&gt; Parser a) -&gt; Value -&gt; Parser a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.FromJSON.html#withText"><span class="hs-identifier hs-var">Asn.withText</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TaskStatus&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Parser TaskStatus
+forall (m :: * -&gt; *). MonadFail m =&gt; Text -&gt; m TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#parseTaskStatus"><span class="hs-identifier hs-var">parseTaskStatus</span></a></span><span>
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#parseTaskStatus"><span class="hs-identifier hs-type">parseTaskStatus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679133800"><span class="annot"><a href="#local-6989586621679133800"><span class="hs-identifier hs-type">m</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadFail</span></span><span> </span><span class="annot"><a href="#local-6989586621679133800"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133800"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span>
+</span><span id="line-111"></span><span id="parseTaskStatus"><span class="annot"><span class="annottext">parseTaskStatus :: forall (m :: * -&gt; *). MonadFail m =&gt; Text -&gt; m TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#parseTaskStatus"><span class="hs-identifier hs-var hs-var">parseTaskStatus</span></a></span></span><span> </span><span id="local-6989586621679134141"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134141"><span class="hs-identifier hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-112"></span><span>  </span><span class="annot"><span class="annottext">Text -&gt; [Text -&gt; m (Maybe TaskStatus)] -&gt; m (Maybe TaskStatus)
+forall (m :: * -&gt; *) (t :: * -&gt; *) (f :: * -&gt; *) a b.
+(Alternative f, Applicative m, Foldable t) =&gt;
+a -&gt; t (a -&gt; m (f b)) -&gt; m (f b)
+</span><a href="Todo.Prelude.html#foldMappersAltA"><span class="hs-identifier hs-var">foldMappersAltA</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134141"><span class="hs-identifier hs-var">txt</span></a></span><span> </span><span class="annot"><span class="annottext">[Text -&gt; m (Maybe TaskStatus)]
+</span><a href="#local-6989586621679134143"><span class="hs-identifier hs-var">parsers</span></a></span><span> </span><span class="annot"><span class="annottext">m (Maybe TaskStatus)
+-&gt; (Maybe TaskStatus -&gt; m TaskStatus) -&gt; m TaskStatus
+forall a b. m a -&gt; (a -&gt; m b) -&gt; m b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-113"></span><span>    </span><span class="annot"><span class="annottext">Maybe TaskStatus
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; m TaskStatus
+forall a. String -&gt; m a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; m TaskStatus) -&gt; String -&gt; m TaskStatus
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Unexpected status value: &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><a href="#local-6989586621679134144"><span class="hs-identifier hs-var">quoteTxt</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134141"><span class="hs-identifier hs-var">txt</span></a></span><span>
+</span><span id="line-114"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679134145"><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134145"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; m TaskStatus
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134145"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-116"></span><span>    </span><span class="annot"><a href="#local-6989586621679134143"><span class="hs-identifier hs-type">parsers</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Prelude.html#List"><span class="hs-identifier hs-type">List</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133800"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-117"></span><span>    </span><span id="local-6989586621679134143"><span class="annot"><span class="annottext">parsers :: [Text -&gt; m (Maybe TaskStatus)]
+</span><a href="#local-6989586621679134143"><span class="hs-identifier hs-var hs-var">parsers</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-118"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Text -&gt; m (Maybe TaskStatus)
+</span><a href="#local-6989586621679134147"><span class="hs-identifier hs-var">parseBlocked</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-119"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; TaskStatus -&gt; Text -&gt; m (Maybe TaskStatus)
+</span><a href="#local-6989586621679134148"><span class="hs-identifier hs-var">parseExact</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;not-started&quot;</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#NotStarted"><span class="hs-identifier hs-var">NotStarted</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-120"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; TaskStatus -&gt; Text -&gt; m (Maybe TaskStatus)
+</span><a href="#local-6989586621679134148"><span class="hs-identifier hs-var">parseExact</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;in-progress&quot;</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#InProgress"><span class="hs-identifier hs-var">InProgress</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-121"></span><span>        </span><span class="annot"><span class="annottext">Text -&gt; TaskStatus -&gt; Text -&gt; m (Maybe TaskStatus)
+</span><a href="#local-6989586621679134148"><span class="hs-identifier hs-var">parseExact</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;completed&quot;</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Completed"><span class="hs-identifier hs-var">Completed</span></a></span><span>
+</span><span id="line-122"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-123"></span><span>
+</span><span id="line-124"></span><span>    </span><span class="annot"><a href="#local-6989586621679134147"><span class="hs-identifier hs-type">parseBlocked</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133800"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-125"></span><span>    </span><span id="local-6989586621679134147"><span class="annot"><span class="annottext">parseBlocked :: Text -&gt; m (Maybe TaskStatus)
+</span><a href="#local-6989586621679134147"><span class="hs-identifier hs-var hs-var">parseBlocked</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
+</span><span class="hs-identifier hs-var">T.stripPrefix</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;blocked:&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679134149"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134149"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-126"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.strip</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134149"><span class="hs-identifier hs-var">rest</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-127"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; m (Maybe TaskStatus)
+forall a. String -&gt; m a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; m (Maybe TaskStatus)) -&gt; String -&gt; m (Maybe TaskStatus)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Received empty list for 'blocked' status: &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><a href="#local-6989586621679134144"><span class="hs-identifier hs-var">quoteTxt</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134149"><span class="hs-identifier hs-var">rest</span></a></span><span>
+</span><span id="line-128"></span><span>        </span><span id="local-6989586621679134151"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134151"><span class="hs-identifier hs-var">nonEmpty</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-129"></span><span>          </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679134152"><span class="annot"><span class="annottext">splitStrs :: [Text]
+</span><a href="#local-6989586621679134152"><span class="hs-identifier hs-var hs-var">splitStrs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.strip</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Text) -&gt; [Text] -&gt; [Text]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; [Text]
+</span><span class="hs-identifier hs-var">T.split</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">','</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134151"><span class="hs-identifier hs-var">nonEmpty</span></a></span><span>
+</span><span id="line-130"></span><span>              </span><span id="local-6989586621679134154"><span class="annot"><span class="annottext">nonEmpties :: [Text]
+</span><a href="#local-6989586621679134154"><span class="hs-identifier hs-var hs-var">nonEmpties</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Bool) -&gt; [Text] -&gt; [Text]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="annot"><span class="annottext">(Bool -&gt; Bool) -&gt; (Text -&gt; Bool) -&gt; Text -&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.null</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679134152"><span class="hs-identifier hs-var">splitStrs</span></a></span><span>
+</span><span id="line-131"></span><span>           </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679134154"><span class="hs-identifier hs-var">nonEmpties</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-132"></span><span>                </span><span class="hs-special">(</span><span id="local-6989586621679134158"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134158"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679134159"><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679134159"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-133"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621679134160"><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679134160"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="annot"><span class="hs-operator hs-type">:|</span></span><span> </span><span id="local-6989586621679134162"><span class="annot"><span class="annottext">[Blocker]
+</span><a href="#local-6989586621679134162"><span class="hs-identifier hs-var">ys</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; m Blocker) -&gt; NonEmpty Text -&gt; m (NonEmpty Blocker)
+forall (t :: * -&gt; *) (f :: * -&gt; *) a b.
+(Traversable t, Applicative f) =&gt;
+(a -&gt; f b) -&gt; t a -&gt; f (t b)
+forall (f :: * -&gt; *) a b.
+Applicative f =&gt;
+(a -&gt; f b) -&gt; NonEmpty a -&gt; f (NonEmpty b)
+</span><span class="hs-identifier hs-var">traverse</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; m Blocker
+forall (m :: * -&gt; *). MonadFail m =&gt; Text -&gt; m Blocker
+</span><a href="Todo.Data.TaskStatus.html#parseBlockedTarget"><span class="hs-identifier hs-var">parseBlockedTarget</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134158"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; NonEmpty Text
+forall a. a -&gt; [a] -&gt; NonEmpty a
+</span><span class="hs-operator hs-var">:|</span></span><span> </span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621679134159"><span class="hs-identifier hs-var">xs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-134"></span><span>                  </span><span class="annot"><span class="annottext">Maybe TaskStatus -&gt; m (Maybe TaskStatus)
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Maybe TaskStatus -&gt; m (Maybe TaskStatus))
+-&gt; Maybe TaskStatus -&gt; m (Maybe TaskStatus)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; Maybe TaskStatus
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(TaskStatus -&gt; Maybe TaskStatus) -&gt; TaskStatus -&gt; Maybe TaskStatus
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">NESet Blocker -&gt; TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Blocked"><span class="hs-identifier hs-var">Blocked</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NonEmpty Blocker -&gt; NESet Blocker
+forall a. Ord a =&gt; NonEmpty a -&gt; NESet a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#fromList"><span class="hs-identifier hs-var">NESet.fromList</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679134160"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">Blocker -&gt; [Blocker] -&gt; NonEmpty Blocker
+forall a. a -&gt; [a] -&gt; NonEmpty a
+</span><span class="hs-operator hs-var">:|</span></span><span> </span><span class="annot"><span class="annottext">[Blocker]
+</span><a href="#local-6989586621679134162"><span class="hs-identifier hs-var">ys</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-135"></span><span>                </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; m (Maybe TaskStatus)
+forall a. String -&gt; m a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; m (Maybe TaskStatus)) -&gt; String -&gt; m (Maybe TaskStatus)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Received no non-empty blockers for 'blocked' status: &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><a href="#local-6989586621679134144"><span class="hs-identifier hs-var">quoteTxt</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134149"><span class="hs-identifier hs-var">rest</span></a></span><span>
+</span><span id="line-136"></span><span>    </span><span class="annot"><a href="#local-6989586621679134147"><span class="hs-identifier hs-var">parseBlocked</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe TaskStatus -&gt; m (Maybe TaskStatus)
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Maybe TaskStatus
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-137"></span><span>
+</span><span id="line-138"></span><span>    </span><span class="annot"><a href="#local-6989586621679134148"><span class="hs-identifier hs-type">parseExact</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133800"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-139"></span><span>    </span><span id="local-6989586621679134148"><span class="annot"><span class="annottext">parseExact :: Text -&gt; TaskStatus -&gt; Text -&gt; m (Maybe TaskStatus)
+</span><a href="#local-6989586621679134148"><span class="hs-identifier hs-var hs-var">parseExact</span></a></span></span><span> </span><span id="local-6989586621679134165"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134165"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span id="local-6989586621679134166"><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134166"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621679134167"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134167"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-140"></span><span>      </span><span class="annot"><span class="annottext">Maybe TaskStatus -&gt; m (Maybe TaskStatus)
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span>
+</span><span id="line-141"></span><span>        </span><span class="annot"><span class="annottext">(Maybe TaskStatus -&gt; m (Maybe TaskStatus))
+-&gt; Maybe TaskStatus -&gt; m (Maybe TaskStatus)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134165"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134167"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-142"></span><span>          </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; Maybe TaskStatus
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134166"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-143"></span><span>          </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe TaskStatus
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-144"></span><span>
+</span><span id="line-145"></span><span>    </span><span class="annot"><a href="#local-6989586621679134144"><span class="hs-identifier hs-type">quoteTxt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-146"></span><span>    </span><span id="local-6989586621679134144"><span class="annot"><span class="annottext">quoteTxt :: Text -&gt; String
+</span><a href="#local-6989586621679134144"><span class="hs-identifier hs-var hs-var">quoteTxt</span></a></span></span><span> </span><span id="local-6989586621679134168"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134168"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;'&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span class="hs-identifier hs-var">unpack</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134168"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;'&quot;</span></span><span>
+</span><span id="line-147"></span><span>
+</span><span id="line-148"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679134171"><span id="local-6989586621679134175"><span id="local-6989586621679134178"><span id="local-6989586621679134181"><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-149"></span><span>  </span><span id="local-6989586621679134193"><span class="annot"><span class="annottext">toJSON :: TaskStatus -&gt; Value
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocked"><span class="hs-identifier hs-type">Blocked</span></a></span><span> </span><span id="local-6989586621679134194"><span class="annot"><span class="annottext">NESet Blocker
+</span><a href="#local-6989586621679134194"><span class="hs-identifier hs-var">ts</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Value) -&gt; Text -&gt; Value
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;blocked: &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">NESet Blocker -&gt; Text
+</span><a href="#local-6989586621679134195"><span class="hs-identifier hs-var">blockedToText</span></a></span><span> </span><span class="annot"><span class="annottext">NESet Blocker
+</span><a href="#local-6989586621679134194"><span class="hs-identifier hs-var">ts</span></a></span><span>
+</span><span id="line-150"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-151"></span><span>      </span><span class="annot"><a href="#local-6989586621679134195"><span class="hs-identifier hs-type">blockedToText</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-152"></span><span>      </span><span id="local-6989586621679134195"><span class="annot"><span class="annottext">blockedToText :: NESet Blocker -&gt; Text
+</span><a href="#local-6989586621679134195"><span class="hs-identifier hs-var hs-var">blockedToText</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Text) -&gt; (TaskId -&gt; Text) -&gt; NESet Blocker -&gt; Text
+</span><a href="Todo.Data.TaskStatus.html#mapBlockedCustom"><span class="hs-identifier hs-var">mapBlockedCustom</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text
+forall a. a -&gt; a
+</span><a href="Todo.Prelude.html#identity"><span class="hs-identifier hs-var">identity</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text
+forall a. (IsString a, Semigroup a) =&gt; a -&gt; a
+</span><a href="Todo.Data.TaskStatus.html#angleBracket"><span class="hs-identifier hs-var">angleBracket</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Text) -&gt; (TaskId -&gt; Text) -&gt; TaskId -&gt; Text
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="hs-operator">.</span><span class="hs-identifier">unTaskId</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-153"></span><span>  </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#NotStarted"><span class="hs-identifier hs-var">NotStarted</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Value
+</span><span class="hs-string">&quot;not-started&quot;</span></span><span>
+</span><span id="line-154"></span><span>  </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#InProgress"><span class="hs-identifier hs-var">InProgress</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Value
+</span><span class="hs-string">&quot;in-progress&quot;</span></span><span>
+</span><span id="line-155"></span><span>  </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/aeson-2.2.3.0-8cc1203e7e97f1dc8b8142f9a2bdb7a1c88139a40202164cd71e277316209b77/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Completed"><span class="hs-identifier hs-var">Completed</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Value
+</span><span class="hs-string">&quot;completed&quot;</span></span><span>
+</span><span id="line-156"></span><span>
+</span><span id="line-157"></span><span class="annot"><span class="hs-comment">-- | True iff Completed.</span></span><span>
+</span><span id="line-158"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#isCompleted"><span class="hs-identifier hs-type">isCompleted</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-159"></span><span id="isCompleted"><span class="annot"><span class="annottext">isCompleted :: TaskStatus -&gt; Bool
+</span><a href="Todo.Data.TaskStatus.html#isCompleted"><span class="hs-identifier hs-var hs-var">isCompleted</span></a></span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Completed"><span class="hs-identifier hs-var">Completed</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-160"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#isCompleted"><span class="hs-identifier hs-var">isCompleted</span></a></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-161"></span><span>
+</span><span id="line-162"></span><span class="annot"><span class="hs-comment">-- | Comma separates TaskIds together, using the provided function.</span></span><span>
+</span><span id="line-163"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#mapBlockedCustom"><span class="hs-identifier hs-type">mapBlockedCustom</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-164"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-165"></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-166"></span><span>  </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-167"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-168"></span><span id="mapBlockedCustom"><span class="annot"><span class="annottext">mapBlockedCustom :: (Text -&gt; Text) -&gt; (TaskId -&gt; Text) -&gt; NESet Blocker -&gt; Text
+</span><a href="Todo.Data.TaskStatus.html#mapBlockedCustom"><span class="hs-identifier hs-var hs-var">mapBlockedCustom</span></a></span></span><span> </span><span id="local-6989586621679134198"><span class="annot"><span class="annottext">Text -&gt; Text
+</span><a href="#local-6989586621679134198"><span class="hs-identifier hs-var">onText</span></a></span></span><span> </span><span id="local-6989586621679134199"><span class="annot"><span class="annottext">TaskId -&gt; Text
+</span><a href="#local-6989586621679134199"><span class="hs-identifier hs-var">onTaskId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-169"></span><span>  </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; Text
+</span><span class="hs-identifier hs-var">T.intercalate</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;, &quot;</span></span><span>
+</span><span id="line-170"></span><span>    </span><span class="annot"><span class="annottext">([Text] -&gt; Text)
+-&gt; (NESet Blocker -&gt; [Text]) -&gt; NESet Blocker -&gt; Text
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Blocker -&gt; Text) -&gt; [Blocker] -&gt; [Text]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Blocker -&gt; Text
+</span><a href="#local-6989586621679134201"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-171"></span><span>    </span><span class="annot"><span class="annottext">([Blocker] -&gt; [Text])
+-&gt; (NESet Blocker -&gt; [Blocker]) -&gt; NESet Blocker -&gt; [Text]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">NESet Blocker -&gt; [Blocker]
+forall a. NESet a -&gt; [a]
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; [a]
+</span><span class="hs-identifier hs-var">toList</span></span><span>
+</span><span id="line-172"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-173"></span><span>    </span><span id="local-6989586621679134201"><span class="annot"><span class="annottext">g :: Blocker -&gt; Text
+</span><a href="#local-6989586621679134201"><span class="hs-identifier hs-var hs-var">g</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerText"><span class="hs-identifier hs-type">BlockerText</span></a></span><span> </span><span id="local-6989586621679134203"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134203"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text
+</span><a href="#local-6989586621679134198"><span class="hs-identifier hs-var">onText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134203"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-174"></span><span>    </span><span class="annot"><a href="#local-6989586621679134201"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerId"><span class="hs-identifier hs-type">BlockerId</span></a></span><span> </span><span id="local-6989586621679134204"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679134204"><span class="hs-identifier hs-var">tid</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; Text
+</span><a href="#local-6989586621679134199"><span class="hs-identifier hs-var">onTaskId</span></a></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679134204"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-175"></span><span>
+</span><span id="line-176"></span><span class="hs-comment">-- TODO: This logic is a bit fragile, in the sense that we have invariants</span><span>
+</span><span id="line-177"></span><span class="hs-comment">-- spread across several functions...consider make this more principled</span><span>
+</span><span id="line-178"></span><span class="hs-comment">-- e.g. using optics' Iso to represent to/from Text with angle brackets.</span><span>
+</span><span id="line-179"></span><span id="local-6989586621679133759"><span class="annot"><a href="Todo.Data.TaskStatus.html#angleBracket"><span class="hs-identifier hs-type">angleBracket</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="annot"><a href="#local-6989586621679133759"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Semigroup</span></span><span> </span><span class="annot"><a href="#local-6989586621679133759"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133759"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133759"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-180"></span><span id="angleBracket"><span class="annot"><span class="annottext">angleBracket :: forall a. (IsString a, Semigroup a) =&gt; a -&gt; a
+</span><a href="Todo.Data.TaskStatus.html#angleBracket"><span class="hs-identifier hs-var hs-var">angleBracket</span></a></span></span><span> </span><span id="local-6989586621679134211"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134211"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-string">&quot;&lt;&quot;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679134211"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-string">&quot;&gt;&quot;</span></span><span>
+</span><span id="line-181"></span><span>
+</span><span id="line-182"></span><span id="local-6989586621679133828"><span class="annot"><a href="Todo.Data.TaskStatus.html#metavar"><span class="hs-identifier hs-type">metavar</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="annot"><a href="#local-6989586621679133828"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679133828"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-183"></span><span id="metavar"><span class="annot"><span class="annottext">metavar :: forall a. IsString a =&gt; a
+</span><a href="Todo.Data.TaskStatus.html#metavar"><span class="hs-identifier hs-var hs-var">metavar</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-string">&quot;(blocked: &lt;blockers&gt; | completed | in-progress | not-started)&quot;</span></span><span>
+</span><span id="line-184"></span><span>
+</span><span id="line-185"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#_Completed"><span class="hs-identifier hs-type">_Completed</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#Prism%27"><span class="hs-identifier hs-type">Prism'</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-186"></span><span id="_Completed"><span class="annot"><span class="annottext">_Completed :: Prism' TaskStatus ()
+</span><a href="Todo.Data.TaskStatus.html#_Completed"><span class="hs-identifier hs-var hs-var">_Completed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-187"></span><span>  </span><span class="annot"><span class="annottext">(() -&gt; TaskStatus)
+-&gt; (TaskStatus -&gt; Either TaskStatus ()) -&gt; Prism' TaskStatus ()
+forall b t s a. (b -&gt; t) -&gt; (s -&gt; Either t a) -&gt; Prism s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#prism"><span class="hs-identifier hs-var">prism</span></a></span><span>
+</span><span id="line-188"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskStatus -&gt; () -&gt; TaskStatus
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Completed"><span class="hs-identifier hs-var">Completed</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-189"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-190"></span><span>        </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Completed"><span class="hs-identifier hs-var">Completed</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Either TaskStatus ()
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-191"></span><span>        </span><span id="local-6989586621679134216"><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134216"><span class="hs-identifier hs-var">other</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; Either TaskStatus ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134216"><span class="hs-identifier hs-var">other</span></a></span><span>
+</span><span id="line-192"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-193"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_Completed"><span class="hs-pragma hs-type">_Completed</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-194"></span><span>
+</span><span id="line-195"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#_NotStarted"><span class="hs-identifier hs-type">_NotStarted</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#Prism%27"><span class="hs-identifier hs-type">Prism'</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-196"></span><span id="_NotStarted"><span class="annot"><span class="annottext">_NotStarted :: Prism' TaskStatus ()
+</span><a href="Todo.Data.TaskStatus.html#_NotStarted"><span class="hs-identifier hs-var hs-var">_NotStarted</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-197"></span><span>  </span><span class="annot"><span class="annottext">(() -&gt; TaskStatus)
+-&gt; (TaskStatus -&gt; Either TaskStatus ()) -&gt; Prism' TaskStatus ()
+forall b t s a. (b -&gt; t) -&gt; (s -&gt; Either t a) -&gt; Prism s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#prism"><span class="hs-identifier hs-var">prism</span></a></span><span>
+</span><span id="line-198"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskStatus -&gt; () -&gt; TaskStatus
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#NotStarted"><span class="hs-identifier hs-var">NotStarted</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-199"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-200"></span><span>        </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#NotStarted"><span class="hs-identifier hs-var">NotStarted</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Either TaskStatus ()
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-201"></span><span>        </span><span id="local-6989586621679134217"><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134217"><span class="hs-identifier hs-var">other</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; Either TaskStatus ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134217"><span class="hs-identifier hs-var">other</span></a></span><span>
+</span><span id="line-202"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-203"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_NotStarted"><span class="hs-pragma hs-type">_NotStarted</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-204"></span><span>
+</span><span id="line-205"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#_InProgress"><span class="hs-identifier hs-type">_InProgress</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#Prism%27"><span class="hs-identifier hs-type">Prism'</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-206"></span><span id="_InProgress"><span class="annot"><span class="annottext">_InProgress :: Prism' TaskStatus ()
+</span><a href="Todo.Data.TaskStatus.html#_InProgress"><span class="hs-identifier hs-var hs-var">_InProgress</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-207"></span><span>  </span><span class="annot"><span class="annottext">(() -&gt; TaskStatus)
+-&gt; (TaskStatus -&gt; Either TaskStatus ()) -&gt; Prism' TaskStatus ()
+forall b t s a. (b -&gt; t) -&gt; (s -&gt; Either t a) -&gt; Prism s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#prism"><span class="hs-identifier hs-var">prism</span></a></span><span>
+</span><span id="line-208"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskStatus -&gt; () -&gt; TaskStatus
+forall a b. a -&gt; b -&gt; a
+</span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#InProgress"><span class="hs-identifier hs-var">InProgress</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-209"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-210"></span><span>        </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#InProgress"><span class="hs-identifier hs-var">InProgress</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Either TaskStatus ()
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-211"></span><span>        </span><span id="local-6989586621679134218"><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134218"><span class="hs-identifier hs-var">other</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; Either TaskStatus ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134218"><span class="hs-identifier hs-var">other</span></a></span><span>
+</span><span id="line-212"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-213"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_InProgress"><span class="hs-pragma hs-type">_InProgress</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-214"></span><span>
+</span><span id="line-215"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#_Blocked"><span class="hs-identifier hs-type">_Blocked</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#Prism%27"><span class="hs-identifier hs-type">Prism'</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/nonempty-containers-0.3.4.5-98b26bfa6ab627ac80377cbbc006d5f001bca13661590aa37abace62590fd81c/share/doc/html/src/Data.Set.NonEmpty.Internal.html#NESet"><span class="hs-identifier hs-type">NESet</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-216"></span><span id="_Blocked"><span class="annot"><span class="annottext">_Blocked :: Prism' TaskStatus (NESet Blocker)
+</span><a href="Todo.Data.TaskStatus.html#_Blocked"><span class="hs-identifier hs-var hs-var">_Blocked</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-217"></span><span>  </span><span class="annot"><span class="annottext">(NESet Blocker -&gt; TaskStatus)
+-&gt; (TaskStatus -&gt; Either TaskStatus (NESet Blocker))
+-&gt; Prism' TaskStatus (NESet Blocker)
+forall b t s a. (b -&gt; t) -&gt; (s -&gt; Either t a) -&gt; Prism s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#prism"><span class="hs-identifier hs-var">prism</span></a></span><span>
+</span><span id="line-218"></span><span>    </span><span class="annot"><span class="annottext">NESet Blocker -&gt; TaskStatus
+</span><a href="Todo.Data.TaskStatus.html#Blocked"><span class="hs-identifier hs-var">Blocked</span></a></span><span>
+</span><span id="line-219"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-220"></span><span>        </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocked"><span class="hs-identifier hs-type">Blocked</span></a></span><span> </span><span id="local-6989586621679134219"><span class="annot"><span class="annottext">NESet Blocker
+</span><a href="#local-6989586621679134219"><span class="hs-identifier hs-var">blockers</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">NESet Blocker -&gt; Either TaskStatus (NESet Blocker)
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">NESet Blocker
+</span><a href="#local-6989586621679134219"><span class="hs-identifier hs-var">blockers</span></a></span><span>
+</span><span id="line-221"></span><span>        </span><span id="local-6989586621679134220"><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134220"><span class="hs-identifier hs-var">other</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; Either TaskStatus (NESet Blocker)
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621679134220"><span class="hs-identifier hs-var">other</span></a></span><span>
+</span><span id="line-222"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-223"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_Blocked"><span class="hs-pragma hs-type">_Blocked</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-224"></span><span>
+</span><span id="line-225"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#_BlockerId"><span class="hs-identifier hs-type">_BlockerId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#Prism%27"><span class="hs-identifier hs-type">Prism'</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskId.Internal.html#TaskId"><span class="hs-identifier hs-type">TaskId</span></a></span><span>
+</span><span id="line-226"></span><span id="_BlockerId"><span class="annot"><span class="annottext">_BlockerId :: Prism' Blocker TaskId
+</span><a href="Todo.Data.TaskStatus.html#_BlockerId"><span class="hs-identifier hs-var hs-var">_BlockerId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-227"></span><span>  </span><span class="annot"><span class="annottext">(TaskId -&gt; Blocker)
+-&gt; (Blocker -&gt; Either Blocker TaskId) -&gt; Prism' Blocker TaskId
+forall b t s a. (b -&gt; t) -&gt; (s -&gt; Either t a) -&gt; Prism s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#prism"><span class="hs-identifier hs-var">prism</span></a></span><span>
+</span><span id="line-228"></span><span>    </span><span class="annot"><span class="annottext">TaskId -&gt; Blocker
+</span><a href="Todo.Data.TaskStatus.html#BlockerId"><span class="hs-identifier hs-var">BlockerId</span></a></span><span>
+</span><span id="line-229"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-230"></span><span>        </span><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerId"><span class="hs-identifier hs-type">BlockerId</span></a></span><span> </span><span id="local-6989586621679134221"><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679134221"><span class="hs-identifier hs-var">taskId</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TaskId -&gt; Either Blocker TaskId
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">TaskId
+</span><a href="#local-6989586621679134221"><span class="hs-identifier hs-var">taskId</span></a></span><span>
+</span><span id="line-231"></span><span>        </span><span id="local-6989586621679134222"><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679134222"><span class="hs-identifier hs-var">other</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Blocker -&gt; Either Blocker TaskId
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679134222"><span class="hs-identifier hs-var">other</span></a></span><span>
+</span><span id="line-232"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-233"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_BlockerId"><span class="hs-pragma hs-type">_BlockerId</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-234"></span><span>
+</span><span id="line-235"></span><span class="annot"><a href="Todo.Data.TaskStatus.html#_BlockerText"><span class="hs-identifier hs-type">_BlockerText</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#Prism%27"><span class="hs-identifier hs-type">Prism'</span></a></span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#Blocker"><span class="hs-identifier hs-type">Blocker</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-236"></span><span id="_BlockerText"><span class="annot"><span class="annottext">_BlockerText :: Prism' Blocker Text
+</span><a href="Todo.Data.TaskStatus.html#_BlockerText"><span class="hs-identifier hs-var hs-var">_BlockerText</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-237"></span><span>  </span><span class="annot"><span class="annottext">(Text -&gt; Blocker)
+-&gt; (Blocker -&gt; Either Blocker Text) -&gt; Prism' Blocker Text
+forall b t s a. (b -&gt; t) -&gt; (s -&gt; Either t a) -&gt; Prism s t a b
+</span><a href="file:///nix/store/vi11wc3h2sdg4jvrhg9w7bd42fslsx1b-optics-core-0.4.1.1-doc/share/doc/optics-core-0.4.1.1/html/src/Optics.Prism.html#prism"><span class="hs-identifier hs-var">prism</span></a></span><span>
+</span><span id="line-238"></span><span>    </span><span class="annot"><span class="annottext">Text -&gt; Blocker
+</span><a href="Todo.Data.TaskStatus.html#BlockerText"><span class="hs-identifier hs-var">BlockerText</span></a></span><span>
+</span><span id="line-239"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-240"></span><span>        </span><span class="annot"><a href="Todo.Data.TaskStatus.html#BlockerText"><span class="hs-identifier hs-type">BlockerText</span></a></span><span> </span><span id="local-6989586621679134223"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134223"><span class="hs-identifier hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Blocker Text
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679134223"><span class="hs-identifier hs-var">txt</span></a></span><span>
+</span><span id="line-241"></span><span>        </span><span id="local-6989586621679134224"><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679134224"><span class="hs-identifier hs-var">other</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Blocker -&gt; Either Blocker Text
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Blocker
+</span><a href="#local-6989586621679134224"><span class="hs-identifier hs-var">other</span></a></span><span>
+</span><span id="line-242"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-243"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="Todo.Data.TaskStatus.html#_BlockerText"><span class="hs-pragma hs-type">_BlockerText</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-244"></span></pre></body></html>
