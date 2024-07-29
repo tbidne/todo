@@ -4,8 +4,8 @@ module Todo.Index
 
     -- ** State
     IndexState (..),
-    IndexUnverified,
-    IndexVerified,
+    Index𝕌,
+    Index𝕍,
 
     -- * Creation
     readIndex,
@@ -83,8 +83,8 @@ import Todo.Exception
 import Todo.Index.Internal
   ( Index (UnsafeIndex),
     IndexState (IndexStateUnverified, IndexStateVerified),
-    IndexUnverified,
-    IndexVerified,
+    Index𝕌,
+    Index𝕍,
   )
 import Todo.Index.Internal qualified as Internal
 import Todo.Index.Optics qualified as IndexO
@@ -103,7 +103,7 @@ readIndex ::
     MonadThrow m
   ) =>
   OsPath ->
-  m IndexVerified
+  m Index𝕍
 readIndex = readTaskList >=> uncurry fromList
 {-# INLINEABLE readIndex #-}
 
@@ -153,7 +153,7 @@ fromList ::
   ) =>
   OsPath ->
   Seq SomeTask ->
-  m IndexVerified
+  m Index𝕍
 fromList path xs = do
   (foundKeys, blockedKeys) <- mkMaps
 
@@ -260,7 +260,7 @@ setSomeTaskValue ::
   Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  Maybe (IndexUnverified, SomeTask)
+  Maybe (Index𝕌, SomeTask)
 setSomeTaskValue = setSomeTaskValueMapped Internal.unverify
 
 -- | Like 'setSomeTaskValue', except expects a 'SingleTask'. Returns a
@@ -279,7 +279,7 @@ setTaskValue ::
   Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  MatchResult IndexUnverified SomeTask
+  MatchResult Index𝕌 SomeTask
 setTaskValue taskLens taskId newA =
   Utils.setPreviewPartialNode'
     (IndexO.ix taskId)
@@ -290,7 +290,7 @@ setTaskValue taskLens taskId newA =
 -- | Like 'setSomeTaskValue', except we map the result.
 setSomeTaskValueMapped ::
   -- | Index mapper.
-  (IndexUnverified -> IndexUnverified) ->
+  (Index𝕌 -> Index𝕌) ->
   -- | Lens for the task value we want to set.
   Lens' SomeTask a ->
   -- | Id for the task to set.
@@ -301,7 +301,7 @@ setSomeTaskValueMapped ::
   Index s ->
   -- | If successful (task id exists), returns the new index and modified
   -- task.
-  Maybe (Tuple2 IndexUnverified SomeTask)
+  Maybe (Tuple2 Index𝕌 SomeTask)
 setSomeTaskValueMapped mapIndex taskLens taskId newA index =
   over' (_Just % _1) mapIndex mSetResult
   where
@@ -320,7 +320,7 @@ setSomeTaskValueMapped mapIndex taskLens taskId newA index =
 -- | Inserts a task into the index at the top-level. Note that this does
 -- __not__ check that the id is not a duplicate, hence the need for
 -- verification.
-insert :: SomeTask -> Index s -> IndexUnverified
+insert :: SomeTask -> Index s -> Index𝕌
 insert task = Internal.unverify . over' IndexO.taskListLens (task :<|)
 
 -- | Newtype for a group task id.
@@ -337,10 +337,10 @@ instance HasField "unGroupTaskId" GroupTaskId TaskId where
 -- | Inserts a new task t1 at the task id. Like 'insert', this performs no
 -- id verification, and the given task id may not exist in the index
 -- (in which case t1 will not be added).
-insertAtTaskId :: GroupTaskId -> SomeTask -> Index s -> IndexUnverified
+insertAtTaskId :: GroupTaskId -> SomeTask -> Index s -> Index𝕌
 insertAtTaskId taskId task = over' tSubtasks (task :<|) . Internal.unverify
   where
-    tSubtasks :: AffineTraversal' IndexUnverified (Seq SomeTask)
+    tSubtasks :: AffineTraversal' Index𝕌 (Seq SomeTask)
     tSubtasks =
       IndexO.ix taskId.unGroupTaskId % _SomeTaskGroup % #subtasks
 
@@ -355,7 +355,7 @@ filterOnIds ::
   Set TaskId ->
   -- | Index
   Index s ->
-  IndexUnverified
+  Index𝕌
 filterOnIds taskIds = filterTopLevel go
   where
     go :: SomeTask -> Bool
@@ -366,7 +366,7 @@ filterOnIds taskIds = filterTopLevel go
 -- | Filters the index on some predicate. Note this runs the predicate on
 -- the top-level tasks __only__. Thus if you need to filter on subtasks,
 -- the passed predicate will have todo this itself.
-filterTopLevel :: (SomeTask -> Bool) -> Index s -> IndexUnverified
+filterTopLevel :: (SomeTask -> Bool) -> Index s -> Index𝕌
 filterTopLevel p (UnsafeIndex taskList path) = UnsafeIndex (Seq.filter p taskList) path
 
 -- | Partitions the Index on the TaskId set. The left result is all tasks
@@ -380,7 +380,7 @@ partitionTaskIds ::
   -- | Index to partition.
   Index s ->
   -- | (Tasks in s, Tasks not in s)
-  Tuple2 IndexUnverified IndexUnverified
+  Tuple2 Index𝕌 Index𝕌
 partitionTaskIds taskIds = partition pred
   where
     pred = (`NESet.member` taskIds) . (.taskId)
@@ -402,7 +402,7 @@ partition ::
   -- | Index to partition.
   Index s ->
   -- | (p == True, p == False)
-  Tuple2 IndexUnverified IndexUnverified
+  Tuple2 Index𝕌 Index𝕌
 partition taskPred index =
   (UnsafeIndex tasksIn index.path, UnsafeIndex tasksOut index.path)
   where
@@ -478,7 +478,7 @@ writeIndex ::
   ( HasCallStack,
     MonadFileWriter m
   ) =>
-  IndexVerified ->
+  Index𝕍 ->
   m ()
 writeIndex (UnsafeIndex taskList path) = writeBinaryFile path encoded
   where
@@ -496,7 +496,7 @@ toList (UnsafeIndex taskList path) = (path, taskList)
 --------------------------------------------------------------------------------
 
 -- | Verifies that the index satisfies the invariants.
-verify :: (HasCallStack, MonadThrow m) => Index s -> m IndexVerified
+verify :: (HasCallStack, MonadThrow m) => Index s -> m Index𝕍
 verify (UnsafeIndex taskList path) = fromList path taskList
 {-# INLINEABLE verify #-}
 

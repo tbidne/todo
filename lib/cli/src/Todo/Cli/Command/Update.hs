@@ -41,7 +41,7 @@ import Todo.Exception
     TaskIdNotFoundE (MkTaskIdNotFoundE),
   )
 import Todo.Exception qualified as E
-import Todo.Index (IndexUnverified, IndexVerified)
+import Todo.Index (Index𝕌, Index𝕍)
 import Todo.Index qualified as Index
 import Todo.Index.Optics qualified as IndexO
 import Todo.Utils (MatchResult (MatchFailure, MatchPartial, MatchSuccess))
@@ -124,11 +124,11 @@ setTaskId = setTaskValueInteractiveSwitch TaskId.parseTaskId updateId
               index
       liftJustM oldTaskId mSetResult
       where
-        updateBlockers :: IndexUnverified -> IndexUnverified
+        updateBlockers :: Index𝕌 -> Index𝕌
         updateBlockers = over' indexBlockerIdTraversal g
           where
             -- Targets all blocking ids
-            indexBlockerIdTraversal :: Traversal IndexUnverified IndexUnverified TaskId TaskId
+            indexBlockerIdTraversal :: Traversal Index𝕌 Index𝕌 TaskId TaskId
             indexBlockerIdTraversal =
               IndexO.indexTraversal
                 % TaskO.someTaskStatusATraversal
@@ -204,7 +204,7 @@ setTaskValueInteractiveSwitch ::
     MonadTime m
   ) =>
   (Text -> EitherString a) ->
-  (TaskId -> a -> IndexVerified -> m (IndexUnverified, SomeTask)) ->
+  (TaskId -> a -> Index𝕍 -> m (Index𝕌, SomeTask)) ->
   CoreConfigMerged ->
   InteractiveSwitch ->
   -- | The task id.
@@ -260,7 +260,7 @@ setTaskValueWithRetry ::
     MonadTime m
   ) =>
   (Text -> EitherString a) ->
-  (TaskId -> a -> IndexVerified -> m (IndexUnverified, SomeTask)) ->
+  (TaskId -> a -> Index𝕍 -> m (Index𝕌, SomeTask)) ->
   CoreConfigMerged ->
   m ()
 setTaskValueWithRetry parser setIndexFn coreConfig = go
@@ -299,7 +299,7 @@ setTaskValue ::
     MonadThrow m,
     MonadTime m
   ) =>
-  (TaskId -> a -> IndexVerified -> m (IndexUnverified, SomeTask)) ->
+  (TaskId -> a -> Index𝕍 -> m (Index𝕌, SomeTask)) ->
   CoreConfigMerged ->
   TaskId ->
   -- | The task value.
@@ -320,7 +320,7 @@ saveUpdated ::
     MonadTerminal m,
     MonadThrow m
   ) =>
-  IndexUnverified ->
+  Index𝕌 ->
   m ()
 saveUpdated newIndex = do
   verifiedIndex <- Index.verify newIndex

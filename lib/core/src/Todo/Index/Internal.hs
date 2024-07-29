@@ -1,11 +1,12 @@
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 module Todo.Index.Internal
   ( -- * Types
     Index (..),
     IndexState (..),
-    IndexUnverified,
-    IndexVerified,
+    Index𝕌,
+    Index𝕍,
 
     -- * Misc,
     unverify,
@@ -33,9 +34,11 @@ data IndexState
     IndexStateVerified
   deriving stock (Eq, Show)
 
-type IndexUnverified = Index IndexStateUnverified
+-- | Unverified index. U+1D54C
+type Index𝕌 = Index IndexStateUnverified
 
-type IndexVerified = Index IndexStateVerified
+-- | Verified index. U+1D54D
+type Index𝕍 = Index IndexStateVerified
 
 -- | Todo index.
 type Index :: IndexState -> Type
@@ -63,7 +66,7 @@ lookup taskId (UnsafeIndex taskList _) = foldMapAlt go taskList
 
 -- | @replaceAtId taskId index newTask@ replaces all tasks corresponding to
 -- @taskId@ in @index@ with @newTask@.
-replaceAtId :: TaskId -> Index s -> Maybe SomeTask -> IndexUnverified
+replaceAtId :: TaskId -> Index s -> Maybe SomeTask -> Index𝕌
 replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
   (`UnsafeIndex` path) $ foldr go Empty taskList
   where
@@ -87,5 +90,5 @@ replaceAtId taskId (UnsafeIndex taskList path) mNewTask =
       Nothing -> identity
 
 -- | Forgets verification status on an Index.
-unverify :: Index s -> IndexUnverified
+unverify :: Index s -> Index𝕌
 unverify = coerce

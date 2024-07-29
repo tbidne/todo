@@ -47,7 +47,7 @@ import Todo.Data.TaskStatus (TaskStatus (NotStarted))
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Exception (DuplicateIdE (MkDuplicateIdE))
-import Todo.Index (GroupTaskId, Index, IndexUnverified, IndexVerified, (∈))
+import Todo.Index (GroupTaskId, Index, Index𝕌, Index𝕍, (∈))
 import Todo.Index qualified as Index
 import Todo.Index.Optics qualified as IndexO
 import Todo.Utils qualified as Utils
@@ -90,7 +90,7 @@ insertTask coreConfig = do
         $ Render.renderSorted currTime color unicode sorted
   where
     color = coreConfig.colorSwitch
-    index :: IndexVerified
+    index :: Index𝕍
     index = coreConfig.index
     unicode = coreConfig.unicodeSwitch
 
@@ -102,7 +102,7 @@ mkSomeTask ::
   ) =>
   ColorSwitch ->
   Index s ->
-  m (IndexUnverified, TaskId)
+  m (Index𝕌, TaskId)
 mkSomeTask color index = do
   let indexToGroupIds =
         IndexO.unverifyGetter

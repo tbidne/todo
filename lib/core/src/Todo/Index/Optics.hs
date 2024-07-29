@@ -21,7 +21,7 @@ import Todo.Data.Task (SomeTask)
 import Todo.Data.Task.Optics qualified as Task
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskStatus (TaskStatus)
-import Todo.Index.Internal (Index (UnsafeIndex), IndexUnverified)
+import Todo.Index.Internal (Index (UnsafeIndex), Index𝕌)
 import Todo.Index.Internal qualified as Internal
 import Todo.Prelude
 import Todo.Utils qualified as Utils
@@ -32,12 +32,12 @@ import Todo.Utils qualified as Utils
 -- This means:
 --
 -- 1. For optics that can change the index (e.g. Lenses, general traversals),
---    the result must be IndexUnverified, and the source either (Index s)
---    (preferred where possible) or IndexUnverified.
+--    the result must be Index𝕌, and the source either (Index s)
+--    (preferred where possible) or Index𝕌.
 --
 -- 2. Optics that only retrieve values (folds) can either be type-preserving
---    on (Index s) (preferred) or result in IndexUnverified. In particular,
---    we cannot allow transforming IndexVerified to IndexUnverified.
+--    on (Index s) (preferred) or result in Index𝕌. In particular,
+--    we cannot allow transforming Index𝕍 to Index𝕌.
 --
 -- Usage is usually straightforward, though we sometimes have to manually
 -- unverify the index first.
@@ -57,7 +57,7 @@ pathLens =
 {-# INLINE pathLens #-}
 
 -- | Lens for task list.
-taskListLens :: Lens (Index s) IndexUnverified (Seq SomeTask) (Seq SomeTask)
+taskListLens :: Lens (Index s) Index𝕌 (Seq SomeTask) (Seq SomeTask)
 taskListLens =
   lensVL
     $ \f
@@ -68,7 +68,7 @@ taskListLens =
 {-# INLINE taskListLens #-}
 
 -- | Indexed affine traversal.
-ix :: TaskId -> AffineTraversal (Index s) IndexUnverified SomeTask SomeTask
+ix :: TaskId -> AffineTraversal (Index s) Index𝕌 SomeTask SomeTask
 ix taskId =
   atraversal
     (\idx -> mToE (Internal.unverify idx) $ Internal.lookup taskId idx)
@@ -76,7 +76,7 @@ ix taskId =
 {-# INLINE ix #-}
 
 -- | Indexed lens.
-at :: TaskId -> Lens (Index s) IndexUnverified (Maybe SomeTask) (Maybe SomeTask)
+at :: TaskId -> Lens (Index s) Index𝕌 (Maybe SomeTask) (Maybe SomeTask)
 at taskId = lens (Internal.lookup taskId) (Internal.replaceAtId taskId)
 {-# INLINE at #-}
 
@@ -88,16 +88,16 @@ indexIdStatusFold =
 -- | Traversal for every task that satisfies the predicate.
 indexPredTraversal ::
   (SomeTask -> Bool) ->
-  Traversal (Index s) IndexUnverified SomeTask SomeTask
+  Traversal (Index s) Index𝕌 SomeTask SomeTask
 indexPredTraversal p =
   taskListLens
     % Utils.seqTraversal
     % Task.someTaskPredTraversal p
 
 -- | Traversal across all tasks.
-indexTraversal :: Traversal (Index s) IndexUnverified SomeTask SomeTask
+indexTraversal :: Traversal (Index s) Index𝕌 SomeTask SomeTask
 indexTraversal = indexPredTraversal (const True)
 
 -- | Drops verification.
-unverifyGetter :: Getter (Index s) IndexUnverified
+unverifyGetter :: Getter (Index s) Index𝕌
 unverifyGetter = to Internal.unverify
