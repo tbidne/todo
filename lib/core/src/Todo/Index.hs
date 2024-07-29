@@ -261,7 +261,7 @@ setSomeTaskValue ::
   -- | If successful (task id exists), returns the new index and modified
   -- task.
   Maybe (Index𝕌, SomeTask)
-setSomeTaskValue = setSomeTaskValueMapped Internal.unverify
+setSomeTaskValue = setSomeTaskValueMapped identity
 
 -- | Like 'setSomeTaskValue', except expects a 'SingleTask'. Returns a
 -- 'MatchResult' to distinguish between a total failure (task id does not
@@ -321,7 +321,7 @@ setSomeTaskValueMapped mapIndex taskLens taskId newA index =
 -- __not__ check that the id is not a duplicate, hence the need for
 -- verification.
 insert :: SomeTask -> Index s -> Index𝕌
-insert task = Internal.unverify . over' IndexO.taskListLens (task :<|)
+insert task = over' IndexO.taskListLens (task :<|)
 
 -- | Newtype for a group task id.
 newtype GroupTaskId = MkGroupTaskId TaskId

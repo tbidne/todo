@@ -110,7 +110,7 @@ mkSomeTask color index = do
           % TaskO.taskGroupTraversal
           % #taskId
 
-      parentIds = toListOf indexToGroupIds $ Index.unverify index
+      parentIds = toListOf indexToGroupIds index
 
   putTextLn "Parent id(s):\n"
 
