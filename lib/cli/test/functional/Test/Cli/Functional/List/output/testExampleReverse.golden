@@ -44,7 +44,7 @@
    deadline: 2024-08-12 12:00:00
 
 ⛔ id: groceries
-   status: blocked: <fix_car>, <paycheck>, 'store closed'
+   status: blocked: <fix_car>, <paycheck>, store closed
    priority: high
 
   ❌ id: apples

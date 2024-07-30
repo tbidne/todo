@@ -1,7 +1,7 @@
 Found duplicate tasks with id 'paycheck'.
 
 ⛔ id: groceries
-   status: blocked: <fix_car>, <paycheck>, 'store closed'
+   status: blocked: <fix_car>, <paycheck>, store closed
    priority: high
 
   ❌ id: bananas

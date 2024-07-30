@@ -29,7 +29,7 @@ Successfully deleted tasks(s).
    description: Car needs brakes fixed
 
 ⛔ id: groceries
-   status: blocked: <fix_car>, <paycheck>, 'store closed'
+   status: blocked: <fix_car>, <paycheck>, store closed
    priority: normal
 
   ❌ id: apples

@@ -7,7 +7,7 @@ Found id(s):
 - empty_group: completed
 - equipment: blocked: <fix_car>
 - fix_car: not-started
-- groceries: blocked: <fix_car>, <paycheck>, 'store closed'
+- groceries: blocked: <fix_car>, <paycheck>, store closed
 - haircut: not-started
 - pack_bananas: blocked: <groceries>
 - paycheck: in-progress
@@ -28,7 +28,7 @@ Successfully updated task
 
 
 ⛔ id: groceries
-   status: blocked: <fix_car>, <paycheck>, 'store closed'
+   status: blocked: <fix_car>, <paycheck>, store closed
    priority: high
 
   ❌ id: bananas

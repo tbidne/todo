@@ -28,6 +28,9 @@ module Todo.Utils
 
     -- * Aeson
     validateKeys,
+
+    -- * Misc
+    foldableToText,
   )
 where
 
@@ -314,3 +317,13 @@ validateKeys expectedKeys o = do
         (quote . K.toText <$> ks)
 
     quote k = "'" <> k <> "'"
+
+foldableToText ::
+  (Foldable f) =>
+  (a -> Text) ->
+  f a ->
+  Text
+foldableToText onBlocker =
+  T.intercalate ", "
+    . fmap onBlocker
+    . toList

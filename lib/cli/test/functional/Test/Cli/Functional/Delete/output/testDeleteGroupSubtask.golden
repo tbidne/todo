@@ -10,7 +10,7 @@ Successfully deleted tasks(s).
 
 
 ⛔ id: groceries
-   status: blocked: <fix_car>, <paycheck>, 'store closed'
+   status: blocked: <fix_car>, <paycheck>, store closed
    priority: high
 
   ❌ id: bananas

@@ -1,14 +1,14 @@
 Updated task:
 
 ⛔ id: apples
-   status: blocked: <ball>, <fix_car>, 'a blocker', 'another'
+   status: blocked: <ball>, <fix_car>, a blocker, another
    priority: normal
 
 Successfully updated task
 
 
 ⛔ id: groceries
-   status: blocked: <fix_car>, <paycheck>, 'store closed'
+   status: blocked: <fix_car>, <paycheck>, store closed
    priority: high
 
   ❌ id: bananas
@@ -16,7 +16,7 @@ Successfully updated task
      priority: high
 
   ⛔ id: apples
-     status: blocked: <ball>, <fix_car>, 'a blocker', 'another'
+     status: blocked: <ball>, <fix_car>, a blocker, another
      priority: normal
 
 🚧 id: paycheck
