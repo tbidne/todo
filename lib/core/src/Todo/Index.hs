@@ -48,6 +48,7 @@ module Todo.Index
 
     -- * Misc
     getBlockingIds,
+    getParentIds,
   )
 where
 
@@ -531,6 +532,17 @@ getBlockingIds (UnsafeIndex idx _path) = foldl' go Map.empty idx
         <$> NESet.toList ids
 
     neToSeq = Seq.fromList . NE.toList
+
+-- | Retrieves all parent ids.
+getParentIds :: Index s -> List TaskId
+getParentIds = toListOf indexToGroupIdsPrism
+  where
+    indexToGroupIdsPrism :: Fold (Index s) TaskId
+    indexToGroupIdsPrism =
+      IndexO.unverifyGetter
+        % IndexO.indexTraversal
+        % _SomeTaskGroup
+        % #taskId
 
 --------------------------------------------------------------------------------
 ------------------------------------ Helpers -----------------------------------

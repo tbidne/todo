@@ -5,7 +5,6 @@ Parent id(s):
 - groceries
 - soccer_match
 - equipment
-- equipment
 - empty_group
 
 Task id for parent group (leave blank for no parent)? 
@@ -21,7 +20,6 @@ Parent id(s):
 - group_id
 - groceries
 - soccer_match
-- equipment
 - equipment
 - empty_group
 
@@ -40,7 +38,6 @@ Parent id(s):
 - group_id
 - groceries
 - soccer_match
-- equipment
 - equipment
 - empty_group
 

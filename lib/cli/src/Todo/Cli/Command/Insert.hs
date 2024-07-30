@@ -38,7 +38,6 @@ import Todo.Data.Task
     SomeTask (SomeTaskGroup, SomeTaskSingle),
     TaskGroup (MkTaskGroup, priority, status, subtasks, taskId),
   )
-import Todo.Data.Task.Optics qualified as TaskO
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Data.TaskPriority (TaskPriority (Normal))
@@ -49,7 +48,6 @@ import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Exception (DuplicateIdE (MkDuplicateIdE))
 import Todo.Index (Index, Index𝕌, (∈))
 import Todo.Index qualified as Index
-import Todo.Index.Optics qualified as IndexO
 import Todo.Utils qualified as Utils
 
 -- | Inserts new task(s) into the file.
@@ -102,13 +100,7 @@ mkSomeTask ::
   Index s ->
   m (Index𝕌, TaskId)
 mkSomeTask color index = do
-  let indexToGroupIds =
-        IndexO.unverifyGetter
-          % IndexO.indexTraversal
-          % TaskO.taskGroupTraversal
-          % #taskId
-
-      parentIds = toListOf indexToGroupIds index
+  let parentIds = Index.getParentIds index
 
   putTextLn "Parent id(s):\n"
 
