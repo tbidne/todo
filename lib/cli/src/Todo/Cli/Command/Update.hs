@@ -270,7 +270,7 @@ setTaskValueWithRetry parser setIndexFn coreConfig = go
         taskId <- CUtils.askParseQ "Enter task id to update: " TaskId.parseTaskId
         value <- CUtils.askParseQ @_ @a "Enter value: " parser
 
-        (newIndex, modifiedTask) <- setIndexFn taskId value index
+        (newIndex𝕌, modifiedTask) <- setIndexFn taskId value index
 
         printUpdated coreConfig modifiedTask
 
@@ -278,7 +278,7 @@ setTaskValueWithRetry parser setIndexFn coreConfig = go
 
         if ans
           then
-            saveUpdated newIndex
+            saveUpdated newIndex𝕌
           else
             putTextLn "Taks not updated."
 
@@ -306,11 +306,11 @@ setTaskValue ::
   a ->
   m ()
 setTaskValue setIndexFn coreConfig taskId newValue = do
-  (newIndex, modifiedTask) <- setIndexFn taskId newValue index
+  (newIndex𝕌, modifiedTask) <- setIndexFn taskId newValue index
 
   printUpdated coreConfig modifiedTask
 
-  saveUpdated newIndex
+  saveUpdated newIndex𝕌
   where
     index = coreConfig.index
 
@@ -322,9 +322,9 @@ saveUpdated ::
   ) =>
   Index𝕌 ->
   m ()
-saveUpdated newIndex = do
-  verifiedIndex <- Index.verify newIndex
-  Index.writeIndex verifiedIndex
+saveUpdated newIndex𝕌 = do
+  newIndex𝕍 <- Index.verify newIndex𝕌
+  Index.writeIndex newIndex𝕍
   putTextLn "Successfully updated task"
 
 printUpdated ::
