@@ -47,7 +47,7 @@ import Todo.Data.TaskStatus (TaskStatus (NotStarted))
 import Todo.Data.TaskStatus qualified as TaskStatus
 import Todo.Data.Timestamp qualified as Timestamp
 import Todo.Exception (DuplicateIdE (MkDuplicateIdE))
-import Todo.Index (GroupTaskId, Index, Index𝕌, (∈))
+import Todo.Index (Index, Index𝕌, (∈))
 import Todo.Index qualified as Index
 import Todo.Index.Optics qualified as IndexO
 import Todo.Utils qualified as Utils
@@ -131,7 +131,7 @@ mkSomeTask color index = do
 
   let newIndex = case mParentId of
         Nothing -> Index.insert newTask index
-        Just parentId -> Index.insertAtTaskId parentId newTask index
+        Just onTask -> onTask newTask
 
   pure (newIndex, newTask.taskId)
 
@@ -278,7 +278,7 @@ getExtantTaskGroupIdOrEmpty ::
   -- | Index
   Index s ->
   -- | The group task id, if the user asked for it.
-  m (Maybe GroupTaskId)
+  m (Maybe (SomeTask -> Index𝕌))
 getExtantTaskGroupIdOrEmpty qsn index = go
   where
     go = do
@@ -291,7 +291,7 @@ getExtantTaskGroupIdOrEmpty qsn index = go
               putTextLn $ CUtils.formatBadResponse err
               go
             EitherRight taskId ->
-              case Index.findGroupTaskId taskId index of
+              case Index.insertAtTaskId taskId index of
                 Left err -> putTextLn err *> go
                 Right x -> pure $ Just x
 

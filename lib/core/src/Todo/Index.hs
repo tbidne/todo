@@ -31,8 +31,6 @@ module Todo.Index
 
     -- ** Lookup
     Internal.lookup,
-    GroupTaskId,
-    findGroupTaskId,
 
     -- ** Membership
     member,
@@ -89,7 +87,7 @@ import Todo.Index.Internal
 import Todo.Index.Internal qualified as Internal
 import Todo.Index.Optics qualified as IndexO
 import Todo.Prelude hiding (filter, toList)
-import Todo.Utils (MatchResult)
+import Todo.Utils (MatchResult (MatchFailure, MatchPartial, MatchSuccess))
 import Todo.Utils qualified as Utils
 
 --------------------------------------------------------------------------------
@@ -325,19 +323,33 @@ newtype GroupTaskId = MkGroupTaskId TaskId
 instance HasField "unGroupTaskId" GroupTaskId TaskId where
   getField (MkGroupTaskId x) = x
 
--- TODO: We probably do __not__ want insertAtTaskId to silently
--- fail if the task id does not exist. There should be some kind of
--- error here.
-
--- | Inserts a new task t1 at the task id. Like 'insert', this performs no
--- id verification, and the given task id may not exist in the index
--- (in which case t1 will not be added).
-insertAtTaskId :: GroupTaskId -> SomeTask -> Index s -> Index𝕌
-insertAtTaskId taskId task = over' tSubtasks (task :<|) . Internal.unverify
+-- | Given a parent task id and index, returns a function for adding a new
+-- task at that id. If the id does not exist or it corresponds to a single
+-- task, an error message is returned.
+insertAtTaskId :: TaskId -> Index s -> Either Text (SomeTask -> Index𝕌)
+insertAtTaskId taskId index = case result of
+  MatchFailure -> Left $ displayExceptiont $ MkTaskIdNotFoundE taskId
+  MatchPartial _ ->
+    Left
+      $ mconcat
+        [ "The task id '",
+          taskId.unTaskId,
+          "' exists in the index but is a single task id, not a group."
+        ]
+  MatchSuccess modTasks _ -> Right $ modToPrepend modTasks
   where
-    tSubtasks :: AffineTraversal' Index𝕌 (Seq SomeTask)
-    tSubtasks =
-      IndexO.ix taskId.unGroupTaskId % _SomeTaskGroup % #subtasks
+    result = Utils.previewPartialNodeOver' indexToTask taskToSubtasks index𝕌
+
+    index𝕌 = Internal.unverify index
+
+    modToPrepend :: ((Seq SomeTask -> Seq SomeTask) -> Index𝕌) -> SomeTask -> Index𝕌
+    modToPrepend f st = f (st :<|)
+
+    taskToSubtasks :: AffineTraversal' SomeTask (Seq SomeTask)
+    taskToSubtasks = _SomeTaskGroup % #subtasks
+
+    indexToTask :: AffineTraversal' Index𝕌 SomeTask
+    indexToTask = IndexO.ix taskId
 
 --------------------------------------------------------------------------------
 ----------------------------------- Filtering ----------------------------------
@@ -424,21 +436,6 @@ partition taskPred index =
 --------------------------------------------------------------------------------
 ------------------------------------ Lookup ------------------------------------
 --------------------------------------------------------------------------------
-
--- | Returns a 'GroupTaskId' for the parameter iff it corresponds to a
--- extant group 'TaskId'. Otherwise returns an error message.
-findGroupTaskId :: TaskId -> Index s -> Either Text GroupTaskId
-findGroupTaskId taskId index = case Internal.lookup taskId index of
-  Nothing -> Left $ displayExceptiont $ MkTaskIdNotFoundE taskId
-  Just (SomeTaskSingle _) ->
-    Left
-      $ mconcat
-        [ "The task id '",
-          taskId.unTaskId,
-          "' exists in the index but is a single task id, not a group."
-        ]
-  (Just (SomeTaskGroup _)) ->
-    Right $ MkGroupTaskId taskId
 
 --------------------------------------------------------------------------------
 ---------------------------------- Membership ----------------------------------

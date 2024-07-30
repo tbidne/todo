@@ -14,13 +14,12 @@ module Todo.Utils
     neSetTraversal,
 
     -- ** Preview + Over
-    overPreview',
-    setPreview',
     overPreviewNode',
     setPreviewNode',
     MatchResult (..),
     overPreviewPartialNode',
     setPreviewPartialNode',
+    previewPartialNodeOver',
 
     -- *** Optics
     _MatchSuccess,
@@ -101,40 +100,6 @@ whileM_ mb mx = go
       when b (mx *> go)
 {-# INLINEABLE whileM_ #-}
 
--- | Like 'over'', except we run the 'set'' on the result of a 'preview'.
--- This is intended for updates that can fail. For example, we want @Index@
--- update to fail if we do not find a task with the desired id. The
--- 'Ixed' class, however, provides an @AffineTraversal' s a@ i.e sets always
--- succeed.
---
--- We therefore generalize to AffineFold and Setter, and run the set on the
--- preview.
-overPreview' ::
-  forall k is s a.
-  ( Is k An_AffineFold,
-    Is k A_Setter
-  ) =>
-  Optic k is s s a a ->
-  (a -> a) ->
-  s ->
-  Maybe s
-overPreview' o f s = case preview o s of
-  Nothing -> Nothing
-  Just a -> Just (set' o (f a) s)
-{-# INLINE overPreview' #-}
-
--- | 'set'' with 'overPreview''.
-setPreview' ::
-  ( Is k An_AffineFold,
-    Is k A_Setter
-  ) =>
-  Optic k is s s a a ->
-  a ->
-  s ->
-  Maybe s
-setPreview' o newA = overPreview' o (const newA)
-{-# INLINE setPreview' #-}
-
 -- | 'overPreviewNode'' that sets the field.
 setPreviewNode' ::
   AffineTraversal' s a ->
@@ -144,8 +109,14 @@ setPreviewNode' ::
   Maybe (Tuple2 s a)
 setPreviewNode' o1 o2 b = overPreviewNode' o1 o2 (const b)
 
--- | Like 'overPreview'', except we also return the updated "inner node",
--- if the update succeeds.
+-- | Like 'over'', except we run the 'set'' on the result of a 'preview'.
+-- This is intended for updates that can fail. For example, we want @Index@
+-- update to fail if we do not find a task with the desired id. The
+-- 'Ixed' class, however, provides an @AffineTraversal' s a@ that does not
+-- distinguish between a successful update and a match failure. We do here
+-- via the returned Maybe.
+--
+-- Upon success, we also return the updated "inner node".
 overPreviewNode' ::
   forall s a b.
   -- | AffineTraversal from a "root type" @s@ to node @a@.
@@ -208,6 +179,32 @@ overPreviewPartialNode' rootToNode nodeToLeaf f root = case preview rootToNode r
           node' = set' nodeToLeaf leaf' node
        in MatchSuccess (set' rootToNode node' root) node'
 {-# INLINE overPreviewPartialNode' #-}
+
+-- | Like 'overPreviewPartialNode', except instead of returning the updated
+-- type and inner node, we return a function for modifying the type.
+-- This is useful when want to perform a match first but only carry out the
+-- actual update after doing some intermediate work.
+previewPartialNodeOver' ::
+  -- | AffineTraversal from a "root type" @s@ to node @a@.
+  AffineTraversal' s a ->
+  -- | AffineTraversal from node @a@ to leaf @l@.
+  AffineTraversal' a b ->
+  s ->
+  -- | Functions @f@ and @g@ for modifying the outer and inner nodes,
+  -- respectively. As @f@ also runs @g@ itself, the latter function is only
+  -- useful for examining the possible partial.
+  MatchResult ((b -> b) -> s) ((b -> b) -> a)
+previewPartialNodeOver' rootToNode nodeToLeaf root = case preview rootToNode root of
+  Nothing -> MatchFailure
+  Just node -> case preview nodeToLeaf node of
+    Nothing -> MatchPartial (const node)
+    Just leaf ->
+      let h f = set' nodeToLeaf (f leaf) node
+          g f =
+            let node' = h f
+             in set' rootToNode node' root
+       in MatchSuccess g h
+{-# INLINE previewPartialNodeOver' #-}
 
 -- | Optics matching result.
 data MatchResult s a
