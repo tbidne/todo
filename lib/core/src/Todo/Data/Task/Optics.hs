@@ -35,8 +35,8 @@ someTaskTraversal :: Traversal' SomeTask SomeTask
 someTaskTraversal = someTaskPredTraversal (const True)
 
 -- | Traverses all task groups.
-taskGroupTraversal :: Traversal' SomeTask SomeTask
-taskGroupTraversal = someTaskPredTraversal (is _SomeTaskGroup)
+taskGroupTraversal :: Traversal' SomeTask TaskGroup
+taskGroupTraversal = someTaskTraversal % _SomeTaskGroup
 
 -- | Traverses all tasks that satisfy the predicate.
 someTaskPredTraversal :: (SomeTask -> Bool) -> Traversal' SomeTask SomeTask
