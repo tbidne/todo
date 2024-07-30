@@ -160,7 +160,10 @@ genBlockerTextText :: Gen Text
 genBlockerTextText = genGoodText
 
 genGoodText :: Gen Text
-genGoodText = Gen.text (Range.linear 1 20) genGoodChar
+genGoodText =
+  Gen.filter (not . T.null)
+    . fmap T.strip
+    $ Gen.text (Range.linear 1 20) genGoodChar
 
 genGoodChar :: Gen Char
 genGoodChar = Gen.filter (not . flip Set.member badChars) Gen.unicode

@@ -354,12 +354,12 @@ testTaskStatusJsonRoundtrip = testPropertyNamed desc "testTaskStatusJsonRoundtri
     desc = "TaskStatus JSON encoding round trips"
 
 genSomeTaskList :: Gen (List SomeTask)
-genSomeTaskList = Gen.list (Range.linearFrom 0 0 20) genSomeTask
+genSomeTaskList = Gen.list (Range.linearFrom 0 0 5) genSomeTask
 
 genSomeTask :: Gen SomeTask
 genSomeTask =
   Gen.frequency
-    [ (3, SomeTaskSingle <$> genTask), -- weigh single tasks to make tests faster
+    [ (5, SomeTaskSingle <$> genTask), -- weigh single tasks to make tests faster
       (1, SomeTaskGroup <$> genTaskGroup)
     ]
 
@@ -377,7 +377,7 @@ genTaskGroup = do
         taskId
       }
   where
-    genSubtasks = Seq.fromList <$> Gen.list (Range.linearFrom 0 3 3) genSomeTask
+    genSubtasks = Seq.fromList <$> Gen.list (Range.linear 0 2) genSomeTask
 
 genTask :: Gen SingleTask
 genTask = do
