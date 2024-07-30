@@ -7,7 +7,6 @@ module Todo.Cli.Configuration.Data.Utils
   )
 where
 
-import Optics.Core (review)
 import Options.Applicative qualified as OA
 import Options.Applicative.Help.Chunk qualified as Chunk
 import Options.Applicative.Help.Pretty qualified as Pretty

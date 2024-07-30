@@ -12,7 +12,6 @@ import Data.Map.Strict qualified as Map
 import Effects.FileSystem.FileReader qualified as FR
 import Effects.FileSystem.PathReader qualified as PR
 import Effects.FileSystem.Utils qualified as FsUtils
-import Optics.Core (review)
 import TOML (DecodeTOML (tomlDecoder), Decoder, getFieldOptWith, getFieldWith)
 import TOML qualified
 import Todo.Cli.Configuration.ConfigPhase
@@ -28,7 +27,8 @@ import Todo.Data.Sorted (SortType)
 import Todo.Data.Sorted.RevSort (RevSort)
 import Todo.Exception (ConfigNotFoundE (MkConfigNotFoundE))
 
--- TODO:
+-- TODO: [Toml configuration]
+--
 -- - timestamp color threshold
 -- - timezones, perhaps
 

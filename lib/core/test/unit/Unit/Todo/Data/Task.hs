@@ -419,7 +419,7 @@ genTimestamp =
         -- nearest second. I don't actually care about that level of precision,
         -- hence sticking with 0.
         <*> pure 0
-    genTimeZone = pure utc -- TODO: Maybe offer some way to add timezone config
+    genTimeZone = pure utc -- see TODO: [Toml configuration]
 
 genDescription :: Gen Text
 genDescription = genText 100

@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wno-missing-methods #-}
 {-# OPTIONS_GHC -Wno-x-unimpl #-}
 
--- TODO: Remove -Wno-deprecations once on GHC 9.10+.
+-- TODO: [GHC 9.10] Remove -Wno-deprecations.
 
 module Test.Cli.Config.Prelude
   ( module X,

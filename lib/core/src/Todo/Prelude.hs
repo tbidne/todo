@@ -281,7 +281,7 @@ traceFileLine path txt = traceFile path (txt <> "\n")
 
 {- ORMOLU_DISABLE -}
 
--- | TODO: Remove branch once unconditionally on GHC 9.10+.
+-- | TODO: [GHC 9.10] Remove branch.
 setUncaughtExceptionHandlerDisplay :: IO ()
 setUncaughtExceptionHandlerDisplay =
   Ex.setUncaughtExceptionHandler printExceptExitCode
