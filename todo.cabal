@@ -9,14 +9,15 @@ author:             Thomas Bidne
 maintainer:         tbidne@protonmail.com
 homepage:           https://github.com/tbidne/todo/
 bug-reports:        https://github.com/tbidne/todo/issues
-synopsis:           Template
-description:        Template
-category:           Template
+synopsis:           A todo application
+description:        Todo is a CLI application that manages a todo list.
+category:           CLI Tools
 extra-source-files:
   .gitignore
   cabal.project
-  CHANGELOG.md
   README.md
+
+extra-doc-files:    CHANGELOG.md
 
 source-repository head
   type:     git
