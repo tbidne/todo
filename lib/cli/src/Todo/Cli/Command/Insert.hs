@@ -8,8 +8,6 @@ module Todo.Cli.Command.Insert
   )
 where
 
-import Data.Text.Lazy qualified as TL
-import Data.Text.Lazy.Builder qualified as TLB
 import Effects.Time (MonadTime (getSystemZonedTime))
 import Todo.Cli.Command.Utils qualified as CUtils
 import Todo.Cli.Configuration.Core
@@ -82,8 +80,7 @@ insertTask coreConfig = do
 
       putTextLn "Successfully added task. Modified tasks:\n"
       putTextLn
-        $ TL.toStrict
-        $ TLB.toLazyText
+        $ builderToTxt
         $ Render.renderSorted currTime color unicode sorted
   where
     color = coreConfig.colorSwitch

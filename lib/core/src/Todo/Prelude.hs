@@ -68,6 +68,7 @@ import Control.Applicative as X
     (*>),
     (<*),
   )
+import Control.Exception.Utils as X (throwText, trySync)
 import Control.Monad as X
   ( Monad ((>>=)),
     join,
@@ -76,6 +77,14 @@ import Control.Monad as X
     when,
     (=<<),
     (>=>),
+  )
+import Control.Monad.Catch as X
+  ( Exception (displayException, fromException, toException),
+    MonadCatch,
+    MonadThrow,
+    SomeException (SomeException),
+    throwM,
+    try,
   )
 import Control.Monad.Fail as X (MonadFail (fail))
 import Control.Monad.IO.Class as X (MonadIO (liftIO))
@@ -123,10 +132,9 @@ import Data.Set.NonEmpty as X (NESet)
 import Data.Set.NonEmpty qualified as NESet
 import Data.String as X (IsString (fromString), String)
 import Data.Text as X (Text, pack, unpack)
+import Data.Text.Builder.Linear as X (Builder)
+import Data.Text.Builder.Linear qualified as TBL
 import Data.Text.Display as X (Display (displayBuilder), display)
-import Data.Text.Lazy qualified as TL
-import Data.Text.Lazy.Builder as X (Builder)
-import Data.Text.Lazy.Builder qualified as TLB
 import Data.Traversable as X (Traversable (sequenceA, traverse))
 import Data.Tuple as X (curry, snd, uncurry)
 #if MIN_VERSION_base(4, 20, 0)
@@ -135,16 +143,6 @@ import Data.Tuple.Experimental as X (Tuple2, Tuple3)
 import Data.Tuple.Optics as X (_1, _2)
 import Data.Type.Equality as X (type (~))
 import Data.Word as X (Word16, Word8)
-import Effects.Exception as X
-  ( Exception (displayException, fromException, toException),
-    ExitCode (ExitSuccess),
-    MonadCatch,
-    MonadThrow,
-    throwM,
-    throwString,
-    tryAny,
-  )
-import Effects.Exception qualified as Ex
 import Effects.FileSystem.FileReader as X (MonadFileReader)
 import Effects.FileSystem.FileWriter as X
   ( MonadFileWriter (writeBinaryFile),
@@ -153,10 +151,14 @@ import Effects.FileSystem.FileWriter as X
 import Effects.FileSystem.PathReader as X (MonadPathReader)
 import Effects.FileSystem.PathReader qualified as PR
 import Effects.FileSystem.PathWriter as X (MonadPathWriter)
-import Effects.FileSystem.Utils as X (OsPath, encodeUtf8, osp, (</>))
-import Effects.FileSystem.Utils qualified as FsUtils
 import Effects.Time as X (MonadTime)
+import FileSystem.OsPath as X (OsPath, encode, osp, ospPathSep, (</>))
+import FileSystem.OsPath qualified as OsPath
+import FileSystem.UTF8 as X (encodeUtf8)
 import GHC.Base (RuntimeRep, TYPE, raise#, seq)
+-- import Optics.At.Core as X (ix)
+
+import GHC.Conc.Sync qualified as Sync
 import GHC.Enum as X (Bounded, Enum)
 import GHC.Err as X (error)
 import GHC.Exception (errorCallWithCallStackException)
@@ -174,7 +176,6 @@ import Optics.AffineTraversal as X
     An_AffineTraversal,
     atraversal,
   )
--- import Optics.At.Core as X (ix)
 import Optics.Core as X (Is, Optic, Optic')
 import Optics.Core.Extras as X (is)
 import Optics.Fold as X (Fold, toListOf)
@@ -189,6 +190,7 @@ import Optics.Re as X (re)
 import Optics.Review as X (review)
 import Optics.Setter as X (A_Setter, over', set')
 import Optics.Traversal as X (A_Traversal, Traversal, Traversal', traversalVL)
+import System.Exit as X (ExitCode (ExitSuccess))
 import System.IO as X (FilePath, IO)
 import System.IO qualified as IO
 import System.IO.Unsafe (unsafePerformIO)
@@ -245,7 +247,7 @@ foldMappersAltA x = foldr (\g -> liftA2 (<|>) (g x)) (pure empty)
 {-# INLINEABLE foldMappersAltA #-}
 
 builderToTxt :: Builder -> Text
-builderToTxt = TL.toStrict . TLB.toLazyText
+builderToTxt = TBL.runBuilder
 
 listToSeq :: List a -> Seq a
 listToSeq = Seq.fromList
@@ -273,7 +275,7 @@ unimpl = raise# (errorCallWithCallStackException "Prelude.unimpl: intentionally 
 traceFile :: FilePath -> Text -> a -> a
 traceFile path txt x = writeFn `seq` x
   where
-    io = appendFileUtf8 (FsUtils.unsafeEncodeFpToOs path) txt
+    io = appendFileUtf8 (OsPath.unsafeEncodeValid path) txt
     writeFn = unsafePerformIO io
 
 traceFileLine :: FilePath -> Text -> a -> a
@@ -281,26 +283,15 @@ traceFileLine path txt = traceFile path (txt <> "\n")
 
 {- ORMOLU_DISABLE -}
 
--- | TODO: [GHC 9.10] Remove branch.
 setUncaughtExceptionHandlerDisplay :: IO ()
 setUncaughtExceptionHandlerDisplay =
-  Ex.setUncaughtExceptionHandler printExceptExitCode
+  Sync.setUncaughtExceptionHandler printExceptExitCode
   where
-#if MIN_VERSION_base(4, 20, 0)
     printExceptExitCode ex = case fromException ex of
       Just ExitSuccess -> pure ()
       -- for command failures
       Just (ExitFailure _) -> pure ()
       Nothing -> IO.putStrLn $ displayException ex
-#else
-    printExceptExitCode ex = case fromException ex of
-      Just (Ex.MkExceptionCS ExitSuccess _) -> pure ()
-      -- for command failures
-      Just (Ex.MkExceptionCS (ExitFailure _) _) -> pure ()
-      Nothing -> IO.putStrLn $ displayException ex
-#endif
-
-{- ORMOLU_ENABLE -}
 
 -- | Either, specializing Left to String, for the purposes of MonadFail.
 data EitherString a

@@ -92,7 +92,7 @@ getStrippedLine ::
   m Text
 getStrippedLine prompt = do
   Haskeline.getInputLine (unpack prompt) >>= \case
-    Nothing -> throwString "Input empty"
+    Nothing -> throwText "Input empty"
     Just t -> pure $ T.strip $ pack t
 
 getStrippedLineEmpty ::

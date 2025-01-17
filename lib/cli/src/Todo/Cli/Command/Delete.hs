@@ -57,7 +57,7 @@ deleteTask coreConfig intMode mTaskIds = do
   case intMode of
     InteractiveOn -> do
       when (is _Just mTaskIds)
-        $ throwString "--task-id incompatible with --interactive on. Please only specify one."
+        $ throwText "--task-id incompatible with --interactive on. Please only specify one."
 
       let allIds = L.sort $ toListOf IndexO.indexIdStatusFold index
 
@@ -73,7 +73,7 @@ deleteTask coreConfig intMode mTaskIds = do
       deleteWithRetry coreConfig
     InteractiveOff -> case mTaskIds of
       Nothing ->
-        throwString "When --interactive is off, --task-id is required."
+        throwText "When --interactive is off, --task-id is required."
       Just taskIds ->
         deleteIds coreConfig taskIds
   where
@@ -93,7 +93,7 @@ deleteWithRetry ::
 deleteWithRetry coreConfig = go
   where
     go = do
-      eResult <- tryAny $ do
+      eResult <- trySync $ do
         taskIds <- CUtils.askParseQ "Enter task id(s) to delete: " parseTaskIds
         deleteIds coreConfig taskIds
 

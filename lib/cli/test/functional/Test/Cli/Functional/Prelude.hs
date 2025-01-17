@@ -39,15 +39,14 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BSL
 import Data.IORef (IORef, modifyIORef', newIORef, readIORef, writeIORef)
 import Data.Proxy as X (Proxy (Proxy))
-import Effects.Exception (tryCS)
 import Effects.FileSystem.HandleWriter (MonadHandleWriter)
 import Effects.FileSystem.PathWriter as X (copyFileWithMetadata)
 import Effects.FileSystem.PathWriter qualified as PW
-import Effects.FileSystem.Utils as X (unsafeDecodeOsToFp, unsafeEncodeFpToOs)
-import Effects.FileSystem.Utils qualified as FsUtils
 import Effects.Haskeline (MonadHaskeline (getInputLine))
 import Effects.System.Environment (MonadEnv (withArgs))
 import Effects.System.Terminal (MonadTerminal (putStr))
+import FileSystem.OsPath as X (unsafeDecode, unsafeEncodeValid)
+import FileSystem.OsPath qualified as OsPath
 import Test.Cli.Functional.Prelude.GoldenParams (GoldenParams (..))
 import Test.Tasty as X (TestName, TestTree, defaultMain, testGroup)
 import Test.Tasty.Golden as X (goldenVsFile)
@@ -145,10 +144,10 @@ runTodoException ::
   List String ->
   IO Text
 runTodoException args = do
-  eResult <- tryCS @_ @e $ runTodo args
+  eResult <- try @_ @e $ runTodo args
 
   case eResult of
-    Right _ -> throwString "Expected exception, received success"
+    Right _ -> throwText "Expected exception, received success"
     Left ex -> pure (pack $ displayException ex)
 
 -- | Runs a golden test with the params.
@@ -184,7 +183,7 @@ testGoldenRunnerParamsMTestEnv goldenParams mTestEnv =
 
     let cmdArgs =
           [ "--index-path",
-            unsafeDecodeOsToFp testIndexPath,
+            unsafeDecode testIndexPath,
             "--color",
             "off"
           ]
@@ -200,7 +199,7 @@ testGoldenRunnerParamsMTestEnv goldenParams mTestEnv =
         then do
           let listArgs =
                 [ "--index-path",
-                  unsafeDecodeOsToFp testIndexPath,
+                  unsafeDecode testIndexPath,
                   "--color",
                   "off",
                   "list"
@@ -215,14 +214,8 @@ testGoldenRunnerParamsMTestEnv goldenParams mTestEnv =
     testDirWithNameOsPath = goldenParams.dataDir </> goldenParams.testDirName
 
     outputPathStart =
-      unsafeDecodeOsToFp
-        $ [osp|lib|]
-        </> [osp|cli|]
-        </> [osp|test|]
-        </> [osp|functional|]
-        </> [osp|Test|]
-        </> [osp|Cli|]
-        </> [osp|Functional|]
+      unsafeDecode
+        $ [ospPathSep|lib/cli/test/functional/Test/Cli/Functional|]
         </> goldenParams.dataDir
         </> [osp|output|]
         </> goldenParams.testDirName
@@ -238,10 +231,10 @@ toBS = (<> "\n") . encodeUtf8
 
 writeActualFile :: (MonadFileWriter m) => FilePath -> Text -> m ()
 writeActualFile actualPath result =
-  writeBinaryFile (unsafeEncodeFpToOs actualPath) (toBS result)
+  writeBinaryFile (unsafeEncodeValid actualPath) (toBS result)
 
 cfp :: FilePath -> FilePath -> FilePath
-cfp = FsUtils.combineFilePaths
+cfp = OsPath.combineFilePaths
 
 -- | Appends the given directory onto the test directory, creating the
 -- new directory if necessary.
@@ -263,7 +256,7 @@ concatSeq :: Seq Text -> Text
 concatSeq = fold
 
 exampleJsonOsPath :: OsPath
-exampleJsonOsPath = [osp|examples|] </> [osp|index.json|]
+exampleJsonOsPath = [ospPathSep|examples/index.json|]
 
 -- | Takes a name like 'Delete'
 mkInputDir :: OsPath -> OsPath
@@ -275,11 +268,4 @@ mkOutputDir testModName = mkDirPrefix testModName </> [osp|output|]
 
 mkDirPrefix :: OsPath -> OsPath
 mkDirPrefix p =
-  [osp|lib|]
-    </> [osp|cli|]
-    </> [osp|test|]
-    </> [osp|functional|]
-    </> [osp|Test|]
-    </> [osp|Cli|]
-    </> [osp|Functional|]
-    </> p
+  [ospPathSep|lib/cli/test/functional/Test/Cli/Functional|] </> p

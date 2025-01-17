@@ -3,8 +3,6 @@ module Todo.Cli.Command.List
   )
 where
 
-import Data.Text.Lazy qualified as TL
-import Data.Text.Lazy.Builder qualified as TLB
 import Effects.Time (MonadTime (getSystemZonedTime))
 import Todo.Cli.Configuration.Core
   ( CoreConfig
@@ -40,8 +38,7 @@ listTasks coreConfig msortType revSort = do
   currTime <- getSystemZonedTime
 
   putTextLn
-    $ TL.toStrict
-    $ TLB.toLazyText
+    $ builderToTxt
     $ Render.renderSorted currTime color unicode sorted
   where
     color = coreConfig.colorSwitch

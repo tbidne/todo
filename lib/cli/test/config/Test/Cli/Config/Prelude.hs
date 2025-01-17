@@ -33,7 +33,6 @@ module Test.Cli.Config.Prelude
 where
 
 import Control.Monad.Reader (MonadReader (ask), ReaderT, runReaderT)
-import Effects.Exception (tryCS)
 import Effects.FileSystem.PathReader
   ( MonadPathReader
       ( doesFileExist,
@@ -41,7 +40,7 @@ import Effects.FileSystem.PathReader
       ),
     XdgDirectory (XdgConfig),
   )
-import Effects.FileSystem.Utils qualified as FsUtils
+import FileSystem.OsPath qualified as OsPath
 import Hedgehog as X
   ( PropertyName,
     PropertyT,
@@ -110,17 +109,17 @@ runGetConfig args = withArgs args $ runIntIO defaultEnv Cli.getConfig
 
 runGetConfigException :: (Exception e) => List String -> IO e
 runGetConfigException args = withArgs args $ do
-  eResult <- tryCS $ runIntIO defaultEnv Cli.getConfig
+  eResult <- try $ runIntIO defaultEnv Cli.getConfig
   case eResult of
     Left ex -> pure ex
-    Right x -> throwString $ "Expected exception, received: " <> show x
+    Right x -> throwText $ "Expected exception, received: " <> showt x
 
 runXdgGetConfigException :: (Exception e) => OsPath -> List String -> IO e
 runXdgGetConfigException xdgDir args = withArgs args $ do
-  eResult <- tryCS $ runIntIO env Cli.getConfig
+  eResult <- try $ runIntIO env Cli.getConfig
   case eResult of
     Left ex -> pure ex
-    Right x -> throwString $ "Expected exception, received: " <> show x
+    Right x -> throwText $ "Expected exception, received: " <> showt x
   where
     env = MkIntEnv xdgDir
 
@@ -131,18 +130,13 @@ testHedgehogOne desc fnName m =
     $ property m
 
 tomlOsPath :: OsPath
-tomlOsPath =
-  [osp|lib|]
-    </> [osp|cli|]
-    </> [osp|test|]
-    </> [osp|config|]
-    </> [osp|toml|]
+tomlOsPath = [ospPathSep|lib/cli/test/config/toml|]
 
 tomlFilePath :: FilePath
-tomlFilePath = FsUtils.unsafeDecodeOsToFp tomlOsPath
+tomlFilePath = OsPath.unsafeDecode tomlOsPath
 
 cfp :: FilePath -> FilePath -> FilePath
-cfp = FsUtils.combineFilePaths
+cfp = OsPath.combineFilePaths
 
 unsafeParseTimestamp :: (HasCallStack) => String -> Timestamp
 unsafeParseTimestamp s = case Timestamp.parseTimestamp s of
@@ -150,19 +144,19 @@ unsafeParseTimestamp s = case Timestamp.parseTimestamp s of
   Just t -> t
 
 exampleConfigFilePath :: FilePath
-exampleConfigFilePath = FsUtils.unsafeDecodeOsToFp exampleConfigOsPath
+exampleConfigFilePath = OsPath.unsafeDecode exampleConfigOsPath
 
 exampleConfigOsPath :: OsPath
-exampleConfigOsPath = [osp|examples|] </> [osp|config.toml|]
+exampleConfigOsPath = [ospPathSep|examples/config.toml|]
 
 noPathConfigFilePath :: FilePath
-noPathConfigFilePath = FsUtils.unsafeDecodeOsToFp noPathConfigOsPath
+noPathConfigFilePath = OsPath.unsafeDecode noPathConfigOsPath
 
 noPathConfigOsPath :: OsPath
 noPathConfigOsPath = getTestConfigTomlOsPath [osp|no-path.toml|]
 
 commandsConfigFilePath :: FilePath
-commandsConfigFilePath = FsUtils.unsafeDecodeOsToFp commandsConfigOsPath
+commandsConfigFilePath = OsPath.unsafeDecode commandsConfigOsPath
 
 commandsConfigOsPath :: OsPath
 commandsConfigOsPath = getTestConfigTomlOsPath [osp|commands.toml|]

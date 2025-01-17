@@ -3,7 +3,7 @@ name:               todo
 version:            0.1
 license:            MIT
 license-file:       LICENSE
-tested-with:        GHC ==9.8.2 || ==9.10.1
+tested-with:        GHC ==9.8.4 || ==9.10.1 || ==9.12.1
 copyright:          2024-2025 Thomas Bidne
 author:             Thomas Bidne
 maintainer:         tbidne@protonmail.com
@@ -77,22 +77,24 @@ library
   build-depends:
     , aeson                ^>=2.2.0.0
     , aeson-pretty         ^>=0.8.9
-    , base                 >=4.19.0.0  && <4.21
+    , base                 >=4.19.0.0  && <4.22
     , bytestring           >=0.10.12.0 && <0.13
     , containers           >=0.6.2.1   && <0.8
-    , effects-exceptions   ^>=0.1
     , effects-fs           ^>=0.1
     , effects-time         ^>=0.1
+    , exception-utils      ^>=0.1
+    , exceptions           ^>=0.10.4
     , nonempty-containers  >=0.3.4.2   && <0.4
     , optics-core          ^>=0.4
     , text                 >=2.0       && <2.2
-    , text-display         >=0.0.3.0   && <0.6
+    , text-builder-linear  ^>=0.1
+    , text-display         ^>=1.0.0.0
     , time                 >=1.9.3     && <1.15
     , toml-reader          >=0.2.0.0   && <0.3
 
   -- For tuple syntax
   if impl(ghc >=9.10.1)
-    build-depends: ghc-experimental ^>=0.1.0.0
+    build-depends: ghc-experimental >=0.1.0.0 && <9.1202
 
   hs-source-dirs:  lib/core/src
 
@@ -113,7 +115,7 @@ test-suite unit
     , base
     , bytestring
     , containers
-    , hedgehog             >=1.0.2   && <1.5
+    , hedgehog             >=1.0.2   && <1.6
     , nonempty-containers
     , tasty                >=1.1.0.3 && <1.6
     , tasty-hedgehog       >=1.2.0.0 && <1.5
@@ -184,7 +186,6 @@ test-suite cli-config
 
   build-depends:
     , base
-    , effects-exceptions
     , effects-fs
     , hedgehog
     , mtl
@@ -216,14 +217,13 @@ test-suite cli-functional
     , base
     , bytestring
     , effects-env
-    , effects-exceptions
     , effects-fs
     , effects-haskeline
     , effects-terminal
-    , env-guard           ^>=0.2
+    , env-guard          ^>=0.2
     , mtl
     , tasty
-    , tasty-golden        ^>=2.3.1.1
+    , tasty-golden       ^>=2.3.1.1
     , text
     , todo
     , todo-cli
@@ -250,7 +250,7 @@ benchmark benchmarks
     , base
     , deepseq      >=1.4.4.0 && <1.6
     , effects-fs
-    , tasty-bench  ^>=0.3
+    , tasty-bench  >=0.3     && <0.5
     , todo
     , todo-cli
 

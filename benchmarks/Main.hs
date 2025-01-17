@@ -9,7 +9,7 @@ import Data.IORef (IORef, modifyIORef', newIORef, readIORef)
 import Data.Word (Word32)
 import Effects.FileSystem.PathReader qualified as PR
 import Effects.FileSystem.PathWriter qualified as PR
-import Effects.FileSystem.Utils qualified as FS
+import FileSystem.OsPath qualified as OsPath
 import Test.Tasty.Bench
   ( Benchmark,
     bench,
@@ -126,7 +126,7 @@ setup = do
   where
     createShallow :: OsPath -> OsPath -> Word32 -> IO OsPath
     createShallow benchDir name numTasks = do
-      numOsPath <- FS.encodeFpToOsThrowM (show numTasks)
+      numOsPath <- OsPath.encodeThrowM (show numTasks)
       let tasks = mkTask . showt <$> [1 .. numTasks]
           path = benchDir </> name <> [osp|_|] <> numOsPath
           idx = UnsafeIndex (listToSeq tasks) path
@@ -136,7 +136,7 @@ setup = do
 
     createDeep :: OsPath -> OsPath -> Word8 -> IO OsPath
     createDeep benchDir name depth = do
-      numOsPath <- FS.encodeFpToOsThrowM (show depth)
+      numOsPath <- OsPath.encodeThrowM (show depth)
       counterRef <- newIORef 0
 
       tasks <- go depth counterRef

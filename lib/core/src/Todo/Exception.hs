@@ -13,13 +13,17 @@ module Todo.Exception
 
     -- * Functions
     displayExceptionSkipKnownCS,
+
+    -- * Misc
+    proxies,
   )
 where
 
-import Data.Proxy (Proxy (Proxy))
-import Effects.Exception (ExceptionProxy (MkExceptionProxy))
-import Effects.Exception qualified as Ex
-import Effects.FileSystem.Utils qualified as FsUtils
+import Control.Exception.Annotation.Utils (ExceptionProxy (MkExceptionProxy))
+#if MIN_VERSION_base(4, 20, 0) && !MIN_VERSION_base(4, 21, 0)
+import Control.Exception.Annotation.Utils qualified as AnnUtils
+#endif
+import FileSystem.OsPath qualified as OsPath
 import Todo.Data.TaskId (TaskId)
 import Todo.Data.TaskId qualified as TaskId
 import Todo.Prelude
@@ -109,7 +113,7 @@ instance Exception IndexNameLookupE where
       [ "No index with name '",
         unpack name,
         "' found in index-legend: '",
-        FsUtils.decodeOsToFpLenient path,
+        OsPath.decodeLenient path,
         "'"
       ]
 
@@ -121,7 +125,7 @@ instance Exception XdgIndexNotFoundE where
   displayException (MkXdgIndexNotFoundE p) =
     mconcat
       [ "No index name or path was given, so we fell back to XDG config '",
-        FsUtils.decodeOsToFpLenient p,
+        OsPath.decodeLenient p,
         "', but none were found."
       ]
 
@@ -133,7 +137,7 @@ instance Exception ConfigNotFoundE where
   displayException (MkConfigNotFoundE p) =
     mconcat
       [ "Config file not found: '",
-        FsUtils.decodeOsToFpLenient p,
+        OsPath.decodeLenient p,
         "'"
       ]
 
@@ -142,27 +146,31 @@ instance Exception ConfigNotFoundE where
 
 -- | Display exception, skipping callstacks for known exceptions.
 displayExceptionSkipKnownCS :: (Exception e) => e -> String
-displayExceptionSkipKnownCS = skipKnownExceptions proxies
+displayExceptionSkipKnownCS = skipKnownExceptions
 
 proxies :: List ExceptionProxy
 proxies =
-  [ MkExceptionProxy $ Proxy @BlockedIdRefE,
-    MkExceptionProxy $ Proxy @ConfigNotFoundE,
-    MkExceptionProxy $ Proxy @DeleteE,
-    MkExceptionProxy $ Proxy @DuplicateIdE,
-    MkExceptionProxy $ Proxy @FoundGroupNotSingleE,
-    MkExceptionProxy $ Proxy @IndexNameLookupE,
-    MkExceptionProxy $ Proxy @TaskIdNotFoundE
+  [ MkExceptionProxy @BlockedIdRefE,
+    MkExceptionProxy @ConfigNotFoundE,
+    MkExceptionProxy @DeleteE,
+    MkExceptionProxy @DuplicateIdE,
+    MkExceptionProxy @FoundGroupNotSingleE,
+    MkExceptionProxy @IndexNameLookupE,
+    MkExceptionProxy @TaskIdNotFoundE
   ]
 
-skipKnownExceptions :: forall e. (Exception e) => [ExceptionProxy] -> e -> String
+skipKnownExceptions :: forall e. (Exception e) => e -> String
 
 {- ORMOLU_DISABLE -}
 
-#if MIN_VERSION_base(4, 20, 0)
-skipKnownExceptions = Ex.displayInnerMatch
+#if MIN_VERSION_base(4, 20, 0) && !MIN_VERSION_base(4, 21, 0)
+skipKnownExceptions ex =
+  if AnnUtils.matchesException proxies ex
+    then case toException ex of
+      SomeException innerEx -> displayException innerEx
+    else displayException ex
 #else
-skipKnownExceptions = Ex.displayCSNoMatch
+skipKnownExceptions = displayException
 #endif
 
 {- ORMOLU_ENABLE -}

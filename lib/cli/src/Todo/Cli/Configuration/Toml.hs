@@ -11,7 +11,7 @@ where
 import Data.Map.Strict qualified as Map
 import Effects.FileSystem.FileReader qualified as FR
 import Effects.FileSystem.PathReader qualified as PR
-import Effects.FileSystem.Utils qualified as FsUtils
+import FileSystem.OsPath qualified as OsPath
 import TOML (DecodeTOML (tomlDecoder), Decoder, getFieldOptWith, getFieldWith)
 import TOML qualified
 import Todo.Cli.Configuration.ConfigPhase
@@ -149,7 +149,7 @@ decodeTaskNamePathMap =
         pure $ Map.fromList nameOsPathList
 
     encodePath :: TaskNamePathPair -> Decoder (Text, OsPath)
-    encodePath (MkTaskNamePathPair n p) = (n,) <$> FsUtils.encodeFpToValidOsFail p
+    encodePath (MkTaskNamePathPair n p) = (n,) <$> OsPath.encodeValidFail p
 
 decodeIndexName :: Decoder (Maybe Text)
 decodeIndexName = getFieldOptWith tomlDecoder "index-name"

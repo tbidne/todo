@@ -9,8 +9,6 @@ module Todo.Cli.Command.Update
 where
 
 import Data.List qualified as L
-import Data.Text.Lazy qualified as TL
-import Data.Text.Lazy.Builder qualified as TLB
 import Todo.Cli.Command.Utils qualified as CUtils
 import Todo.Cli.Configuration.Core
   ( CoreConfig (colorSwitch, index, unicodeSwitch),
@@ -223,9 +221,9 @@ setTaskValueInteractiveSwitch
       InteractiveOn ->
         case (mTaskId, mNewValue) of
           (Just _, _) -> do
-            throwString "--task-id is incompatible with --interactive on."
+            throwText "--task-id is incompatible with --interactive on."
           (_, Just _) ->
-            throwString "Value is incompatible with --interactive on."
+            throwText "Value is incompatible with --interactive on."
           (Nothing, Nothing) -> do
             let allIds = L.sort $ toListOf IndexO.indexIdStatusFold index
 
@@ -242,9 +240,9 @@ setTaskValueInteractiveSwitch
       InteractiveOff ->
         case (mTaskId, mNewValue) of
           (Nothing, _) -> do
-            throwString "--task-id is mandatory with --interactive off."
+            throwText "--task-id is mandatory with --interactive off."
           (_, Nothing) ->
-            throwString "Value is mandatory with --interactive off."
+            throwText "Value is mandatory with --interactive off."
           (Just taskId, Just newValue) ->
             setTaskValue setIndexFn coreConfig taskId newValue
     where
@@ -266,7 +264,7 @@ setTaskValueWithRetry ::
 setTaskValueWithRetry parser setIndexFn coreConfig = go
   where
     go = do
-      eResult <- tryAny $ do
+      eResult <- trySync $ do
         taskId <- CUtils.askParseQ "Enter task id to update: " TaskId.parseTaskId
         value <- CUtils.askParseQ @_ @a "Enter value: " parser
 
@@ -339,9 +337,7 @@ printUpdated coreConfig modifiedTask = do
   putTextLn "Updated task:\n"
   rendered <- Render.renderOne color unicode modifiedTask
 
-  putTextLn
-    $ TL.toStrict
-    $ TLB.toLazyText rendered
+  putTextLn $ builderToTxt rendered
   where
     color = coreConfig.colorSwitch
     unicode = coreConfig.unicodeSwitch
